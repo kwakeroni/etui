@@ -1,0 +1,23 @@
+<root xmlns="namespace1"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="namespace1 test.xsd">
+    <A>
+        <!-- if the ref-number is not equal to one of the key-number, the validation will give error -->
+        <part ref-number="1"/>
+    </A>
+    <A>
+        <!-- if the ref-number is not equal to one of the key-number, the validation will give error -->
+        <part ref-number="2"/>
+    </A>
+    <B>
+        <C>
+            <part key-number="1">BC1</part>
+            <part key-number="2">BC2</part>
+            <part key-number="1">BC3</part>
+        </C>
+    </B>
+    <C>
+        <part key-number="1">C1</part>
+        <part key-number="2">C2</part>
+        <part key-number="1">C3</part>
+    </C>
+</root>

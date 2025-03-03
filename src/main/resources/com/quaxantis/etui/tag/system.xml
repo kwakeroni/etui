@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag-collection xmlns="https://quaxantis.com/etui/tags" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://quaxantis.com/etui/tags tag-collection.xsd">
+    <collection>System</collection>
+    <family name="sourcefile" group="">
+        <label>Source File attribute</label>
+        <tags>
+            <tag name="SourceFile" readonly="true" />
+        </tags>
+    </family>
+    <family name="exiftool" group="ExifTool">
+        <label>Exiftool information</label>
+        <tags>
+            <tag name="ExifToolVersion" readonly="true" />
+        </tags>
+    </family>
+    <family name="file" group="File">
+        <label>File attributes</label>
+        <description>
+            Represents some system attributes of the file.
+        </description>
+        <tags>
+            <tag name="FileName" readonly="true" />
+            <tag name="Directory" readonly="true" />
+            <tag name="FileSize" readonly="true" />
+            <tag name="FileModifyDate" readonly="true" />
+            <tag name="FileAccessDate" readonly="true" />
+            <tag name="FileCreateDate" readonly="true" />
+            <tag name="FilePermissions" readonly="true" />
+            <tag name="FileType" readonly="true" />
+            <tag name="FileTypeExtension" readonly="true" />
+            <tag name="MIMEType" readonly="true" />
+        </tags>
+    </family>
+</tag-collection>

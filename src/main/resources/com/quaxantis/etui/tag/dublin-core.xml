@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag-collection xmlns="https://quaxantis.com/etui/tags" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://quaxantis.com/etui/tags tag-collection.xsd">
+    <collection>Standards</collection>
+    <family name="dc" group="XMP">
+        <label>Dublin Core</label>
+        <homePage>https://www.dublincore.org/</homePage>
+        <reference>https://www.dublincore.org/specifications/dublin-core/dcmi-terms</reference>
+        <description>
+            The Dublin Core™ Metadata Initiative, or "DCMI", is an organization supporting innovation
+            in metadata design and best practices across the metadata ecology.
+            DCMI works openly, and it is supported by a paid-membership model.
+
+            The tags in this family correspond to the dc/elements/1.1 namespace,
+            originally created in 2000 for the RDF representation of the fifteen-element Dublin Core
+            and widely used in data for more than twenty years.
+        </description>
+        <tags>
+            <tag name="Title">
+                <label>Title</label>
+                <description>A name given to the resource.</description>
+            </tag>
+            <tag name="Subject">
+                <label>Subject</label>
+                <description>A topic of the resource.</description>
+                <format>
+                    <description>
+                        Recommended practice is to refer to the subject with a URI.
+                        If this is not possible or feasible, a literal entry that identifies the subject may be provided.
+                        Both should preferably refer to a subject in a controlled vocabulary.
+                    </description>
+                </format>
+            </tag>
+            <tag name="Creator">
+                <label>Creator</label>
+                <description>An entity responsible for making the resource.</description>
+                <format>
+                    <description>
+                        Recommended practice is to identify the creator with a URI.
+                        If this is not possible or feasible, a literal entry that identifies the creator may be provided.
+                    </description>
+                </format>
+            </tag>
+            <tag name="Contributor">
+                <label>Contributor</label>
+                <description>An entity responsible for making contributions to the resource.</description>
+                <format>
+                    <description>
+                        The guidelines for using names of persons or organizations as creators apply to contributors.
+                        Recommended practice is to identify the creator with a URI.
+                        If this is not possible or feasible, a literal entry that identifies the creator may be provided.
+                    </description>
+                </format>
+            </tag>
+            <tag name="Publisher">
+                <label>Publisher</label>
+                <description>An entity responsible for making the resource available.</description>
+            </tag>
+            <tag name="Date">
+                <label>Date</label>
+                <description>
+                    A point or period of time associated with an event in the lifecycle of the resource.
+                    Date may be used to express temporal information at any level of granularity.
+                </description>
+                <format>
+                    <description>
+                        Recommended practice is to express the date, date/time, or period of time according to
+                        &lt;a href='https://en.wikipedia.org/wiki/ISO_8601'&gt;ISO 8601-1&lt;/a&gt;
+                        or a published profile of the ISO standard, such as the W3C Note on Date and Time Formats
+                        or the Extended Date/Time Format Specification.
+                        If the full date is unknown, month and year (YYYY-MM) or just year (YYYY) may be used.
+                        Date ranges may be specified using ISO 8601 period of time specification
+                        in which start and end dates are separated by a '/' (slash) character.
+                        Either the start or end date may be missing.
+                    </description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-04-12</example><!-- date according to ISO 8601-1 -->
+                        <example pattern="yyyy-mm">1985-04</example><!-- month and year (YYYY-MM) -->
+                        <example pattern="yyyy">1985</example><!-- just year (YYYY) -->
+                        <example pattern="yyyy-mm-dd/yyyy-mm-dd">1985-04-12/1986-04-11</example><!-- Date ranges may be specified using ISO 8601 period of time specification in which start and end dates are separated by a '/' (slash) character. -->
+                        <example pattern="yyyy-mm-dd/duration">1985-04-12/1Y</example><!-- Date ranges may be specified using ISO 8601 period of time specification in which start and end dates are separated by a '/' (slash) character. -->
+                        <example pattern="duration/yyyy-mm-dd">1Y/1986-04-11</example><!-- Date ranges may be specified using ISO 8601 period of time specification in which start and end dates are separated by a '/' (slash) character. -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZ">1985-04-12T23:20:50.52Z</example><!-- date/time according to ISO 8601-1 -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZZZ">1985-04-12T23:20:50.52+00:02</example><!-- date/time according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="Description">
+                <label>Description</label>
+                <description>
+                    An account of the resource.
+                    Description may include but is not limited to:
+                    an abstract, a table of contents, a graphical representation, or a free-text account of the resource.
+                </description>
+            </tag>
+            <tag name="Type">
+                <label>Type</label>
+                <description>The nature or genre of the resource.</description>
+                <format>
+                    <description>
+                        Recommended practice is to use a controlled vocabulary such as the
+                        &lt;a href="https://dublincore.org/documents/dcmi-type-vocabulary/">DCMI Type Vocabulary&lt;/a&gt; (see examples).
+                        To describe the file format, physical medium, or dimensions of the resource, use the property Format.
+                    </description>
+                    <examples>
+                        <example>Collection</example>
+                        <example>Dataset</example>
+                        <example>Event</example>
+                        <example>Image</example>
+                        <example>InteractiveResource</example>
+                        <example>MovingImage</example>
+                        <example>PhysicalObject</example>
+                        <example>Service</example>
+                        <example>Software</example>
+                        <example>Sound</example>
+                        <example>StillImage</example>
+                        <example>Text</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="Format">
+                <label>Format</label>
+                <description>The file format, physical medium, or dimensions of the resource.</description>
+                <format>
+                    <description>
+                        Recommended practice is to use a controlled vocabulary where available.
+                        For example, for file formats one could use the list of
+                        &lt;a href="https://www.iana.org/assignments/media-types/media-types.xhtml">Internet Media Types&lt;/a&gt;.
+                        Examples of dimensions include size and duration.
+                    </description>
+                </format>
+            </tag>
+            <tag name="Language">
+                <label>Language</label>
+                <description>
+                    A language of the resource.
+                </description>
+                <format>
+                    <description>
+                        Recommended practice is to use either
+                        a non-literal entry representing a language from a controlled vocabulary such as ISO 639-2 or ISO 639-3,
+                        or a literal entry consisting of an IETF Best Current Practice 47 language tag.
+                    </description>
+                    <examples>
+                        <example pattern="ll">en</example>
+                        <example pattern="ll-RR">en-US</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="Coverage">
+                <label>Coverage</label>
+                <description>
+                    The spatial or temporal topic of the resource, spatial applicability of the resource,
+                    or jurisdiction under which the resource is relevant.
+                    Spatial topic and spatial applicability may be a named place or a location specified by its geographic coordinates.
+                    Temporal topic may be a named period, date, or date range.
+                    A jurisdiction may be a named administrative entity or a geographic place to which the resource applies.
+                </description>
+                <format>
+                    <description>
+                        Recommended practice is to use a controlled vocabulary such as the
+                        &lt;a href="https://www.getty.edu/research/tools/vocabulary/tgn/index.html">Getty Thesaurus of Geographic Names&lt;/a&gt;.
+                        Where appropriate, named places or time periods may be used
+                        in preference to numeric identifiers such as sets of coordinates or date ranges.
+                    </description>
+                </format>
+            </tag>
+            <tag name="Identifier">
+                <label>Identifier</label>
+                <description>
+                    An unambiguous reference to the resource within a given context.
+                </description>
+                <format>
+                    <description>
+                        Recommended practice is to identify the resource by means of a string conforming to an identification system.
+                        Examples include International Standard Book Number (ISBN), Digital Object Identifier (DOI), and Uniform Resource Name (URN).
+                        Persistent identifiers should be provided as HTTP URIs.
+                    </description>
+                </format>
+            </tag>
+            <tag name="Source">
+                <label>Source</label>
+                <description>
+                    A related resource from which the described resource is derived.
+                    This property is intended to be used with non-literal values.
+                    The described resource may be derived from the related resource in whole or in part.
+                </description>
+                <format>
+                    <description>
+                        Best practice is to identify the related resource by means of a URI
+                        or a string conforming to a formal identification system.
+                    </description>
+                </format>
+            </tag>
+            <tag name="Relation">
+                <label>Relation</label>
+                <description>
+                    A related resource.
+                </description>
+                <format>
+                    <description>
+                        Recommended practice is to identify the related resource by means of a URI.
+                        If this is not possible or feasible, a string conforming to a formal identification system may be provided.
+                    </description>
+                </format>
+            </tag>
+            <tag name="Rights">
+                <label>Rights</label>
+                <description>
+                    Information about rights held in and over the resource.
+                    Typically, rights information includes a statement about various property rights associated with the resource,
+                    including intellectual property rights.
+                </description>
+                <format>
+                    <description>
+                        Recommended practice is to refer to a rights statement with a URI.
+                        If this is not possible or feasible, a literal entry (name, label, or short text) may be provided.
+                    </description>
+                </format>
+            </tag>
+        </tags>
+    </family>
+</tag-collection>
