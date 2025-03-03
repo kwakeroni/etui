@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag-collection xmlns="https://quaxantis.com/etui/tags" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://quaxantis.com/etui/tags tag-collection.xsd">
+    <collection>Standards</collection>
+    <family name="cc" group="XMP">
+        <label>Creative Commons</label>
+        <homePage>https://wiki.creativecommons.org/wiki/XMP</homePage>
+        <reference>https://creativecommons.org/ns#</reference>
+        <description>
+            Creative Commons is a global nonprofit organization that enables sharing and reuse
+            of creativity and knowledge through the provision of free legal tools.
+            Creative Commons licenses provide an easy way to manage the copyright terms
+            that attach automatically to all creative material under copyright.
+            These licenses allow that material to be shared and reused under terms that are flexible and legally sound.
+            All of these licenses require that users provide attribution to the creator when the material is used and shared.
+        </description>
+        <tags>
+            <tag name="license">
+                <label>License</label>
+                <description>A Work has a License. (a subproperty of dcterms:license, the same as xhtml:license)</description>
+                <format>
+                    <description>
+                        The license URL.
+                    </description>
+                    <examples>
+                        <example>http://creativecommons.org/licenses/by-sa/2.0/</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="attributionName">
+                <label>Attribution Name</label>
+                <description>The name the creator of a Work would like used when attributing re-use.</description>
+            </tag>
+            <tag name="attributionURL">
+                <label>Attribution URL</label>
+                <description>The URL the creator of a Work would like used when attributing re-use.</description>
+            </tag>
+            <tag name="morePermissions">
+                <label>More Permissions</label>
+                <description>A related resource which describes additional permissions or alternative licenses for a Work which may be available.</description>
+                <format>
+                    <description>
+                        A URL where additional permissions (commercial licensing, etc) are available.
+                    </description>
+                </format>
+            </tag>
+            <tag name="useGuidelines">
+                <label>Use Guidelines</label>
+                <description>A related resource which defines non-binding use guidelines for the work .</description>
+            </tag>
+        </tags>
+    </family>
+</tag-collection>

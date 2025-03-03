@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           targetNamespace="https://quaxantis.com/etui/tags"
+           xmlns="https://quaxantis.com/etui/tags"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="tag-collection" type="TagCollection"/>
+    <xs:complexType name="Family">
+        <xs:sequence>
+            <xs:element name="label" type="xs:string" minOccurs="0"/>
+            <xs:element name="homePage" type="xs:string" minOccurs="0"/>
+            <xs:element name="reference" type="xs:string" minOccurs="0"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="tags" type="Tags"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="group" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="TagCollection">
+        <xs:sequence>
+            <xs:element name="collection" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="family" type="Family" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Tag">
+        <xs:sequence>
+            <xs:element name="label" type="xs:string" minOccurs="0"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="format" type="Format" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="readonly" type="xs:boolean" use="optional" default="false" />
+    </xs:complexType>
+    <xs:complexType name="Tags">
+        <xs:sequence>
+            <xs:element name="tag" type="Tag" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Format">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0">
+            </xs:element>
+            <xs:element name="examples" type="Examples" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>date/time according to ISO 8601-1</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Example">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute type="xs:string" name="pattern" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Examples">
+        <xs:sequence>
+            <xs:element type="Example" name="example" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>date according to ISO 8601-1 month and year (YYYY-MM) just year (YYYY) Date ranges
+                        may be specified using ISO 8601 period of time specification in which start and end dates are
+                        separated by a '/' (slash) character. Date ranges may be specified using ISO 8601 period of time
+                        specification in which start and end dates are separated by a '/' (slash) character. Date ranges
+                        may be specified using ISO 8601 period of time specification in which start and end dates are
+                        separated by a '/' (slash) character. date/time according to ISO 8601-1
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

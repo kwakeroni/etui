@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           targetNamespace="https://quaxantis.com/etui/templates"
+           xmlns="https://quaxantis.com/etui/templates"
+           xmlns:t="https://quaxantis.com/etui/templates"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+    <xs:element name="template-collection" type="TemplateCollection" />
+    <xs:complexType name="TemplateCollection">
+        <xs:sequence>
+            <xs:element name="group" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="template" type="Template" maxOccurs="unbounded">
+                <xs:key name="variableKey">
+                    <xs:selector xpath="t:variable" />
+                    <xs:field xpath="@name" />
+                </xs:key>
+                <xs:keyref name="mappingVariableRef" refer="t:variableKey">
+                    <xs:selector xpath="t:mapping"/>
+                    <xs:field xpath="@variable"/>
+                </xs:keyref>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Template">
+        <xs:sequence>
+            <xs:element name="label" type="xs:string" />
+            <xs:element name="variable" type="Variable" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="evaluator" type="xs:string" use="optional"/>
+    </xs:complexType>
+    <xs:complexType name="Variable">
+        <xs:sequence>
+            <xs:element name="label" type="xs:string" minOccurs="0" />
+            <xs:element name="tag" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="tag" type="xs:string" use="optional"/>
+        <xs:attribute name="expression" type="xs:string" use="optional"/>
+    </xs:complexType>
+</xs:schema>

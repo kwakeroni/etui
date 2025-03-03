@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag-collection xmlns="https://quaxantis.com/etui/tags" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://quaxantis.com/etui/tags tag-collection.xsd">
+    <collection>Formats</collection>
+    <family name="png" group="PNG">
+        <label>PNG</label>
+        <reference>http://www.libpng.org/pub/png/spec/1.2/</reference>
+        <description>
+            Tags extracted from PNG images.
+        </description>
+        <tags>
+            <tag name="ImageWidth" readonly="true" />
+            <tag name="ImageHeight" readonly="true" />
+            <tag name="BitDepth" readonly="true" />
+            <tag name="ColorType" readonly="true">
+                <description>
+                    0 = Grayscale
+                    2 = RGB
+                    3 = Palette
+                    4 = Grayscale with Alpha
+                    6 = RGB with Alpha
+                </description>
+            </tag>
+            <tag name="Compression" readonly="true">
+                <description>0 = Deflate/Inflate</description>
+            </tag>
+            <tag name="Filter" readonly="true">
+                <description>0 = Adaptive</description>
+            </tag>
+            <tag name="Interlace" readonly="true">
+                <description>
+                    0 = Noninterlaced
+                    1 = Adam7 Interlace
+                </description>
+            </tag>
+            <tag name="PixelsPerUnitX" readonly="true" />
+            <tag name="PixelsPerUnitY" readonly="true" />
+            <tag name="PixelUnits" readonly="true" />
+            <tag name="Artist" />
+            <tag name="Author" />
+            <tag name="Collection" />
+            <tag name="Comment" />
+            <tag name="Copyright" />
+            <tag name="CreationTime" />
+            <tag name="Description" />
+            <tag name="Disclaimer" />
+            <tag name="Document" />
+            <tag name="Label" />
+            <tag name="Make" />
+            <tag name="Model" />
+            <tag name="Software" />
+            <tag name="Source" />
+            <tag name="TimeStamp" />
+            <tag name="Title" />
+            <tag name="URL" />
+            <tag name="PNGWarning" />
+            <tag name="AestheticScore" />
+            <tag name="CreateDate" />
+            <tag name="ModDate" />
+            <tag name="Parameters" />
+
+
+            <tag name="FileName" readonly="true" />
+            <tag name="Directory" readonly="true" />
+            <tag name="FileSize" readonly="true" />
+            <tag name="FileModifyDate" readonly="true" />
+            <tag name="FileAccessDate" readonly="true" />
+            <tag name="FileCreateDate" readonly="true" />
+            <tag name="FilePermissions" readonly="true" />
+            <tag name="FileType" readonly="true" />
+            <tag name="FileTypeExtension" readonly="true" />
+            <tag name="MIMEType" readonly="true" />
+        </tags>
+    </family>
+</tag-collection>

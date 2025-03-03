@@ -1,0 +1,80 @@
+<xs:schema
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="namespace1"
+        xmlns:r="namespace1"
+        elementFormDefault="qualified">
+
+    <xs:element name="root">
+        <xs:complexType>
+            <xs:sequence>
+
+                <xs:element name="A" type="r:A" maxOccurs="unbounded">
+<!--                    <xs:keyref name="dummy" refer="r:pNumKey">-->
+<!--                        <xs:selector xpath="part"/>-->
+<!--                        <xs:field xpath="@ref-number"/>-->
+<!--                    </xs:keyref>-->
+                </xs:element>
+
+                <xs:element name="B" type="r:BType">
+<!--                    <xs:key name="pNumKey2">-->
+<!--                        <xs:selector xpath="r:C/r:part"/>-->
+<!--                        <xs:field xpath="@key-number"/>-->
+<!--                    </xs:key>-->
+                </xs:element>
+
+                <xs:element name="C" type="r:CType" minOccurs="0" maxOccurs="unbounded">
+                    <!--                    <xs:key name="pNumKey2">-->
+                    <!--                        <xs:selector xpath="r:C/r:part"/>-->
+                    <!--                        <xs:field xpath="@key-number"/>-->
+                    <!--                    </xs:key>-->
+                </xs:element>
+
+            </xs:sequence>
+        </xs:complexType>
+
+        <xs:key name="pNumKeyBC">
+            <xs:selector xpath="r:B/r:C/r:part"/>
+            <xs:field xpath="@key-number"/>
+        </xs:key>
+        <xs:key name="pNumKeyC">
+            <xs:selector xpath="r:C/r:part"/>
+            <xs:field xpath="@key-number"/>
+        </xs:key>
+
+    </xs:element>
+
+    <xs:complexType name="A">
+        <xs:sequence>
+            <xs:element name="part" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute name="ref-number" type="xs:integer"/>
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="BType">
+        <xs:sequence>
+            <xs:element name="C" minOccurs="0" maxOccurs="unbounded" type="r:CType" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CType">
+        <xs:sequence>
+            <xs:element name="part" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute name="key-number" type="xs:integer"/>
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
