@@ -24,6 +24,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -129,7 +130,7 @@ class TagSetUI extends JPanel {
     private static Optional<Container> createPreviewPane(Path file) {
         if (file != null) {
             try {
-                return Optional.of(createPreviewPane0(file));
+                return Optional.ofNullable(createPreviewPane0(file));
             } catch (Exception exc) {
                 log.error("Unable to preview image {}", file, exc);
             }
@@ -137,10 +138,16 @@ class TagSetUI extends JPanel {
         return Optional.empty();
     }
 
+    @Nullable
     private static Container createPreviewPane0(Path file) throws IOException {
         var flowLayout = new FlowLayout();
         int padding = Math.max(flowLayout.getHgap(), flowLayout.getVgap());
-        var imageLabel = new ImageZoomLabel(ImageIO.read(file.toFile()));
+        BufferedImage image = ImageIO.read(file.toFile());
+        if (image == null) {
+            log.info("Unable to preview image {}", file);
+            return null;
+        }
+        var imageLabel = new ImageZoomLabel(image);
         var previewContainer = new JPanel(flowLayout);
         var scrollPane = new JScrollPane(previewContainer);
         int inc = 20;

@@ -85,8 +85,15 @@ public class TagRepository {
 
     private Stream<StreamEntry<String, XMLTagCollection>> standardCollections() {
         return STANDARD_COLLECTIONS.stream()
-                .map(TagRepository.class::getResource)
                 .map(StreamEntry::of)
+                .map(StreamEntry.mapping(TagRepository.class::getResource))
+                .peek(entry -> {
+                    if (entry.isNullValue()) {
+                        log.warn("Could not locate tag definitions: {}", entry.getKey());
+                    }
+                })
+                .filter(StreamEntry::isNonNullValue)
+                .map(StreamEntry.mappingKey((_, url) -> url))
                 .map(entry -> entry.map(this::readCollection))
                 .map(StreamEntry.mappingKey(
                         (url, coll) -> (coll.collection() != null)? coll.collection() : getFilename(url)));

@@ -60,6 +60,10 @@ public record StreamEntry<K, V>(K key, V value) implements Map.Entry<K, V> {
         return predicate.test(value) ? Optional.of(this) : Optional.empty();
     }
 
+    public boolean isNullValue() {
+        return value == null;
+    }
+
     public boolean isNonNullValue() {
         return value != null;
     }
