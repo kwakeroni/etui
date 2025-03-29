@@ -17,6 +17,8 @@ import org.apache.commons.io.FilenameUtils;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -102,11 +104,14 @@ public class EtuiApplication implements TagSetHandler {
         changes.forEach(tag -> jsonObject.put(tag.groupName() + ":" + tag.tagName(), tag.value()));
 
         Path tempFile = Files.createTempFile(FilenameUtils.getBaseName(output.getFileName().toString()) + "-tags", ".json");
-        objectMapper.writeValue(tempFile.toFile(), jsonObject);
+        try (Writer writer = Files.newBufferedWriter(tempFile, StandardCharsets.UTF_8)) {
+            objectMapper.writeValue(writer, jsonObject);
+        }
 
         var inputPath = fileStateMachine.getOpenFile().orElseThrow();
         Exiftool.onFile(inputPath)
                 .addArgs("-f")
+                .addArgs("-charset", "UTF8")
                 .addArgs("-json=" + tempFile)
                 .addArgs("-out", output.toString())
                 .run();

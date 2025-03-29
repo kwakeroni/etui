@@ -25,7 +25,7 @@ public interface FileState {
         }
     }
 
-    default FileState save() {
+    default FileState save(FileOperations operations) {
         throw new IllegalStateException("Unsupported operation in state " + this.getClass().getSimpleName());
     }
 
@@ -57,12 +57,24 @@ public interface FileState {
         return confirmAction.test("There are unsaved changes in the current file. Any changes will be lost.\n\nDo you want to continue ?");
     }
 
+    private static FileState save(FileState currentState,  FileOperations operations) {
+        var inputPath = currentState.getOpenFile().orElseThrow();
+        Path savedpath = operations.save(inputPath);
+        if (savedpath != null) {
+            return currentState.open(operations, savedpath, _ -> true);
+        } else {
+            System.err.println("File could not be saved");
+        }
+        return currentState;
+    }
+
+
     private static FileState saveAs(FileState currentState, FileOperations operations, Path destination, Predicate<String> confirmAction) {
         if (Files.notExists(destination) ||
             confirmAction.test("%s already exists.\n\nDo you want to replace it ?".formatted(destination.getFileName()))) {
             Path savedpath = operations.saveAs(destination);
             if (savedpath != null) {
-                return currentState.open(operations, destination, _ -> true);
+                return currentState.open(operations, savedpath, _ -> true);
             } else {
                 System.err.println("File could not be saved");
             }
@@ -137,6 +149,11 @@ public interface FileState {
             @Override
             public boolean hasOpenFileChanged() {
                 return true;
+            }
+
+            @Override
+            public FileState save(FileOperations operations) {
+                return FileState.save(this, operations);
             }
 
             @Override

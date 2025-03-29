@@ -31,7 +31,7 @@ public class FileStateMachine {
     }
 
     public void save() {
-        this.state.transition(FileState::save);
+        this.state.transition(fileState -> fileState.save(fileOperations));
     }
 
     public void saveAs(Path path, Predicate<String> confirmAction) {

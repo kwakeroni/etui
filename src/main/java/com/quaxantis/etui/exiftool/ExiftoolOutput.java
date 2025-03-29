@@ -7,6 +7,7 @@ import com.quaxantis.etui.TagSet;
 import com.quaxantis.etui.TagValue;
 import com.quaxantis.etui.tag.TagRepository;
 
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -40,7 +41,7 @@ public sealed abstract class ExiftoolOutput<R> {
 
         @Override
         public Exiftool.CliArgs args() {
-            return (format == null)? Exiftool.CliArgs.none() : this.format;
+            return (format == null) ? Exiftool.CliArgs.none() : this.format;
         }
 
         @Override
@@ -124,7 +125,9 @@ public sealed abstract class ExiftoolOutput<R> {
 
         @Override
         public TagSet handleOutput(Process process) throws IOException {
-            return toTagSet(process.inputReader(), this.tagRepository);
+            Reader reader = process.inputReader();
+//            reader = new SpyingReader(reader);
+            return toTagSet(reader, this.tagRepository);
         }
 
         @Override
@@ -148,7 +151,7 @@ public sealed abstract class ExiftoolOutput<R> {
                 throw new IllegalStateException("Expected exiftool output to be an array with an object");
             }
 
-            UnaryOperator<Tag> enrich = (tagRepository == null)? UnaryOperator.identity() : tagRepository::enrichTag;
+            UnaryOperator<Tag> enrich = (tagRepository == null) ? UnaryOperator.identity() : tagRepository::enrichTag;
             Spliterator<Map.Entry<String, JsonNode>> spliterator = Spliterators.spliterator(json.fields(), json.size(), Spliterator.NONNULL);
             return StreamSupport.stream(spliterator, false)
                     .map(entry -> ofJsonKey(entry.getKey(), entry.getValue(), enrich))
@@ -157,8 +160,32 @@ public sealed abstract class ExiftoolOutput<R> {
 
         private static TagValue ofJsonKey(String key, JsonNode value, UnaryOperator<Tag> enrich) {
             int colon = key.indexOf(':');
-            Tag tag = (colon < 0)? Tag.of(null, key) : Tag.of(key.substring(0, colon), key.substring(colon + 1));
+            Tag tag = (colon < 0) ? Tag.of(null, key) : Tag.of(key.substring(0, colon), key.substring(colon + 1));
             return TagValue.of(enrich.apply(tag), value.asText());
+        }
+    }
+
+    private static class SpyingReader extends FilterReader {
+        public SpyingReader(Reader in) {
+            super(in);
+        }
+
+        @Override
+        public int read() throws IOException {
+            int c = super.read();
+            System.out.print((char) c);
+            return c;
+        }
+
+        @Override
+        public int read(char[] cbuf, int off, int len) throws IOException {
+            int count = super.read(cbuf, off, len);
+            if (count > 0) {
+                System.out.print(new String(cbuf, off, count));
+            } else if (count < 0) {
+                System.out.println();
+            }
+            return count;
         }
     }
 }

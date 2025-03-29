@@ -58,7 +58,7 @@ public final class FileActions {
                 .withMnemonic('S')
                 .withAccelerator('S')
                 .enabledIf(fileStateMachine::hasOpenFileChanged, fileStateMachine::registerListener)
-                .withAction(this::saveTempFile);
+                .withAction(event -> fileStateMachine.save());
 
         this.saveAs = ActionBuilder.withName("Save as...")
                 .withMnemonic('A')
