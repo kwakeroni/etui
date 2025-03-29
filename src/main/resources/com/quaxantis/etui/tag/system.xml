@@ -9,12 +9,14 @@
     </family>
     <family name="exiftool" group="ExifTool">
         <label>Exiftool information</label>
+        <reference>https://exiftool.org/TagNames/Extra.html</reference>
         <tags>
             <tag name="ExifToolVersion" readonly="true" />
         </tags>
     </family>
     <family name="file" group="File">
         <label>File attributes</label>
+        <reference>https://exiftool.org/TagNames/Extra.html</reference>
         <description>
             Represents some system attributes of the file.
         </description>
@@ -29,6 +31,17 @@
             <tag name="FileType" readonly="true" />
             <tag name="FileTypeExtension" readonly="true" />
             <tag name="MIMEType" readonly="true" />
+        </tags>
+    </family>
+    <family name="composite" group="Composite">
+        <label>Composite derived attributes</label>
+        <reference>https://exiftool.org/TagNames/Composite.html</reference>
+        <description>The values of the composite tags are Derived From the values of other tags.</description>
+        <tags>
+            <tag name="ImageSize" readonly="true" />
+            <tag name="ImageWidth" readonly="true" />
+            <tag name="ImageHeight" readonly="true" />
+            <tag name="Megapixels" readonly="true" />
         </tags>
     </family>
 </tag-collection>

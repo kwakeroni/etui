@@ -71,4 +71,62 @@
             <tag name="MIMEType" readonly="true" />
         </tags>
     </family>
+    <family name="webp" group="RIFF">
+        <tags>
+            <tag name="AlphaPreprocessing" readonly="true" />
+            <tag name="AlphaFiltering" readonly="true" />
+            <tag name="AlphaCompression" readonly="true" />
+            <tag name="BackgroundColor" readonly="true" />
+            <tag name="AnimationLoopCount" readonly="true" />
+            <tag name="Duration" readonly="true" />
+            <tag name="VP8Version" readonly="true" />
+            <tag name="ImageWidth" readonly="true" />
+            <tag name="HorizontalScale" readonly="true" />
+            <tag name="ImageHeight" readonly="true" />
+            <tag name="VerticalScale" readonly="true" />
+            <tag name="AlphaIsUsed" readonly="true" />
+            <tag name="WebP_Flags" readonly="true" />
+        </tags>
+    </family>
+    <family name="pdf" group="PDF">
+        <label>PDF</label>
+        <description>
+            Tags extracted from PDF documents.
+        </description>
+        <!-- Note
+             Custom tags can be added to the .ExifTool_config:
+             ```
+                %Image::ExifTool::UserDefined = (
+                    'Image::ExifTool::PDF::Info' => {
+                        MyTag => { },
+                    },
+                );
+                1; # end
+            ```
+            The PDF:MyTag tag will then be visible in the Personalized section from Acrobat Reader.
+         -->
+        <tags>
+            <tag name="PDFVersion" readonly="true" />
+            <tag name="PageCount" readonly="true" />
+            <tag name="PageLayout" readonly="true" />
+            <tag name="PageMode" readonly="true" />
+            <tag name="Language" readonly="true" />
+            <tag name="Title" />
+            <tag name="Author" />
+            <tag name="Subject" />
+            <tag name="Keywords" />
+            <tag name="CreateDate" />
+            <tag name="ModifyDate" />
+            <tag name="SourceModified" />
+            <tag name="Trapped" readonly="true"/>
+            <tag name="Creator">
+                <label>Creator Application</label>
+                <description>Software application used to create the PDF</description>
+            </tag>
+            <tag name="Producer">
+                <label>PDF Producer</label>
+                <description>Software library that produced the PDF</description>
+            </tag>
+        </tags>
+    </family>
 </tag-collection>
