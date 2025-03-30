@@ -1,3 +1,4 @@
+# Maven
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -9,6 +10,12 @@ buildNumber.properties
 .mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
+
+# Local config
+setEnv.cmd
+setEnv.sh
+.classpath
+.classpath-src
 
 # Backup files
 *~
@@ -22,7 +29,6 @@ hs_err_pid*
 *.iws
 
 ## Eclipse
-.classpath
 .metadata
 .project
 .settings/

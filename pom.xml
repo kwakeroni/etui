@@ -130,6 +130,16 @@
                     <version>3.13.0</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.8.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
                     <groupId>com.vegardit.maven</groupId>
                     <artifactId>depcheck-maven-plugin</artifactId>
                     <version>2.0.1</version>
@@ -202,8 +212,148 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.8.0</version>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>local-package</id>
+            <properties>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
+            <build>
+                <finalName>${project.artifactId}</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-classpath</id>
+                                <goals>
+                                    <goal>build-classpath</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <outputProperty>maven.runtime.classpath</outputProperty>
+                                    <includeScope>runtime</includeScope>
+                                    <silent>true</silent>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-classpath</id>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <mainClass>BuildClasspath</mainClass>
+                                    <systemProperties>
+                                        <systemProperty>
+                                            <key>maven.runtime.classpath</key>
+                                            <value>${maven.runtime.classpath}</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>maven.local.path</key>
+                                            <value>${project.build.directory}/${project.build.finalName}.jar</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>classpath.output</key>
+                                            <value>${classpath.output}</value>
+                                        </systemProperty>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>local-source</id>
+            <properties>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
+            <build>
+                <finalName>${project.artifactId}</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-classpath</id>
+                                <goals>
+                                    <goal>build-classpath</goal>
+                                </goals>
+                                <phase>process-classes</phase>
+                                <configuration>
+                                    <outputProperty>maven.runtime.classpath</outputProperty>
+                                    <includeScope>runtime</includeScope>
+                                    <silent>true</silent>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-classpath</id>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <phase>process-classes</phase>
+                                <configuration>
+                                    <mainClass>BuildClasspath</mainClass>
+                                    <systemProperties>
+                                        <systemProperty>
+                                            <key>maven.runtime.classpath</key>
+                                            <value>${maven.runtime.classpath}</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>maven.local.path</key>
+                                            <value>${project.basedir}/src/main/resources</value>
+                                        </systemProperty>
+                                        <systemProperty>
+                                            <key>classpath.output</key>
+                                            <value>${classpath.output}</value>
+                                        </systemProperty>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>local-exec</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>--enable-preview</argument>
+                                <argument>-cp</argument>
+                                <classpath />
+                                <argument>Etui</argument>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
