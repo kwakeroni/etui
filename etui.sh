@@ -5,9 +5,9 @@ if [ -e setEnv.sh ]; then
 fi
 
 if [ -z "$JAVA_HOME" ]; then
-echo The JAVA_HOME environment variable is not defined correctly,
-echo this environment variable is needed to run this program.
-exit 1
+  echo The JAVA_HOME environment variable is not defined correctly,
+  echo this environment variable is needed to run this program.
+  exit 1
 fi
 
 export FROM_SOURCE=${FROM_SOURCE:-false}

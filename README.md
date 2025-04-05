@@ -37,6 +37,16 @@ Environment variables, including `JAVA_HOME` can be set by creating a local `set
 export JAVA_HOME=/c/Programs/jdk-22.0.1
 ```
 
+#### _Windows (cmd)_
+```console
+etui.cmd
+```
+
+Environment variables, including `JAVA_HOME` can be set by creating a local `setEnv.cmd` script:
+```bat
+SET JAVA_HOME=C:\Programs\jdk-22.0.1
+```
+
 #### Taking control of the build process
 Etui is a [Maven](https://maven.apache.org/) project 
 and can be built using the standard build procedure.
