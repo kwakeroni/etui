@@ -13,9 +13,9 @@ import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.List;
 import java.util.Objects;
 import java.util.SequencedCollection;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public abstract class AbstractForm<T, F extends AbstractForm<T, F>> extends JPanel {
@@ -23,7 +23,7 @@ public abstract class AbstractForm<T, F extends AbstractForm<T, F>> extends JPan
     private static final Object PROPERTY_INFO_COMPONENT = new Object();
 
     protected final F self;
-    private final ScopedValue<T> dataBeingSet = ScopedValue.newInstance();
+    private final AtomicReference<T> dataBeingSet = new AtomicReference<>();
     private Dimension wrappedContentSize;
 
     @SafeVarargs
@@ -64,8 +64,8 @@ public abstract class AbstractForm<T, F extends AbstractForm<T, F>> extends JPan
     // DATA
 
     public T getData() {
-        if (dataBeingSet.isBound()) {
-            return dataBeingSet.get();
+        if (dataBeingSet.get() instanceof T t) {
+            return t;
         }
         T bean = createBean();
         for (FormField<T, ?> field : fields()) {
@@ -75,12 +75,15 @@ public abstract class AbstractForm<T, F extends AbstractForm<T, F>> extends JPan
     }
 
     public void setData(T bean) {
-        ScopedValue.runWhere(dataBeingSet, bean, () -> {
+        T oldData = dataBeingSet.getAndSet(bean);
+        try {
             for (FormField<T, ?> field : fields()) {
                 field.setValueFrom(bean);
             }
             fireFormChange();
-        });
+        } finally {
+            dataBeingSet.set(oldData);
+        }
     }
 
     public void modifyData(Consumer<T> modifier) {
@@ -90,7 +93,7 @@ public abstract class AbstractForm<T, F extends AbstractForm<T, F>> extends JPan
     }
 
     protected boolean isSettingData() {
-        return dataBeingSet.isBound();
+        return dataBeingSet.get() != null;
     }
 
     public void clear() {
@@ -155,7 +158,7 @@ public abstract class AbstractForm<T, F extends AbstractForm<T, F>> extends JPan
         int minWidth = 200;
         int totalHeight = PAD;
 
-        int i=0;
+        int i = 0;
         FormField<T, ?> previousField = null;
         for (FormField<T, ?> field : fields()) {
             var isLastField = (++i == fields().size());

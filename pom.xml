@@ -10,7 +10,6 @@
 
     <properties>
         <maven.compiler.release>22</maven.compiler.release>
-        <maven.compiler.enablePreview>true</maven.compiler.enablePreview>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jackson.version>2.17.2</jackson.version>
         <slf4j.version>2.0.15</slf4j.version>
@@ -345,7 +344,6 @@
                         <configuration>
                             <executable>java</executable>
                             <arguments>
-                                <argument>--enable-preview</argument>
                                 <argument>-cp</argument>
                                 <classpath />
                                 <argument>Etui</argument>

@@ -23,14 +23,14 @@ if not "%FROM_SOURCE%" == "false" (
         call mvnw.cmd %MAVEN_ARGS% process-classes -Plocal-source -Dclasspath.output=.classpath-src
     )
     echo Starting Etui
-    "%JAVA_HOME%\bin\java" --source 22 --enable-preview -cp @.classpath-src src/main/java/Etui.java %*
+    "%JAVA_HOME%\bin\java" --source 22 -cp @.classpath-src src/main/java/Etui.java %*
 ) else (
     if not "%FORCE_BUILD%" == "" (
         echo Building Etui
         call mvnw.cmd %MAVEN_ARGS% clean package -DskipTests -Plocal-package -Dclasspath.output=.classpath
     )
   echo Starting Etui
-  "%JAVA_HOME%\bin\java" --enable-preview -cp @.classpath Etui %*
+  "%JAVA_HOME%\bin\java" -cp @.classpath Etui %*
 )
 
 endlocal
