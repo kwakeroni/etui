@@ -32,6 +32,7 @@ class FileOperations {
 
     private TagSet readTagSet(Path path) {
         return Exiftool.onFile(path)
+                .addArgs("-escapeHTML")
                 .addArgs("-api", "NoPDFList")
                 .setOutput(ExiftoolOutput.toTagSet(this.tagRepository))
                 .run();

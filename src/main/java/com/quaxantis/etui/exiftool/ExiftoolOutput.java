@@ -6,6 +6,7 @@ import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.TagSet;
 import com.quaxantis.etui.TagValue;
 import com.quaxantis.etui.tag.TagRepository;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.FilterReader;
 import java.io.IOException;
@@ -158,10 +159,11 @@ public sealed abstract class ExiftoolOutput<R> {
                     .collect(TagSet.toTagSet());
         }
 
-        private static TagValue ofJsonKey(String key, JsonNode value, UnaryOperator<Tag> enrich) {
+        private static TagValue ofJsonKey(String key, JsonNode jsonValue, UnaryOperator<Tag> enrich) {
+            String value = StringEscapeUtils.unescapeHtml4(jsonValue.asText());
             int colon = key.indexOf(':');
             Tag tag = (colon < 0) ? Tag.of(null, key) : Tag.of(key.substring(0, colon), key.substring(colon + 1));
-            return TagValue.of(enrich.apply(tag), value.asText());
+            return TagValue.of(enrich.apply(tag), value);
         }
     }
 

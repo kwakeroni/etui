@@ -13,6 +13,7 @@ import com.quaxantis.etui.swing.ExiftoolSwingUI;
 import com.quaxantis.etui.tag.TagRepository;
 import com.quaxantis.etui.template.TemplateRepository;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -101,7 +102,7 @@ public class EtuiApplication implements TagSetHandler {
         var objectMapper = new ObjectMapper();
         var jsonFactory = new JsonNodeFactory(true);
         var jsonObject = jsonFactory.objectNode();
-        changes.forEach(tag -> jsonObject.put(tag.groupName() + ":" + tag.tagName(), tag.value()));
+        changes.forEach(tag -> jsonObject.put(tag.groupName() + ":" + tag.tagName(), StringEscapeUtils.escapeHtml4(tag.value())));
 
         Path tempFile = Files.createTempFile(FilenameUtils.getBaseName(output.getFileName().toString()) + "-tags", ".json");
         try (Writer writer = Files.newBufferedWriter(tempFile, StandardCharsets.UTF_8)) {
@@ -111,7 +112,7 @@ public class EtuiApplication implements TagSetHandler {
         var inputPath = fileStateMachine.getOpenFile().orElseThrow();
         Exiftool.onFile(inputPath)
                 .addArgs("-f")
-                .addArgs("-charset", "UTF8")
+                .addArgs("-escapeHTML")
                 .addArgs("-json=" + tempFile)
                 .addArgs("-out", output.toString())
                 .run();
