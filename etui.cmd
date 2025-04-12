@@ -1,7 +1,11 @@
 @echo off
 setlocal
 
-if exist setEnv.cmd call setEnv.cmd
+if exist setEnv.cmd (
+    call setEnv.cmd
+) else if exist %~dp0setEnv.cmd (
+    call %~dp0setEnv.cmd
+)
 
 if "%JAVA_HOME%" == "" (
     echo The JAVA_HOME environment variable is not defined correctly,
@@ -11,26 +15,30 @@ if "%JAVA_HOME%" == "" (
 
 if "%FROM_SOURCE%" == "" (set FROM_SOURCE=false)
 if "%MAVEN_ARGS%" == "" (set MAVEN_ARGS=-q)
+if /I "%SHOW_CONSOLE%" == "true" (
+  set JAVA_BIN=%JAVA_HOME%\bin\java
+) else (
+  set JAVA_BIN=%JAVA_HOME%\bin\javaw
+)
 
-if not exist target\etui.jar (set FORCE_BUILD=true)
-if not exist .classpath (set FORCE_BUILD=true)
-if not exist .classpath-src (set NO_SRC_CLASSPATH=true)
+if not exist %~dp0target\etui.jar (set FORCE_BUILD=true)
+if not exist %~dp0.classpath (set FORCE_BUILD=true)
+if not exist %~dp0.classpath-src (set NO_SRC_CLASSPATH=true)
 
-if not "%FROM_SOURCE%" == "false" (
+if /I not "%FROM_SOURCE%" == "false" (
     echo Running Etui from source code
     if not "%NO_SRC_CLASSPATH%" == "" (
         echo Resolving classpath
-        call mvnw.cmd %MAVEN_ARGS% process-classes -Plocal-source -Dclasspath.output=.classpath-src
+        call %~dp0mvnw.cmd %MAVEN_ARGS% -f %~dp0pom.xml process-classes -Plocal-source -Dclasspath.output=%~dp0.classpath-src
     )
     echo Starting Etui
-    "%JAVA_HOME%\bin\java" --source 22 -cp @.classpath-src src/main/java/Etui.java %*
+    start "" "%JAVA_BIN%" --source 22 -cp @%~dp0.classpath-src %~dp0src/main/java/Etui.java %*
 ) else (
     if not "%FORCE_BUILD%" == "" (
         echo Building Etui
-        call mvnw.cmd %MAVEN_ARGS% clean package -DskipTests -Plocal-package -Dclasspath.output=.classpath
+        call %~dp0mvnw.cmd %MAVEN_ARGS% -f %~dp0pom.xml clean package -DskipTests -Plocal-package -Dclasspath.output=%~dp0.classpath
     )
   echo Starting Etui
-  "%JAVA_HOME%\bin\java" -cp @.classpath Etui %*
+  start "" "%JAVA_BIN%" -cp @%~dp0.classpath Etui %*
 )
-
 endlocal
