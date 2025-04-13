@@ -122,7 +122,10 @@ final class ParserStates {
                 case Token.Whitespace(_) -> proceed();
                 case Token.AlphaNumeric(var identifier) -> push(ExtensibleExpr.identifier(identifier));
                 case Token.Operator(GroupOp.Start op, _)
-                        when op.matches(GroupOp.STRING_DOUBLE) || op.matches(GroupOp.STRING_SINGLE) -> push(new String(op));
+                        when op.matches(GroupOp.STRING_DOUBLE) || op.matches(GroupOp.STRING_SINGLE) ->
+                        push(new String(op));
+                case Token.Operator(GroupOp.Start op, _)
+                        when op.matches(GroupOp.PARENTHESES) -> push(new Group(op));
                 case Token.Operator(_, _), Token.Other(_), Token.EOF() -> throw unexpectedToken(token, "expression");
             };
         }
@@ -198,12 +201,12 @@ final class ParserStates {
         @Nonnull
         @Override
         public ParserAction offer(@Nonnull Token token) {
-            // The only current Expression Group (${}) is not extensible with an infix
-            // as it is only used in a Text which does not support any operators but the expression group.
             return switch (token) {
                 case Token.Whitespace(_) -> proceed();
                 case Token.Operator(GroupOp.End op, _) when op.matches(startOperator) ->
-                        yieldExpression(expression, true);
+                        (startOperator.group().isExtensible()) ?
+                                replaceWith(new ExtensibleExpr(expression))
+                                : yieldExpression(expression, true);
                 default -> throw unexpectedToken(token, startOperator.group().endDelimiter());
             };
         }

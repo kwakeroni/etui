@@ -185,4 +185,26 @@ class SimpleParserTest {
                         new OptPrefix(new Concat(new Text(","),new Text(" "),new Text("p"),new Text("."),new Text(" ")), new Identifier("pageRange"))
                 ));
     }
+
+    @Test
+    void rootExpressionCannotBeGroupWithParenthesis() {
+        assertThat(parser.parse("(myVariable)"))
+                .isEqualTo(new Concat(
+                        new Text("("),
+                        new Text("myVariable"),
+                        new Text(")")
+                ));
+    }
+
+    @Test
+    void parsesGroupWithParenthesis() {
+        assertThat(parser.parse("${(myVariable)}"))
+                .isEqualTo(new Identifier("myVariable"));
+    }
+
+    @Test
+    void parsesExpressionStartingWithParenthesis() {
+        assertThat(parser.parse("${(publicationDate?:copyrightYear)?+'.'}"))
+                .isEqualTo(new OptSuffix(new Elvis(new Identifier("publicationDate"), new Identifier("copyrightYear")), new Text(".")));
+    }
 }

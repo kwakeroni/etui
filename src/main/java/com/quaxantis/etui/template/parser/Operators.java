@@ -47,29 +47,34 @@ final class Operators {
     }
 
     enum GroupOp {
-        EXPRESSION("${", "}"),
-        STRING_DOUBLE("\""),
-        STRING_SINGLE("'"),
+        // ${} is not extensible with an infix as it is only used in a Text which does not support any operators but the expression group.
+        EXPRESSION("${", "}", false),
+        PARENTHESES("(", ")", true),
+        STRING_DOUBLE("\"", true),
+        STRING_SINGLE("'", true),
         ;
 
         private final Start start;
         private final End end;
         private final String startDelimiter;
         private final String endDelimiter;
+        private final boolean extensible;
 
-        GroupOp(String startAndEndDelimiter) {
+        GroupOp(String startAndEndDelimiter, boolean extensible) {
             this.startDelimiter = startAndEndDelimiter;
             this.endDelimiter = startAndEndDelimiter;
             StartAndEnd startAndEndOperator = StartAndEnd.of(this);
             this.start = startAndEndOperator;
             this.end = startAndEndOperator;
+            this.extensible = extensible;
         }
 
-        GroupOp(String startDelimiter, String endDelimiter) {
+        GroupOp(String startDelimiter, String endDelimiter, boolean extensible) {
             this.startDelimiter = startDelimiter;
             this.endDelimiter = endDelimiter;
             this.start = Start.of(this);
             this.end = End.of(this);
+            this.extensible = extensible;
         }
 
         public String startDelimiter() {
@@ -86,6 +91,10 @@ final class Operators {
 
         public End endOp() {
             return this.end;
+        }
+
+        public boolean isExtensible() {
+            return this.extensible;
         }
 
         @Override
