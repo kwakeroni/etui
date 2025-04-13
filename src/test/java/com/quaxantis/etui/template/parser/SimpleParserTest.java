@@ -89,6 +89,17 @@ class SimpleParserTest {
                 ));
     }
 
+
+    @Test
+    void parsesOtherLiteralTokensAndExpressions() {
+        assertThat(parser.parse("${myVariable}.${myVariable}"))
+                .isEqualTo(new Concat(
+                        new Identifier("myVariable"),
+                        new Text("."),
+                        new Identifier("myVariable")
+                ));
+    }
+
     @Test
     void parsesStringLiteralExpressionWithDoubleQuotes() {
         assertThat(parser.parse("${\"myString\"}"))

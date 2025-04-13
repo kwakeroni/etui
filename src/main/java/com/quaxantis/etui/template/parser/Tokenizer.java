@@ -45,6 +45,10 @@ class Tokenizer {
                         String op = string.substring(i-opl, i);
                         list.add(new Token.Operator(operators.get(op), op));
                         pos = i;
+                    } else if (pos < i-1 && operators.containsKey(string.substring(i-1, i+1))) {
+                        String other = string.substring(pos, i-1);
+                        list.add(new Token.Other(other));
+                        pos = i-1;
                     }
                 }
             }
