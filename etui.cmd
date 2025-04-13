@@ -32,13 +32,13 @@ if /I not "%FROM_SOURCE%" == "false" (
         call %~dp0mvnw.cmd %MAVEN_ARGS% -f %~dp0pom.xml process-classes -Plocal-source -Dclasspath.output=%~dp0.classpath-src
     )
     echo Starting Etui
-    start "" "%JAVA_BIN%" --source 22 -cp @%~dp0.classpath-src %~dp0src/main/java/Etui.java %*
+    start "" "%JAVA_BIN%" --source 22 -splash:%~dp0src\main\resources\splash.png -cp @%~dp0.classpath-src %~dp0src/main/java/Etui.java %*
 ) else (
     if not "%FORCE_BUILD%" == "" (
         echo Building Etui
         call %~dp0mvnw.cmd %MAVEN_ARGS% -f %~dp0pom.xml clean package -DskipTests -Plocal-package -Dclasspath.output=%~dp0.classpath
     )
   echo Starting Etui
-  start "" "%JAVA_BIN%" -cp @%~dp0.classpath Etui %*
+  start "" "%JAVA_BIN%" -splash:%~dp0src\main\resources\splash.png -cp @%~dp0.classpath Etui %*
 )
 endlocal

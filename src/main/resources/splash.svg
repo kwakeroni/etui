@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="20.527552mm"
+   height="14.144479mm"
+   viewBox="0 0 20.527552 14.144479"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="splash.svg"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="5.6568543"
+     inkscape:cx="16.175068"
+     inkscape:cy="51.972348"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="591"
+     inkscape:window-y="1432"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-19.82604,-86.964062)">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.32;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:0.32"
+       id="rect4838"
+       width="20.207552"
+       height="13.824479"
+       x="19.98604"
+       y="87.124062"
+       rx="0.029999999"
+       ry="0.029999999" />
+    <g
+       id="g4784"
+       transform="translate(-0.53521368,0.38186013)">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Nunito;-inkscape-font-specification:Nunito;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke-width:0.0468313"
+         x="22.081795"
+         y="98.82531"
+         id="text4490"><tspan
+           sodipodi:role="line"
+           x="22.081795"
+           y="98.82531"
+           style="font-size:4.23333px;text-align:start;text-anchor:start;stroke-width:0.0468313"
+           id="tspan4488"
+           rotate="0 0 0"><tspan
+             rotate="0 0 0"
+             id="tspan4486"
+             style="font-size:4.23333px;text-align:start;text-anchor:start;stroke-width:0.0468313">UI</tspan></tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Nunito;-inkscape-font-specification:Nunito;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke-width:0.0468313"
+         x="23.620609"
+         y="95.12764"
+         id="text4494"><tspan
+           sodipodi:role="line"
+           id="tspan4492"
+           x="23.620609"
+           y="95.12764"
+           style="font-size:4.23333px;stroke-width:0.0468313">T</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:4.23333px;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke-width:0.0468313"
+         x="23.53171"
+         y="91.42997"
+         id="text4498"><tspan
+           sodipodi:role="line"
+           id="tspan4496"
+           x="23.664001"
+           y="91.42997"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Nunito;-inkscape-font-specification:Nunito;letter-spacing:0.264583px;fill:#000000;fill-opacity:1;stroke-width:0.0468313">E</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:2.82222px;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke-width:0.0468313"
+         x="32.586765"
+         y="90.929642"
+         id="text4502"><tspan
+           sodipodi:role="line"
+           id="tspan4500"
+           x="32.719055"
+           y="90.929642"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:Nunito;-inkscape-font-specification:Nunito;letter-spacing:0.264583px;fill:#000000;fill-opacity:1;stroke-width:0.0468313">xifTool</tspan></text>
+      <g
+         aria-label="E"
+         id="g4621"
+         style="font-size:4.23333px;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:0.32;stroke-width:0.0468313"
+         transform="rotate(180,32.737561,91.778817)">
+        <path
+           id="path4745"
+           style="-inkscape-font-specification:Nunito;fill:#000000;fill-opacity:0.32"
+           d="m 38.694952,91.41449 c 0.06208,0 0.109791,-0.01677 0.143661,-0.05064 0.03105,-0.03105 0.04651,-0.07744 0.04651,-0.139526 v -2.603975 c 0,-0.06209 -0.01546,-0.109791 -0.04651,-0.143661 -0.03387,-0.03105 -0.08157,-0.04651 -0.143661,-0.04651 -3.918384,0 -8.260958,0 -11.945524,0 -0.06208,0 -0.110307,0.01677 -0.144177,0.05064 -0.03105,0.03105 -0.04651,0.07744 -0.04651,0.139527 v 2.603975 c 0,0.06209 0.01546,0.109791 0.04651,0.143661 0.03387,0.03105 0.08209,0.04651 0.144177,0.04651 4.081254,0 8.408295,0 11.945524,-10e-7 z m -0.148311,-0.291972 c -4.295319,0 -7.699013,0 -11.648901,0 v -2.40037 c 3.983352,0 8.199272,0 11.648901,0 z"
+           sodipodi:nodetypes="cssscccssscccccccc" />
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:Nunito;-inkscape-font-specification:Nunito;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke-width:0.0468313"
+         x="32.704597"
+         y="94.376129"
+         id="text4625"><tspan
+           sodipodi:role="line"
+           id="tspan4623"
+           x="32.704597"
+           y="94.376129"
+           style="font-size:2.82222px;stroke-width:0.0468313">emplate</tspan></text>
+      <g
+         aria-label="E"
+         id="g4757"
+         style="font-size:4.23333px;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:0.32;stroke-width:0.0468313"
+         transform="rotate(180,32.737561,93.612835)">
+        <path
+           id="path4755"
+           style="-inkscape-font-specification:Nunito;fill:#000000;fill-opacity:0.32"
+           d="m 38.694952,91.41449 c 0.06208,0 0.109791,-0.01677 0.143661,-0.05064 0.03105,-0.03105 0.04651,-0.07744 0.04651,-0.139526 v -2.603975 c 0,-0.06209 -0.01546,-0.109791 -0.04651,-0.143661 -0.03387,-0.03105 -0.08157,-0.04651 -0.143661,-0.04651 -3.918384,0 -8.260958,0 -11.945524,0 -0.06208,0 -0.110307,0.01677 -0.144177,0.05064 -0.03105,0.03105 -0.04651,0.07744 -0.04651,0.139527 v 2.603975 c 0,0.06209 0.01546,0.109791 0.04651,0.143661 0.03387,0.03105 0.08209,0.04651 0.144177,0.04651 4.081254,0 8.408295,0 11.945524,-10e-7 z m -0.148311,-0.291972 c -4.295319,0 -7.699013,0 -11.648901,0 v -2.40037 c 3.983352,0 8.199272,0 11.648901,0 z"
+           sodipodi:nodetypes="cssscccssscccccccc" />
+      </g>
+      <g
+         aria-label="E"
+         id="g4761"
+         style="font-size:4.23333px;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:0.32;stroke-width:0.0468313"
+         transform="rotate(180,32.737561,89.929982)">
+        <path
+           id="path4759"
+           style="-inkscape-font-specification:Nunito;fill:#000000;fill-opacity:0.32"
+           d="m 38.694952,91.41449 c 0.06208,0 0.109791,-0.01677 0.143661,-0.05064 0.03105,-0.03105 0.04651,-0.07744 0.04651,-0.139526 v -2.603975 c 0,-0.06209 -0.01546,-0.109791 -0.04651,-0.143661 -0.03387,-0.03105 -0.08157,-0.04651 -0.143661,-0.04651 -3.918384,0 -8.260958,0 -11.945524,0 -0.06208,0 -0.110307,0.01677 -0.144177,0.05064 -0.03105,0.03105 -0.04651,0.07744 -0.04651,0.139527 v 2.603975 c 0,0.06209 0.01546,0.109791 0.04651,0.143661 0.03387,0.03105 0.08209,0.04651 0.144177,0.04651 4.081254,0 8.408295,0 11.945524,-10e-7 z m -0.148311,-0.291972 c -4.295319,0 -7.699013,0 -11.648901,0 v -2.40037 c 3.983352,0 8.199272,0 11.648901,0 z"
+           sodipodi:nodetypes="cssscccssscccccccc" />
+      </g>
+    </g>
+    <g
+       aria-label="E"
+       id="text4608"
+       style="font-size:4.23333px;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:0.32;stroke-width:0.0468313"
+       transform="translate(0.64552474,3.7809306)" />
+  </g>
+</svg>

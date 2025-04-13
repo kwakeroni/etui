@@ -19,14 +19,14 @@ if $FROM_SOURCE; then
     ./mvnw $MAVEN_ARGS process-classes -Plocal-source -Dclasspath.output=.classpath-src
   fi
   echo Starting Etui
-  "$JAVA_HOME/bin/java" --source 22 -cp @.classpath-src src/main/java/Etui.java "$@"
+  "$JAVA_HOME/bin/java" --source 22 -splash:src/main/resources/splash.png -cp @.classpath-src src/main/java/Etui.java "$@"
 else
   if [ ! -f target/etui.jar ] || [ ! -f .classpath ]; then
     echo Building Etui
     ./mvnw $MAVEN_ARGS clean package -DskipTests -Plocal-package -Dclasspath.output=.classpath
   fi
   echo Starting Etui
-  "$JAVA_HOME/bin/java" -cp @.classpath Etui "$@"
+  "$JAVA_HOME/bin/java" -splash:src/main/resources/splash.png -cp @.classpath Etui "$@"
 fi
 
 
