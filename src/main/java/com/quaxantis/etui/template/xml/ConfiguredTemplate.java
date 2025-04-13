@@ -71,7 +71,7 @@ public class ConfiguredTemplate implements Template {
                 .filter(TagDescriptor.class::isInstance)
                 .toArray(Tag[]::new);
 
-        return (tags.length == 1)? new VariableSupport(xmlVariable.name(), tags[0]) : xmlVariable;
+        return (tags.length == 1)? new VariableSupport(xmlVariable, tags[0]) : xmlVariable;
     }
 
     private static ExpressionEvaluator createEvaluator(XMLTemplate xmlTemplate, ExpressionEvaluatorFactory expressionEvaluatorFactory, ExpressionEvaluator.Context context) {

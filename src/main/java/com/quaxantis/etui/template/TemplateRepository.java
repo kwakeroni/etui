@@ -15,6 +15,7 @@ import com.quaxantis.support.util.StreamEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -62,7 +63,7 @@ public class TemplateRepository {
         group.templates().forEach(downStream);
     }
 
-
+    // TODO: filter by file format
     public List<TemplateGroup> templateGroups() {
         try(var templates = Stream.concat(standardCollections(), configuredCollections())) {
             return templates.collect(TemplateGroupCollector.collector());
@@ -99,6 +100,7 @@ public class TemplateRepository {
 //                .map(entry -> new TemplateGroup(entry.getKey(), List.of(), entry.getValue()));
 //    }
 
+    // TODO: support glob
     private Stream<StreamEntry<String, ConfiguredTemplate>> configuredCollections() {
         return configuration.getTemplateDefinitions()
                 .stream()
@@ -107,6 +109,7 @@ public class TemplateRepository {
                 .filter(not(Files::isDirectory))
                 .map(StreamEntry::of)
                 .map(StreamEntry.mapping(this::readCollection))
+                .filter(StreamEntry::isNonNullValue)
                 .map(StreamEntry.mappingKey((path, collection) -> (collection.group() != null)?
                         collection.group() : path.getFileName().toString()))
                 .map(StreamEntry.mapping(XMLTemplateCollection::templates))
@@ -134,12 +137,14 @@ public class TemplateRepository {
                                       TemplateSupport.Builder::build));
     }
 
+    @Nullable
     private XMLTemplateCollection readCollection(Path path) {
         try {
             log.info("Importing template definitions from {}", path);
             return this.objectMapper.readValue(path.toFile(), XMLTemplateCollection.class);
-        } catch (IOException ioe) {
-            throw new UncheckedIOException("Exception reading " + path, ioe);
+        } catch (Exception exc) {
+            log.error("Error while reading template collection {}", path, exc);
+            return null;
         }
     }
 

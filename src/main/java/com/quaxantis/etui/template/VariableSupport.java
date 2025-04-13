@@ -6,17 +6,25 @@ import com.quaxantis.etui.Template;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Optional;
 
 public class VariableSupport implements Template.Variable, TagDescriptor {
     private final String name;
     private final TagDescriptor descriptor;
+    private final Optional<Template.Variable> delegate;
 
     public VariableSupport(@Nonnull Tag tag) {
         this(tag.qualifiedName(), tag);
     }
-    public VariableSupport(String name, @Nonnull Tag tag) {
+    private VariableSupport(String name, @Nonnull Tag tag) {
         this.name = name;
         this.descriptor = TagDescriptor.of(tag);
+        this.delegate = Optional.empty();
+    }
+    public VariableSupport(Template.Variable variable, Tag tag) {
+        this.name = variable.name();
+        this.descriptor = TagDescriptor.of(tag);
+        this.delegate = Optional.of(variable);
     }
 
     @Override
@@ -36,8 +44,9 @@ public class VariableSupport implements Template.Variable, TagDescriptor {
 
     @Override
     public String label() {
-        var label = descriptor.label();
-        return (label != null)?  label : descriptor.tag().tagName();
+        return this.delegate.map(Template.Variable::label)
+                .or(() -> Optional.ofNullable(descriptor.label()))
+                .orElseGet(() -> descriptor.tag().tagName());
     }
 
     @Override
@@ -62,11 +71,11 @@ public class VariableSupport implements Template.Variable, TagDescriptor {
 
     @Override
     public String expression() {
-        return null;
+        return delegate.map(Template.Variable::expression).orElse(null);
     }
 
     @Override
     public boolean hasExpression() {
-        return false;
+        return delegate.map(Template.Variable::hasExpression).orElse(false);
     }
 }

@@ -17,6 +17,8 @@ import com.quaxantis.support.swing.form.FormFieldInput;
 import com.quaxantis.support.swing.form.FormListener;
 import com.quaxantis.support.swing.util.QuickJFrame;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -29,6 +31,7 @@ import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
 public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
+    private final Logger log = LoggerFactory.getLogger(TemplateForm.class);
 
     private final ExpressionEvaluator expressionEvaluator;
     private final TemplateMapper mapper;
@@ -84,8 +87,12 @@ public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
                 .filter(entry -> entry.getValue().isEmpty() || !entry.getValue().isDirty())
                 .forEach(entry -> {
                     var var = entry.getKey();
-                    String newValue = expressionEvaluator.evaluate(var.expression(), values);
-                    values.set(var, newValue);
+                    try {
+                        String newValue = expressionEvaluator.evaluate(var.expression(), values);
+                        values.set(var, newValue);
+                    } catch (Exception exc) {
+                        log.error("Error while evaluating variable {}", var.name(), exc);
+                    }
                 });
 
         setData(values);
@@ -125,9 +132,10 @@ public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
         BiConsumer<TemplateValues, TemplateValues.Entry> setter = (values, entry) -> values.set(variable, entry.value().orElse(null));
         Supplier<Optional<String>> expressionValue = () -> expressionEvaluator.apply(variable);
 
+        String label = HasLabel.labelOf(variable, () -> StringUtils.capitalize(variable.name())) + (variable.hasExpression()? "°" : "");
         return field(variable.name(), getter, setter, expressionValue)
                 .withSource(variable)
-                .withLabel(HasLabel.labelOf(variable, () -> StringUtils.capitalize(variable.name())))
+                .withLabel(label)
                 .build();
     }
 

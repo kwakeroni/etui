@@ -23,7 +23,7 @@ public class TemplateUI {
 
     private static final int PAD = 5;
 
-    public static void main() {
+    public static void main(String[] ignored) {
         var configOperations = new ConfigOperations();
         var configuration = configOperations.getConfiguration();
         var repo = new TemplateRepository(configuration, new TagRepository(configuration));
@@ -104,6 +104,7 @@ public class TemplateUI {
             public void focusGained(TemplateForm form, FormField<?, ?> field, FocusEvent event) {
 //                System.out.println("focus gained " + field.source());
                 // TODO avoid cast-at-a-distance of source
+                // TODO add variable description (before tag description)
                 tagInfoPanel.setTag(field.source());
                 tagInfoPanel.setExamplePatternAction(field::applyPattern);
             }
@@ -118,6 +119,7 @@ public class TemplateUI {
         panel.setBorder(BorderFactory.createEtchedBorder());
         panel.add(templateTree, BorderLayout.WEST);
         panel.setBackground(templateTree.getBackground());
+        // Todo: init template area when reopening with a selected template
         templateTree.setExternalizedPath(configOperations.getConfiguration().getLastSelectedTemplate().orElse(null));
         templateTree.addTemplateSelectionListener((_, template) -> {
             tagInfoPanel.setTag(null);

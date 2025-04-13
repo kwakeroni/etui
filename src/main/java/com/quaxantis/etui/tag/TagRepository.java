@@ -72,6 +72,7 @@ public class TagRepository {
         }
     }
 
+    // TODO: filter by file format
     public SequencedMap<String, List<TagFamily>> getGroupedFamilies() {
         try (var collections = Stream.concat(configuredCollections(), standardCollections())) {
             return collections
