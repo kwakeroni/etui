@@ -5,10 +5,15 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import com.quaxantis.etui.TagDescriptor;
 
+import java.util.StringJoiner;
+
 @JsonIgnoreProperties(ignoreUnknown = true, value = {""})
 public final class XMLFormatExample implements TagDescriptor.Example {
     @JacksonXmlProperty(isAttribute = true)
     private String pattern;
+
+    @JacksonXmlProperty(isAttribute = true)
+    private String value;
 
     @JacksonXmlText
     private String text;
@@ -32,9 +37,20 @@ public final class XMLFormatExample implements TagDescriptor.Example {
     }
 
     @Override
+    public String value() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    @Override
     public String toString() {
-        return "XMLFormatExample[" +
-               "pattern=" + pattern + ", " +
-               "example=" + text + ']';
+        return new StringJoiner(", ", XMLFormatExample.class.getSimpleName() + "[", "]")
+                .add("pattern='" + pattern + "'")
+                .add("value='" + value + "'")
+                .add("text='" + text + "'")
+                .toString();
     }
 }

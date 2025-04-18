@@ -62,6 +62,7 @@ public class TemplateUI {
         var templateSelector = createTemplateTree(templateRepository, templatePanel, tagInfoPanel, configOperations);
         var actionBar = createActionBar(templatePanel, actionButton, actionlistener);
         var templateScrollPane = new JScrollPane(templatePanel);
+        templateScrollPane.getVerticalScrollBar().setUnitIncrement(64);
 
         var panel = new JPanel();
         var organizer = SpringLayoutOrganizer.organize(panel);
@@ -81,7 +82,7 @@ public class TemplateUI {
 
         panel.setPreferredSize(new Dimension(350, 200));
         tagInfoPanel.setPreferredSize(new Dimension(200, 200));
-        var templateSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel, tagInfoPanel);
+        var templateSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel, new JScrollPane(tagInfoPanel));
         templateSplitPane.setOneTouchExpandable(true);
         templateSplitPane.setResizeWeight(0.9);
 

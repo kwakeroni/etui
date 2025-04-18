@@ -30,6 +30,7 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNullElse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 
 @DisplayName("A ConfiguredTemplate")
 class ConfiguredTemplateTest extends AbstractTemplateTest {
@@ -47,7 +48,10 @@ class ConfiguredTemplateTest extends AbstractTemplateTest {
                 .withLabel("myTagLabel")
                 .withDescription("myDescription")
                 .withFormatDescription("myFormat")
-                .addExample("myExample", "myPattern");
+                .addExample("myExample1")
+                .addExample("myExample2", "myPattern")
+                .addExample("myExample3", "myPattern", "myValue")
+                .addFixedValue("myExample4", "myValue");
 
         Mockito.when(tagRepository.findTagByQualifiedName("GRP:myTag"))
                 .thenReturn(Optional.of(tag));
@@ -69,8 +73,11 @@ class ConfiguredTemplateTest extends AbstractTemplateTest {
                     .returns("myFormat", TagDescriptor::formatDescription)
                     .extracting(TagDescriptor::examples)
                     .satisfies(examples -> {
-                        assertThat(examples).extracting(TagDescriptor.Example::text, TagDescriptor.Example::pattern)
-                                .containsExactly(Tuple.tuple("myExample", "myPattern"));
+                        assertThat(examples).extracting(TagDescriptor.Example::text, TagDescriptor.Example::pattern, TagDescriptor.Example::value)
+                                .containsExactly(tuple("myExample1", null, null),
+                                                 tuple("myExample2", "myPattern", null),
+                                                 tuple("myExample3", "myPattern", "myValue"),
+                                                 tuple("myExample4", null, "myValue"));
                     });
         });
     }

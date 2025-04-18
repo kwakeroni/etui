@@ -263,7 +263,13 @@ public class TagInfoPanel extends JEditorPane {
 
     private static String exampleLink(TagDescriptor.Example example) {
         if (example.pattern() != null) {
-            return "<a href='pattern:%s'>%s</a>".formatted(example.pattern(), example.text());
+            if (example.value() != null) {
+                return "<a href='pattern:%1$s'>%2$s</a> : %3$s".formatted(example.pattern(), example.value(), example.text());
+            } else {
+                return "<a href='pattern:%1$s'>%2$s</a>".formatted(example.pattern(), example.text());
+            }
+        } else if (example.value() != null) {
+            return "<a href='pattern:%1$s'>%1$s</a> : %2$s".formatted(example.value(), example.text());
         } else {
             return example.text();
         }

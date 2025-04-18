@@ -17,6 +17,7 @@ public interface TagDescriptor extends HasLabel, HasDescription {
     interface Example {
         String text();
         String pattern();
+        String value();
     }
 
     public static TagDescriptor of(@Nonnull Tag tag) {

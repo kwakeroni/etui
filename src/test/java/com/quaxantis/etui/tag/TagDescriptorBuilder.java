@@ -15,7 +15,7 @@ public class TagDescriptorBuilder implements Tag, TagDescriptor {
     private String label;
     private String description;
     private String formatDescription;
-    private List<Example> examples = new ArrayList<>();
+    private final List<Example> examples = new ArrayList<>();
 
     public static TagDescriptorBuilder of(Tag tag) {
         return new TagDescriptorBuilder(tag);
@@ -101,6 +101,10 @@ public class TagDescriptorBuilder implements Tag, TagDescriptor {
     }
 
     public TagDescriptorBuilder addExample(String text, String pattern) {
+        return addExample(text, pattern, null);
+    }
+
+    public TagDescriptorBuilder addExample(String text, String pattern, String value) {
         return addExample(new Example() {
             @Override
             public String text() {
@@ -111,7 +115,16 @@ public class TagDescriptorBuilder implements Tag, TagDescriptor {
             public String pattern() {
                 return pattern;
             }
+
+            @Override
+            public String value() {
+                return value;
+            }
         });
+    }
+
+   public TagDescriptorBuilder addFixedValue(String text, String value) {
+        return addExample(text, null, value);
     }
 
 }
