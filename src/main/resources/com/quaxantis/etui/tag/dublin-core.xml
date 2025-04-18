@@ -141,8 +141,12 @@
                         or a literal entry consisting of an IETF Best Current Practice 47 language tag.
                     </description>
                     <examples>
-                        <example pattern="ll">en</example>
-                        <example pattern="ll-RR">en-US</example>
+                        <example value="nl">Dutch</example>
+                        <example value="en">English</example>
+                        <example value="en-GB">British English</example>
+                        <example value="en-US">American English</example>
+                        <example pattern="ll">language</example>
+                        <example pattern="ll-RR">language-region</example>
                     </examples>
                 </format>
             </tag>

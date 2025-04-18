@@ -1,0 +1,1690 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag-collection xmlns="https://quaxantis.com/etui/tags" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://quaxantis.com/etui/tags tag-collection.xsd">
+    <collection>Standards</collection>
+    <family name="prism" group="XMP">
+        <label>Prism</label>
+        <homePage>https://www.w3.org/submissions/prism</homePage>
+        <reference>https://www.w3.org/submissions/prism/prism-basic.html</reference>
+        <description>
+            The PRISM (Publishing Requirements for Industry Standard Metadata) Specification defines a set of metadata vocabularies
+            to facilitate management, aggregating, packaging, styling and delivery of content across publishing channels and platforms.
+            PRISM provides a framework for the interchange and preservation of content and metadata,
+            a collection of elements to describe that content, and a set of controlled vocabularies listing the values for those elements.
+        </description>
+        <tags>
+            <tag name="academicField">
+                <label>Academic Field</label>
+                <description>&lt;strong&gt;(as the subject of a resource)&lt;/strong&gt;
+
+                    Refines dc:subject by specifying an academic speciality.</description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="aggregateIssueNumber">
+                <label>Aggregate Issue Number</label>
+                <description>This number represents the total number of issues of a serial publication.</description>
+                <format>
+                    <description>Integer</description>
+                </format>
+            </tag>
+            <tag name="aggregationType">
+                <label>Aggregation Type</label>
+                <description>
+                    The aggregation type specifies the unit of aggregation for a content collection.
+
+                    PRISM recommends that the PRISM &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347230"&gt;Aggregation Type Controlled Vocabulary&lt;/a&gt; be used to provide values for this element.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example value="blog">An online commentary, organized in a chronological fashion.</example>
+                        <example value="book">A literary work, or a main division of such a work. A book  is a monograph while magazines or journals are serial periodicals.</example>
+                        <example value="bookazine">A book containing ad materials</example>
+                        <example value="catalog">Enumerations of items, usually arranged systematically, with  descriptive details; may be in book or pamphlet form, on cards, or  online. [ AAT ]</example>
+                        <example value="feed">Digital delivery through a mechanism such as aggregators, RSS, email, newswire, etc.</example>
+                        <example value="journal">A periodical containing scholarly articles or otherwise disseminating information on developments in scholarly fields. [ AAT ]</example>
+                        <example value="magazine">A periodical containing articles, essays, poems, or other  writings by different authors, usually on a variety of topics and  intended for a general reading public or treating a particular area of  interest for a popular audience. [ AAT ] Magazines contain advertising.</example>
+                        <example value="manual">Work containing concise information, often rules or instructions needed to perform tasks or processes. [ AAT ]</example>
+                        <example value="newsletter">A regularly distributed publication generally about one main topic that is of interest to its subscribers.</example>
+                        <example value="newspaper">A scheduled publication containing news of current events, informative articles, diverse features and advertising.</example>
+                        <example value="other">Any other publication. Use is not recommended.</example>
+                        <example value="report">A publication prepared by an analyst or strategist focusing on a  specific topic such as a stock, industry sector, or geographic region.</example>
+                        <example value="pamphlet">An unbound booklet.</example>
+                        <example value="vook">A vook blends a book with high-quality video</example>
+                        <example value="whitepaper">A white paper is an authoritative report or guide that helps to educate readers or helps them to make a decision.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="AlternateTitleText">
+                <label>Alternate Title</label>
+                <description>
+                    An alternate title or alternate headline for a resource that may be used in a table of contents, a popup etc. and can vary with platform.
+
+                    PRISM recommends that dc:title will be a name by which the resource is formally known on its origin platform.
+                    This element provides an alternate title or headline for use on another platform.
+                    Platform is assumed by media object type
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="AlternateTitleA-platform">
+                <label>Alternate Title (Platform)</label>
+                <description>
+                    An alternate title or alternate headline for a resource that may be used in a table of contents, a popup etc. and can vary with platform.
+
+                    PRISM recommends that dc:title will be a name by which the resource is formally known on its origin platform.
+                    This element provides an alternate title or headline for use on another platform.
+                    Platform is assumed by media object type
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;prism:platform&lt;/a&gt;</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="AlternateTitleA-lang">
+                <label>Alternate Title (Language)</label>
+                <description>
+                    An alternate title or alternate headline for a resource that may be used in a table of contents, a popup etc. and can vary with platform.
+
+                    PRISM recommends that dc:title will be a name by which the resource is formally known on its origin platform.
+                    This element provides an alternate title or headline for use on another platform.
+                    Platform is assumed by media object type
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://en.wikipedia.org/wiki/IETF_language_tag"&gt;RFC 3066&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="nl">Dutch</example>
+                        <example value="en">English</example>
+                        <example value="en-GB">British English</example>
+                        <example value="en-US">American English</example>
+                        <example pattern="ll">language</example>
+                        <example pattern="ll-RR">language-region</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="blogTitle">
+                <label>Blog Title</label>
+                <description>
+                    The title of a blog.
+
+                    The blog title applies to all blog entries.  Typically the blog title appears in the header of the blog.
+                    Blog titles often have double meanings and often serve as a teaser for the blog.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="blogURL">
+                <label>Blog URL</label>
+                <description>
+                    The URL for a Blog.
+
+                    This element is a refinement of URL.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="bookEdition">
+                <label>Book Edition</label>
+                <description>
+                    The edition of a book, usually associated with a timeframe or printing location.
+
+                    Book Edition should be used for books, while prism:edition defines the edition of a magazine or serial publication
+                    that indicates a regional variation of a magazine or serial publication.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>Tenth Edition</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="byteCount">
+                <label>Byte Count</label>
+                <description>
+                    Size, in 8-bit bytes, of the resource.
+
+                    Typically, prism:byteCount is the size of a file. It might be used to display an estimate of download time to a user,
+                    to serve as a quick check on whether a file was transmitted correctly between systems, etc.
+                    If the resource is compressed, such as a JPEG image, byteCount gives its compressed size, which is much easier to obtain.
+                    Abbreviations, such as KB and MB MUST NOT be used.
+                </description>
+                <format>
+                    <description>Integer</description>
+                </format>
+            </tag>
+            <tag name="ChannelChannel">
+                <label>Channel</label>
+                <description>
+                    Web channel assigned to the resource.
+
+                    A resource may be assigned to one or more online channels.
+                    This may be a different organization than indicated by the section, as channels address online navigation whereas sections address organization.
+                    Channel organization may cross publications when content is placed online, and may combine sections or cut across sections.
+                    The channel often becomes part of the URL, whereas a section name may or may not be.
+                    The four subchannel elements should be used to denote a hierarchy of subchannels.
+                    In other words, a subchannel2 should not be used unless a subchannel1 is present, a subchannel3 should not be used unless a subchannel2 is present, etc.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="ChannelSubchannel1">
+                <label>Channel (Subchannel 1)</label>
+                <description>
+                    Web channel assigned to the resource.
+
+                    A resource may be assigned to one or more online channels.
+                    This may be a different organization than indicated by the section, as channels address online navigation whereas sections address organization.
+                    Channel organization may cross publications when content is placed online, and may combine sections or cut across sections.
+                    The channel often becomes part of the URL, whereas a section name may or may not be.
+                    The four subchannel elements should be used to denote a hierarchy of subchannels.
+                    In other words, a subchannel2 should not be used unless a subchannel1 is present, a subchannel3 should not be used unless a subchannel2 is present, etc.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="ChannelSubchannel2">
+                <label>Channel (Subchannel 2)</label>
+                <description>
+                    Web channel assigned to the resource.
+
+                    A resource may be assigned to one or more online channels.
+                    This may be a different organization than indicated by the section, as channels address online navigation whereas sections address organization.
+                    Channel organization may cross publications when content is placed online, and may combine sections or cut across sections.
+                    The channel often becomes part of the URL, whereas a section name may or may not be.
+                    The four subchannel elements should be used to denote a hierarchy of subchannels.
+                    In other words, a subchannel2 should not be used unless a subchannel1 is present, a subchannel3 should not be used unless a subchannel2 is present, etc.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="ChannelSubchannel3">
+                <label>Channel (Subchannel 3)</label>
+                <description>
+                    Web channel assigned to the resource.
+
+                    A resource may be assigned to one or more online channels.
+                    This may be a different organization than indicated by the section, as channels address online navigation whereas sections address organization.
+                    Channel organization may cross publications when content is placed online, and may combine sections or cut across sections.
+                    The channel often becomes part of the URL, whereas a section name may or may not be.
+                    The four subchannel elements should be used to denote a hierarchy of subchannels.
+                    In other words, a subchannel2 should not be used unless a subchannel1 is present, a subchannel3 should not be used unless a subchannel2 is present, etc.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="ChannelSubchannel4">
+                <label>Channel (Subchannel 4)</label>
+                <description>
+                    Web channel assigned to the resource.
+
+                    A resource may be assigned to one or more online channels.
+                    This may be a different organization than indicated by the section, as channels address online navigation whereas sections address organization.
+                    Channel organization may cross publications when content is placed online, and may combine sections or cut across sections.
+                    The channel often becomes part of the URL, whereas a section name may or may not be.
+                    The four subchannel elements should be used to denote a hierarchy of subchannels.
+                    In other words, a subchannel2 should not be used unless a subchannel1 is present, a subchannel3 should not be used unless a subchannel2 is present, etc.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="ChannelA-lang">
+                <label>Channel (Language)</label>
+                <description>
+                    Web channel assigned to the resource.
+
+                    A resource may be assigned to one or more online channels.
+                    This may be a different organization than indicated by the section, as channels address online navigation whereas sections address organization.
+                    Channel organization may cross publications when content is placed online, and may combine sections or cut across sections.
+                    The channel often becomes part of the URL, whereas a section name may or may not be.
+                    The four subchannel elements should be used to denote a hierarchy of subchannels.
+                    In other words, a subchannel2 should not be used unless a subchannel1 is present, a subchannel3 should not be used unless a subchannel2 is present, etc.
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://en.wikipedia.org/wiki/IETF_language_tag"&gt;RFC 3066&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="nl">Dutch</example>
+                        <example value="en">English</example>
+                        <example value="en-GB">British English</example>
+                        <example value="en-US">American English</example>
+                        <example pattern="ll">language</example>
+                        <example pattern="ll-RR">language-region</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="complianceProfile">
+                <label>Compliance Profile</label>
+                <description>
+                    The PRISM specification compliance profile that the resource adheres to.
+
+                    Best Practice is to use a reference from the PRISM
+                    &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347232"&gt;Compliance Profile Controlled Vocabulary&lt;/a&gt;.
+
+                    If the element is not present, consuming systems MAY treat the resource&apos;s compliance profile as unknown,
+                    or they MAY treat it as specified in a contractual, human-interpretable assertion --
+                    that is, &quot;Our contract with this producer says that they are Profile #2 compliant, so my consuming system will assume that it is.&quot;
+                    If the element is present and populated with values from the controlled vocabulary,
+                    consuming systems MUST assume that compliance is as asserted in the element.
+                    If the element is present and unpopulated or populated with a value other than as specified here, the behavior of the consuming system is undefined.
+
+                    Recommended practice is to specify values from the PRISM
+                    &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347232"&gt;Controlled Vocabulary for Compliance Profile&lt;/a&gt;.
+                </description>
+                <format>
+                    <description>Text, closed: three</description>
+                    <examples>
+                        <example value="three">is the only valid value for XMP</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="contentType">
+                <label>Content Type</label>
+                <description>
+                    Describes the content type of the resource.  This
+
+                    Recommended practice is to use a value from the PRISM Content Type controlled vocabulary.
+                </description>
+                <format>
+                    <description>Text, closed choice
+                        &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347233"&gt;prism:contentType&lt;/a&gt;
+                        controlled vocabulary</description>
+                    <examples>
+                        <example value="advertisement">Piece of material promoting a product, service, or event whose presence is paid for.</example>
+                        <example value="article">A generic genre for an article from a magazine, magazine  supplement, newsletter or journal. Recommended best practice is to  refine further using more specific genre terms.</example>
+                        <example value="blogEntry">A editorial unit of an online commentary, organized in a  chronological fashion. Recommended best practice is to refine further  using more specific genre terms.</example>
+                        <example value="bookChapter">A main division of a book. These divisions may be grouped into units or sections in some books.</example>
+                        <example value="classifiedAdSection">An section containing brief advertisements often organized by  subject matter such as automobiles, home appliances, jewelry, pets, etc.</example>
+                        <example value="contentBlock">A block of content that can stand alone, be stored in a content  management system as an independent unit and that may have its own  metadata.</example>
+                        <example value="frontCover">The text and images that appear on the physical front cover of a  magazine, journal, book, etc. Not to be confused with the cover story.</example>
+                        <example value="index">A detailed list, usually arranged alphabetically, of the  specific information contained within an issue. There are many kinds of  indices including a recipe index, an index of advertisers or an index of  destinations for a travel magazine.</example>
+                        <example value="introduction">Editorial content that provides a summary of content contained  within a division of a publication. This may be the introduction  to a section of a magazine, a part of a book or a unit of study within a  text book.</example>
+                        <example value="masthead">Editorial content that provides the publication name and credits  for the publication such as the owner, the publication staff and other  contributors.</example>
+                        <example value="navigationalAid">A structure that provides navigational links to other content within the publication.</example>
+                        <example value="otherCover">A generic term for a cover, other than a front cover for a  magazine, magazine supplement, journal or book. Recommended bet  practice is to refine further using more specific genre terms.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="copyrightYear">
+                <label>Copyright Year</label>
+                <description>
+                    Identifies the copyright year of a book
+
+                    This field is to identify a book.  Is not used with magazines or other serial publications.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>2012</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="corporateEntity">
+                <label>Corporate Entity</label>
+                <description>
+                    The name(s) of publisher’s organizational units related to the resource,
+                    either as the financial owner or group responsible for the resource,
+                    and at a lower hierarchical level than the corporate entity named in dc:publisher.
+
+                    Not a model for identifying a corporate organization mentioned in the article.
+                    prism:organization should be used to describe content about a corporation.
+                </description>
+                <format>
+                    <description>bag Text</description>
+                    <examples>
+                        <example>Consumer Publications Business Unit</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="coverDate">
+                <label>Cover Date</label>
+                <description>
+                    The cover date is the numeric form of the issue date (cover display date) printed on the cover of a magazine;
+                    suitable for storing in a database field with a &apos;date&apos; data type.
+
+                    The cover date is not to be confused with either the publication date or with the offSaleDate.
+                    It is simply the numeric expression of the date printed on the cover.
+                    Note: Either a cover date or a publication date is required.
+                </description>
+                <format>
+                    <description>Date</description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-07-14</example><!-- date according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="coverDisplayDate">
+                <label>Cover Display Date</label>
+                <description>
+                    The cover display date is the issue date printed on the cover of a magazine as a text string.
+
+                    This field has the same meaning as the prism:coverDate element – the last date an issue should be displayed for sale.
+                    However, many issues will not have a simple date which can be loaded into a database field of a “date” datatype.
+                    For example, “Spring 2002.” Such dates should be placed in this element.
+
+                    For the convenience of applications which allow the user to search content within a specified range of dates,
+                    both the prism:coverDate and the prism:coverDisplayDate elements may be provided.
+                    In applications where the cover date is to be displayed to a user, this element SHOULD be used in preference to prism:coverDate.
+                    The prism:coverDate element SHOULD be used for the date comparisons.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="creationDate">
+                <label>Creation Date</label>
+                <description>
+                    Date (and potentially the time) the identified resource was first created.
+
+                    A publisher will not usually send this information to external parties, but will only use it in internal applications such as editorial workflow.
+                    The prism:coverDate element will be more commonly sent to others.
+                </description>
+                <format>
+                    <description>Date</description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-04-12</example><!-- date according to ISO 8601-1 -->
+                        <example pattern="yyyy-mm">1985-04</example><!-- month and year (YYYY-MM) -->
+                        <example pattern="yyyy">1985</example><!-- just year (YYYY) -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZ">1985-04-12T23:20:50.52Z</example><!-- date/time according to ISO 8601-1 -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZZZ">1985-04-12T23:20:50.52+00:02</example><!-- date/time according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="dateReceived">
+                <label>Date Received</label>
+                <description>
+                    Date (and potentially time) the resource was received on current system.
+
+                    This element will not usually be provided by a publisher.
+                    Instead, it is provided so recipients can inform their providers of the time when the resource was received from the publisher.
+                </description>
+                <format>
+                    <description>Date</description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-04-12</example><!-- date according to ISO 8601-1 -->
+                        <example pattern="yyyy-mm">1985-04</example><!-- month and year (YYYY-MM) -->
+                        <example pattern="yyyy">1985</example><!-- just year (YYYY) -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZ">1985-04-12T23:20:50.52Z</example><!-- date/time according to ISO 8601-1 -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZZZ">1985-04-12T23:20:50.52+00:02</example><!-- date/time according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="device">
+                <label>Device</label>
+                <description>
+                    Specification of a device to refine delivery platform by adding more specific targeting for the content.
+                    Typically used to further differentiate electronic delivery platforms such as smart phones or tablets.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>iPhone 4S</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="distributor">
+                <label>Distributor</label>
+                <description>
+                    An identifier for the distributor of the resource.
+
+                    The organization or individual that most recently made the resource available,
+                    typically as part of a value-added service such as aggregation, syndication, or distribution.
+                    If the Publisher is the most recent distributor, omit this field.
+                    Advanced practice is to use a URI for the distributor as a value for the rdf:resource attribute.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="doi">
+                <label>Digital Object Identifier</label>
+                <description>
+                    The Digital Object Identifier, DOI, for the article.
+
+                    The DOI may also be used as the dc:identifier.
+                    If used as a dc:identifier, the URI form should be captured, and the bare identifier should also be captured using prism:doi.
+                    If an alternate unique identifier is used as the required dc:identifier, then the DOI should be specified as a bare identifier within prism:doi only.
+                    If the URL associated with a DOI is to be specified,
+                    then prism:url may be used in conjunction with prism:doi in order to provide the service endpoint (i.e. the URL).
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>(dc:identifier) doi:10.1030/03054</example>
+                        <example>(prism:doi) 10.1030/03054</example>
+                        <example>(prism:url) http://dx.doi.org/10.1030/03054</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="edition">
+                <label>Edition of a Magazine</label>
+                <description>
+                    An identifier for one of several alternate issues of a magazine or other resource.
+
+                    An issue of a magazine may be produced in multiple editions, with each edition providing content customized for a particular demographic or geographic group.
+                    Fortune, for example, is produced in a Domestic edition, a European edition, and an Asian edition.
+                    While much of the content overlaps, there is some content that is unique to each edition.
+                    Note:  Not to be confused with a book edition (prism:bookEdition) that specifies a particular “printing” of a book, often associated with a timeframe or press location.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="eIssn">
+                <label>E(lectronic) Issn</label>
+                <description>
+                    ISSN for an electronic version of the issue in which the resource occurs.
+
+                    Permits publishers to include a second ISSN, identifying an electronic version of the issue in which the resource occurs (therefore e(lectronic)Issn.
+                    If used, prism:eIssn MUST contain the ISSN of the electronic version. See prism:issn.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>0015-8259</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="endingPage">
+                <label>Ending Page</label>
+                <description>
+                    Identifies the last page number for the printed resource.
+
+                    For use in bibliographic citation of resources.
+                    This element, when used, MUST hold the last page number on which any part of the resource occurs,
+                    regardless of sequential breaks or skips in page numbering.
+                    It MUST NOT be used in conjunction with the prism:startingPage element to arrive at a page count,
+                    since the resource may be printed across a non-contiguous page range.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="event">
+                <label>Event</label>
+                <description>&lt;strong&gt;(as the subject of a resource)&lt;/strong&gt;
+                    A refinement of dc:subject.
+                    An event (social gathering, phenomenon, or more generally something that happened at a specifiable place and time)
+                    referred to in order to indicate a subject of the resource.
+
+                    If there is more than one event related to a resource, include a separate instance of prism:event for each event.
+                    The value may be a text string or an authority file reference.
+                </description>
+                <format>
+                    <description>bag Text</description>
+                </format>
+            </tag>
+            <tag name="genre">
+                <label>Genre</label>
+                <description>
+                    Refines the intellectual content of the resource as specified by prism:contentType.
+
+                    Recommended practice is to use a value from the PRISM
+                    &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347234"&gt;Genre controlled vocabulary&lt;/a&gt;.
+                </description>
+                <format>
+                    <description>bag Text, closed choice &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347234"&gt;prism:genre&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="abstract">A section featuring the most important points of a work.</example>
+                        <example value="acknowledgement">Written recognition of acts or achievements.</example>
+                        <example value="adaptation">Articles whose content, in whole or in part, is adapted from  another work. There will be text in the article stating that it is an  adaptation and indicating the source.</example>
+                        <example value="advertorial">Editorial content promoting a product, service, or event that is paid for by an advertiser.</example>
+                        <example value="analysis">Articles which cover a topic in depth by dividing it into parts for detailed examination.</example>
+                        <example value="answers">The answers to a quiz or text presented in the publications</example>
+                        <example value="appendix">A division of supplementary materials found at the end of a book. Refines book chapter.</example>
+                        <example value="authorBio">Brief text about the author of a work.</example>
+                        <example value="autobiography">Biography of an individual written by himself or herself. [ AAT ]</example>
+                        <example value="backCover">The text and images that appear on the outside of the physical back cover of a magazine, journal, book, etc</example>
+                        <example value="bibliography">A section describing lists of books or other textual materials  arranged in some logical order giving brief information about the works,  such as author, date, publisher, and place of publication; may be works  by a particular author, or on a particular topic. [ AAT ]</example>
+                        <example value="biography">A complete written account of the life of an individual. This is  not to be confused with Profile, which documents noteworthy  characteristics and achievements.</example>
+                        <example value="box">Ancillary content that cannot standalone and is presented with an article.</example>
+                        <example value="calendar">A calendar such as “upcoming events”</example>
+                        <example value="cartoon">A pictorial image, typically a line drawing, using wit.</example>
+                        <example value="chapter">A division of main material of a book. Refines book chapter.</example>
+                        <example value="chart">Content represented by a graphical representation of any sort of  data by means of dots, lines, or bars; usually to illustrate  relationships. This includes graphs.</example>
+                        <example value="chronology">A record of events in the order of their occurrence.</example>
+                        <example value="clarification">A brief statement used to make ambiguous content or a statement in a published story clear.</example>
+                        <example value="classifiedAd">An advertisement, usually brief, that appears in a publication under headings with others of the same category.</example>
+                        <example value="column">Articles that appear in a “Columns” section on the table of  contents or that are recurring, opinionated pieces. A column will  normally have a title and be written by the same person every issue.</example>
+                        <example value="correction">A new version of an item, replacing what was wrong in the  previous version. May be referenced to previous version using  prism:isCorrectionOf.</example>
+                        <example value="coverStory">Cover story for a magazine, normally the single story most  closely associated with the main cover description. The cover story may  also be identified by the magazine in the table of contents. Rarely,  there may be more than one cover story, as in the case of a “split”  cover. Occasionally, a magazine may not have a cover story, because the  cover image or text is not closely associated with a particular story.</example>
+                        <example value="coverPackageArticle">An article relating to the Cover Story of an issue. Best  practice is to relate these articles back to the cover using  dcterms:isPartOf.</example>
+                        <example value="dedication">Editorial content that provides a formal statement of respect or affection to one who has inspired the work.</example>
+                        <example value="department">A short, regularly occurring non-feature article.</example>
+                        <example value="diagram">Content represented by cross-sections and drawings that break down the various parts or features of what is pictured.</example>
+                        <example value="electionResults">The results of an election.</example>
+                        <example value="essay">Non-fiction article expressing an author's personal point of view about a subject.</example>
+                        <example value="excerpt">An article in which the primary text or images have been excerpted from other sources, usually books.</example>
+                        <example value="faq">A set of frequently asked questions with answers</example>
+                        <example value="fashionShoot">A fashion-based photo essay.</example>
+                        <example value="feature">A prominent or special article.</example>
+                        <example value="featurePackageArticle">An article relating to a feature section in an issue. Best  practice is to relate these back to the feature using dcterms:isPartOf.</example>
+                        <example value="fiction">An article which is the creative expression of the author  comprising works of imaginative narration, especially in the form of  prose.</example>
+                        <example value="financialStatement">Reports summarizing the financial condition of an organization on any date or for any period. [ AAT ]</example>
+                        <example value="foreward">Editorial content that provides an introduction to a book.</example>
+                        <example value="glossary">An alphabetical list of terms or words found in or relating to a specific subject, text, or dialect, with explanations.</example>
+                        <example value="horoscope">A chart or diagram of the heavens, used in calculating births to foretell events in a person's life</example>
+                        <example value="insideBackCover">The text and images that appear on the insside of the physical back cover of a magazine, journal, book, etc.</example>
+                        <example value="insideFrontCover">The text and images that appear on the reverse side of the physical front cover of a magazine, journal, book, etc.</example>
+                        <example value="interactiveContent">Content that invites a person to do something other than read or  view the material and changes in response to user interaction.</example>
+                        <example value="interview">Statements, transcripts, or recordings of conversations  presented in Q and A format in which one person obtains information from  another.</example>
+                        <example value="jumpPage">A content block with the sole purpose of providing interactive  links to other resources. Often the jump page is highly designed  and includes teasers, graphics, etc. Should not be confused with  #resources that simply presents a list of referenced resources.</example>
+                        <example value="legalDocument">Documents having legal relevance. [ AAT ]</example>
+                        <example value="letters">A specifically addressed and signed written communication. A  letter sent to the editors of a publication expressing an opinion is an  example.</example>
+                        <example value="list">A list of items such as a “top ten” list of “best dressed” list”</example>
+                        <example value="map">A unit of content containing a representation of a geographical  physical space or area with associated text, such as “locations in this  week’s news”.</example>
+                        <example value="newsBulletin">Brief summary of breaking news.</example>
+                        <example value="notice">Announcements given for a specific purpose.</example>
+                        <example value="obituary">Published notices of a death, usually with a brief biography of the deceased. [ AAT ]</example>
+                        <example value="opinion">An article in a publication expressing the opinion of its  author. Do not confuse with a column, which provides recurring opinions.</example>
+                        <example value="photoEssay">Articles in which the photographic content is given greater  emphasis or significance than the text, and is thematic in nature.</example>
+                        <example value="poem">A writing in which language is used for its aesthetic and  evocative qualities in addition to, or in lieu of, its ostensible  meaning.</example>
+                        <example value="poll">An inquiry into opinion conducted by interviewing a sample of people. [WORDNET]</example>
+                        <example value="postscript">A note or series of notes appended to a completed letter, article, or book</example>
+                        <example value="preface">A preliminary statement in a book by the author or editor that  sets forth its purpose and scope, expresses acknowledgment of assistance  from others, or explains how the work came to be.</example>
+                        <example value="pressRelease">Official or authoritative statements giving information for publication in newspapers or periodicals. [ AAT ]</example>
+                        <example value="productDescription">A description of a product with no editorial evaluation. (See “review”)</example>
+                        <example value="profile">An essay presenting noteworthy characteristics and achievements for a place, organization or person.</example>
+                        <example value="puzzle">A problem or contrivance designed to a to be solved by ingenuity or logic.</example>
+                        <example value="qAndA">A set of questions and answers. Similar to an interview but in the QA format.</example>
+                        <example value="quiz">A set of quiz questions, possibly including the set of answers.</example>
+                        <example value="quotation">A single quote or compilation of quotations presented as a single article.</example>
+                        <example value="ranking">Contains a ranking, by number or from best to worst. Do not use for lists which do not have a ranked order.</example>
+                        <example value="recipe">Sets of directions with a list of ingredients for making or preparing something, especially food. [ AAT ]</example>
+                        <example value="references">A unit of content listing materials referenced by a book or  other publication; possibly containing links to those materials.</example>
+                        <example value="reprint">Use for articles whose content, in whole or in part, is  reprinted. There will be text in the article stating that it is a  reprint and indicating the issue in which it was originally published.</example>
+                        <example value="resources">A unit of content describing related materials arranged in some  logical order and possibly containing links to those materials.</example>
+                        <example value="response">An answer or reply to a letter or a blog.</example>
+                        <example value="review">Critical assessments of any type of media or product. The most  common items reviewed are movies, shows, books, music albums, consumer  products, and cars.</example>
+                        <example value="schedule">Plans of procedure, showing the sequence of items or operations  and the time allotted for each. (e.g. an agenda) Do not confuse with  eventsCalendar. [ AAT ]</example>
+                        <example value="scrubber">A navigation aid made up of thumbnails of each page or page set  within a magazine. In interactive editions each scrubber page view  links the reader directly to that page.</example>
+                        <example value="sectionList">A navigation aid made up of a sequential list of the editorial  sections within a magazine. In interactive editions each section  displayed links the reader directly to the first page of that section.</example>
+                        <example value="sectionTableOfContents">A navigation aid made up of a sequential list of the parts of an editorial section within a magazine.</example>
+                        <example value="sidebar">Information placed adjacent to an article in a printed or web  publication. It is graphically separate from the main text but is  contextually related.</example>
+                        <example value="stockQuote">Information on a company's stock price, too brief to be considered a financial statement.</example>
+                        <example value="supplementArticle">An article of a supplement to a publication, such as an article within a magazine supplement.</example>
+                        <example value="supplementBackCover">The back cover of a supplement to a publication.</example>
+                        <example value="supplementFrontCover">The front cover of a supplement to a publication</example>
+                        <example value="tableOfContents">A navigation aid made up of a sequential list of the parts of a  work, with a page number link to where each part begins.</example>
+                        <example value="transcript">Written record of words originally spoken, such as of court proceedings, broadcasts, or oral histories. [ AAT ]</example>
+                        <example value="userComments">Comments provided by users or readers.</example>
+                        <example value="userGeneratedContent">Content generated by users. Also known as UGC.</example>
+                        <example value="userReview">A review provided by users or readers</example>
+                        <example value="wireStory">An article obtained through a news wire service.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="hasAlternative">
+                <label>Has Alternative</label>
+                <description>
+                    Identifies an alternative resource in case the current resource cannot be used
+                    (typically because of rights restrictions) or there is a platform-based alternative.
+
+                    Identifies another resource that can be substituted in place of the current resource.
+                    This provides a means for avoiding unsightly things like printing blank rectangles containing &quot;No rights to reproduce this image&quot;.
+                    It also allows for relating content that differs intellectually when delivered on alternate platforms.
+                    Alternatives are not simply a reformatting of the original work; they are a separate intellectual work.
+                    To point to alternatives which are a different resolution, color space, file format, or different delivery platform etc. see dc:hasFormat.
+                    For alternatives which are newer or older versions of the same intellectual work, see dcterms:hasVersion.
+
+                    As an example, imagine a publisher distributing an article containing a stock photo to which they did not secure Brazilian rights.
+                    If the publisher sent the article to Brazil, they might describe the original image that was published,
+                    but suggest an alternative to their syndication partners using prism:hasAlternative.
+                </description>
+                <format>
+                    <description>bag Text, a refined version of dc:relation</description>
+                </format>
+            </tag>
+            <tag name="HasCorrectionText">
+                <label>Has Correction</label>
+                <description>
+                    Identifies any known corrections to the current resource.
+
+                    The prism:hasCorrection element identifies the &quot;correction block,” not a corrected version of the current resource.
+                    Corrected versions of the resource can be identified with the dcterms:hasVersion element.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>Published November 4, 2002 page 24 Clarification: The graphic in [PERSONAL TIME: YOUR TECHNOLOGY, Oct. 7] referred to B3D. We said that B3D allows your PC&apos;s spare computer power to be used by Brilliant&apos;s network. This power-sharing feature has not yet been activated, and, the company says, it will not be used without the computer owner&apos;s specific consent.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="HasCorrectionA-platform">
+                <label>Has Correction (Platform)</label>
+                <description>
+                    Identifies any known corrections to the current resource.
+
+                    The prism:hasCorrection element identifies the &quot;correction block,” not a corrected version of the current resource.
+                    Corrected versions of the resource can be identified with the dcterms:hasVersion element.
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;prism:platform&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="HasCorrectionA-lang">
+                <label>Has Correction (Language)</label>
+                <description>
+                    Identifies any known corrections to the current resource.
+
+                    The prism:hasCorrection element identifies the &quot;correction block,” not a corrected version of the current resource.
+                    Corrected versions of the resource can be identified with the dcterms:hasVersion element.
+
+                    &lt;strong&gt;Note:&lt;/strong&gt; not a refined version of dc:relation
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://en.wikipedia.org/wiki/IETF_language_tag"&gt;RFC 3066&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="nl">Dutch</example>
+                        <example value="en">English</example>
+                        <example value="en-GB">British English</example>
+                        <example value="en-US">American English</example>
+                        <example pattern="ll">language</example>
+                        <example pattern="ll-RR">language-region</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="hasTranslation">
+                <label>Has Translation</label>
+                <description>
+                    The described resource has been translated into another language, and the referenced resource is that translation.
+
+                    Points from the original article to the translation(s), which must have a different identifier than the original resource.
+                    The language of the translated version can be determined by looking up the metadata for the translated version.
+                    Recommended best practice is to identify the translated version with a URI.
+                </description>
+                <format>
+                    <description>bag Text, a refined version of dc:relation</description>
+                </format>
+            </tag>
+            <tag name="industry">
+                <label>Industry</label>
+                <description>&lt;strong&gt;(as the subject of a resource)&lt;/strong&gt;
+
+                    An industry or industry sector, referred to in order to indicate a subject of the resource.
+
+                    Values can come from a controlled vocabulary such as
+                    &lt;a href="https://www.sec.gov/search-filings/standard-industrial-classification-sic-code-list"&gt;SIC&lt;/a&gt; (Standard Industry Classification)
+                    and &lt;a href="https://www.census.gov/naics/"&gt;NAICS&lt;/a&gt; (North American Industry Classification Specification).
+                </description>
+                <format>
+                    <description>bag Text</description>
+                    <examples>
+                        <example>Health Care &amp;amp; Medicine</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="isAlternativeOf">
+                <label>Is Alternative Of</label>
+                <description>
+                    Identifies this resource as an alternative to another.
+
+                    Identifies this resource as one that can be substituted in place of another resource.
+                    This provides a means for avoiding unsightly things like printing blank rectangles containing &quot;No rights to reproduce this image&quot;.
+                    It also allows for relating content that differs intellectually when delivered on alternate platforms.
+                    Alternatives are not simply a reformatting of the original work; they are a separate intellectual work.
+                    To point to alternatives which are a different resolution, color space, file format, or different delivery platform etc. see dc:hasFormat.
+                    For alternatives which are newer or older versions of the same intellectual work, see dcterms:hasVersion.
+
+                    As an example, imagine a publisher distributing an article containing a stock photo to which they did not secure Brazilian rights.
+                    If the publisher sent the article to Brazil, they might describe the original image that was published,
+                    but suggest an alternative to their syndication partners using prism:hasAlternative.
+                </description>
+                <format>
+                    <description>bag Text, a refined version of dc:relation</description>
+                </format>
+            </tag>
+            <tag name="isbn">
+                <label>ISBN</label>
+                <description>
+                    The ISBN for the publication in which the resource was published.
+
+                    For use with book serials where each volume has an ISBN.
+                    This element can be used 0 or more times in recognition of the necessity to capture both an ISBN-10 and an ISBN-13 during the industry’s transition to ISBN-13.
+                    Whenever possible use an ISBN-13 value over an ISBN-10. For information on the transition visit
+                    &lt;a href="https://www.isbn.org/about_ISBN_standard"&gt;https://www.isbn.org/about_ISBN_standard&lt;/a&gt;.
+                </description>
+                <format>
+                    <description>bag Text</description>
+                    <examples>
+                        <example>978-0-444-50928-4</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="isCorrectionOf">
+                <label>Is Correction Of</label>
+                <description>
+                    The described resource is a corrected version of the referenced resource.
+
+                    Note that this is NOT the inverse of the prism:hasCorrection element, which points to a correction block instead of a corrected resource.
+                </description>
+                <format>
+                    <description>bag Text, a refined version of dc:relation</description>
+                </format>
+            </tag>
+            <tag name="issn">
+                <label>ISSN</label>
+                <description>
+                    The ISSN for the publication in which the resource was published.
+
+                    If there are separate ISSNs for print and electronic versions, and if prism:ISSN is used,
+                    it MUST contain the ISSN for the print version. See prism:eIssn.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>0015-8259</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="issueIdentifier">
+                <label>Issue Identifier</label>
+                <description>
+                    A system generated unique publisher identifier for the issue of a serial publication.
+                    The issue identifies should not be confused with the &quot;special&quot; issue name element, prism:issueName.
+
+                    This element is often used as the dc:identifier because it is unique within the publication.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="issueName">
+                <label>Issue Name</label>
+                <description>
+                    A special issue name, typically used for major issues of a magazine or other resource.
+
+                    Certain issues of a magazine may be commonly known by a name like &quot;Swimsuit Issue&quot; or &quot;Buyer&apos;s Guide Issue.&quot;
+                    These are frequently memorable issues and contain materials of great reference value.
+                    Issues may be tied to a particular day, but still be known by a name, such as the &quot;Halloween Issue.&quot;
+                    If an issue is known by a general date, such as &quot;Spring 2002,&quot; use the prism:coverDisplayDate element instead.
+                    The issue name is not a unique identifier.  The element issueIdentifier or dc:identifier should be used for that purpose.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="issueTeaser">
+                <label>Issue Teaser</label>
+                <description>
+                    A teaser that is used to increase interest in an issue of a magazine or other serial publication.
+
+                    The issue teaser should not be confused with the special issue name.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>(prism:issueName) Swimsuit Issue</example>
+                        <example>(prism:issueTeaser) The Hottest Swimsuits for 2012</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="issueType">
+                <label>Issue Type</label>
+                <description>
+                    Defines the type of serial publication issue.
+
+                    Serial publications often have two different types of issues.
+                    Regular issues are part of the subscription while Special Issues have a unique focus and content.
+                    Special Issues are typically not included with the magazine subscription.
+                    Note:  Best practice is to use values from the
+                    &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347235"&gt;Issue Type Controlled Vocabulary&lt;/a&gt;
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example value="regularIssue">A regular issue is an issue of a periodical that would be  included as a part of a subscription. This applies even if a  single issue is purchased from a newsstand.</example>
+                        <example value="specialIssue">A special issue is an issue of a periodical that is of special  interest and is not included as part of a subscription. A special  issue must be purchased individually, typically from a newsstand.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="isTranslationOf">
+                <label>Is Translation Of</label>
+                <description>
+                    The described resource is a human-language translation of the referenced resource.
+
+                    This is a more specific version of prism:hasTranslation.
+                    This element is used when pointing from the translated resource back to the original.
+                    If the original resource is not known, the prism:hasTranslation element should be used for both directions of the relationship.
+                    Best practice is to identify the original resource with a URI, but text identifiers are acceptable.
+                </description>
+                <format>
+                    <description>Text, a refined version of dc:relation</description>
+                </format>
+            </tag>
+            <tag name="keyword">
+                <label>Keyword</label>
+                <description>
+                    An element used to tag keywords likely to be used in search queries.
+
+                    Note that this differs from a subject or elements such as dc:subject, prism:person, prism:event, or prism:organization
+                    that are the subject of the article. Best practice is to use values from a keyword controlled vocabulary.
+                </description>
+                <format>
+                    <description>bag Text</description>
+                </format>
+            </tag>
+            <tag name="KillDateDate">
+                <label>Kill Date</label>
+                <description>
+                    Date (and potentially the time) the identified resource is to be removed from websites.
+
+                    This element is reserved for website content.
+                    A new element, prism:offSaleDate should be used to specify when content (either print or digital)
+                    is to be removed from newsstands or online storefronts.
+                </description>
+                <format>
+                    <description>Date</description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-04-12</example><!-- date according to ISO 8601-1 -->
+                        <example pattern="yyyy-mm">1985-04</example><!-- month and year (YYYY-MM) -->
+                        <example pattern="yyyy">1985</example><!-- just year (YYYY) -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZ">1985-04-12T23:20:50.52Z</example><!-- date/time according to ISO 8601-1 -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZZZ">1985-04-12T23:20:50.52+00:02</example><!-- date/time according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="link">
+                <label>Link</label>
+                <description>&lt;strong&gt;(as a subject for a resource)&lt;/strong&gt;
+
+                    Describes a link to an outside resource such as a website, email or hash tag.</description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="location">
+                <label>Geographic Location</label>
+                <description>&lt;strong&gt;(as the subject of a resource)&lt;/strong&gt;
+
+                    A geospatial location, referred to in order to indicate a subject of the resource.
+
+                    As with other subject identifiers, the best practice is NOT to tag locations which are only mentioned in passing.
+                    The staff doing the tagging should assume that a full-text engine will be available to find those.
+                    The location element, on the other hand, is to call out those locations which are a subject for the story,
+                    no matter how many times they are mentioned in the story.
+                    As a test, the tagging staff should ask themselves “if I was searching for information on location X,
+                    would I want to get this story as one of the search results?”
+                    If so, then it should be tagged with that location, otherwise not.
+                    The value may be a string or an authority file reference.
+                </description>
+                <format>
+                    <description>bag Text</description>
+                </format>
+            </tag>
+            <tag name="modificationDate">
+                <label>Modification Date</label>
+                <description>
+                    Date and time the resource was last modified.
+
+                    Publishers will not usually send this information to external parties, but will use it for internal applications.
+                </description>
+                <format>
+                    <description>Date</description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-04-12</example><!-- date according to ISO 8601-1 -->
+                        <example pattern="yyyy-mm">1985-04</example><!-- month and year (YYYY-MM) -->
+                        <example pattern="yyyy">1985</example><!-- just year (YYYY) -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZ">1985-04-12T23:20:50.52Z</example><!-- date/time according to ISO 8601-1 -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZZZ">1985-04-12T23:20:50.52+00:02</example><!-- date/time according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="nationalCatalogNumber">
+                <label>National Catalog Number</label>
+                <description>
+                    A national catalog number is a unique identification number that is assigned by a national body
+                    (such as the Library of Congress in the United States)
+                    to the catalog record created for each book in its cataloged collections.
+                    This number is, at times assigned before the publication of a book
+                    and is printed as part of the identification for that book.</description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="number">
+                <label>Number</label>
+                <description>
+                    Indication of the magazine issue within a volume.
+
+                    This element is intended to be used in combination with the prism:volume element
+                    to specify the magazine issue using the common scheme of Volume and Number.
+                    In the case of a double issue, the prism:number element may contain multiple identifiers.
+                    Separators are not specified by PRISM and are left to the publisher’s discretion.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="object">
+                <label>Object</label>
+                <description>&lt;strong&gt;(as the subject of a resource)&lt;/strong&gt;
+
+                    The name of a physical or virtual object, referred to in order to indicate a subject of the resource.
+
+                    This element is particularly intended for use when categorizing content by products, such as for product reviews.
+                    For example, &lt;prism:object&gt;Dodge Viper&lt;prism:object&gt; would be used to indicate that a subject of the story was a certain high-performance automobile.
+                    The element pim:object is available to specify an object as inline markup.
+
+                    Note: In previous versions of the specification this element was known as prism:objectTitle.
+                </description>
+                <format>
+                    <description>bag Text</description>
+                </format>
+            </tag>
+            <tag name="OnSaleDateDate">
+                <label>On Sale Date</label>
+                <description>
+                    The on sale date is the numeric date when a publication is made available for retail sale;
+                    suitable for storing in a database field with a &apos;dateTime&apos; data type.
+
+                    Because the on sale date may vary by platform, it is the best practice to specify the platform using the PRISM Controlled Vocabulary for platform.
+                </description>
+                <format>
+                    <description>Date</description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-04-12</example><!-- date according to ISO 8601-1 -->
+                        <example pattern="yyyy-mm">1985-04</example><!-- month and year (YYYY-MM) -->
+                        <example pattern="yyyy">1985</example><!-- just year (YYYY) -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZ">1985-04-12T23:20:50.52Z</example><!-- date/time according to ISO 8601-1 -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZZZ">1985-04-12T23:20:50.52+00:02</example><!-- date/time according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="OnSaleDateA-platform">
+                <label>On Sale Date (Platform)</label>
+                <description>
+                    The on sale date is the numeric date when a publication is made available for retail sale;
+                    suitable for storing in a database field with a &apos;dateTime&apos; data type.
+
+                    Because the on sale date may vary by platform, it is the best practice to specify the platform using the PRISM Controlled Vocabulary for platform.
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;prism:platform&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="OnSaleDay">
+                <label>On Sale Day</label>
+                <description>The day that new issues of a publication are regularly made available for retail sale.</description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>Tuesday</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="OnSaleDayA-platform">
+                <label>On Sale Day (Platform)</label>
+                <description>The day that new issues of a publication are regularly made available for retail sale.</description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;prism:platform&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="OffSaleDateDate">
+                <label>Off Sale Date</label>
+                <description>
+                    The specific date when a magazine issue is to be removed from retail sale.
+                    This date may be printed on the cover with words such as “Display Until”.
+                    Values are to be in W3C dateTime format (ccyy-mm-dd).
+                    The prism:offSaleDate value may be the same as that of the prism:coverDate, however the two serve different purposes.
+
+                    Because the off sale date may vary by platform, it is the best practice to specify the platform using the PRISM Controlled Vocabulary for platform.
+                </description>
+                <format>
+                    <description>Date</description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-04-12</example><!-- date according to ISO 8601-1 -->
+                        <example pattern="yyyy-mm">1985-04</example><!-- month and year (YYYY-MM) -->
+                        <example pattern="yyyy">1985</example><!-- just year (YYYY) -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZ">1985-04-12T23:20:50.52Z</example><!-- date/time according to ISO 8601-1 -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZZZ">1985-04-12T23:20:50.52+00:02</example><!-- date/time according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="OffSaleDateA-platform">
+                <label>Off Sale Date (Platform)</label>
+                <description>
+                    The specific date when a magazine issue is to be removed from retail sale.
+                    This date may be printed on the cover with words such as “Display Until”.
+                    Values are to be in W3C dateTime format (ccyy-mm-dd).
+                    The prism:offSaleDate value may be the same as that of the prism:coverDate, however the two serve different purposes.
+
+                    Because the off sale date may vary by platform, it is the best practice to specify the platform using the PRISM Controlled Vocabulary for platform.
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;prism:platform&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="organization">
+                <label>Organization</label>
+                <description>&lt;strong&gt;(when used as the subject of a resource)&lt;/strong&gt;
+                    The name of an organization, referred to in order to indicate a subject of the resource.
+
+                    This element is used to indicate a company, government agency, non-profit organization, etc. as a subject of the current resource.
+                    If there is more than one organization related to a resource, include a separate instance of prism:organization for each.
+                    Many authority files exist that provide a comprehensive listing of organizations.
+                    Not to be confused with prism:corporateEntity that is used to specify the publisher business unit tied to a resource.
+                    The element pim:organization is available to specify organization as inline markup.
+                </description>
+                <format>
+                    <description>bag Text</description>
+                </format>
+            </tag>
+            <tag name="originPlatform">
+                <label>Origin Platform</label>
+                <description>
+                    The original platform where a resource’s intellectual content was delivered.
+
+                    In case of simultaneous origin, this metadata field may be specified more than once.
+                    For example, the origin may simultaneously be mobile and online and should be indicated with two origins specified.
+
+                    Recommended practice is to specify values from the PRISM &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;Controlled Vocabulary for Platform&lt;/a&gt;.
+                </description>
+                <format>
+                    <description>bag Text, Closed: Choice: “email,” “mobile”, “broadcast,” “web,” “print,” “recordableMedia,” “tablet,” “smartphone” and “other.”</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="pageCount">
+                <label>Page Count</label>
+                <description>
+                    Specifies the total page count for the published print version of the resource.
+
+                    Page count is a non-negative integer.
+                    It may specify the page count for any print publication or component such as an article or chapter
+                </description>
+                <format>
+                    <description>Integer</description>
+                </format>
+            </tag>
+            <tag name="pageProgressionDirection">
+                <label>Page Progression Direction</label>
+                <description>Describes the page progression direction or flip direction of content as it is presented.</description>
+                <format>
+                    <description>Text, closed choice (LTR, RTL)</description>
+                    <examples>
+                        <example value="LTR">left-to-right</example>
+                        <example value="RTL">right-to-left</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="pageRange">
+                <label>Page Range</label>
+                <description>
+                    Identifies the page range for the published print version of the resource.
+
+                    Page range is a string. Sequential pages are to be separated with a dash. Nonsequential pages are to be separated with a comma.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example pattern="p">7</example>
+                        <example pattern="pp-pp">14-15</example>
+                        <example pattern="pp-pp,pp-pp">7,14-15</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="person">
+                <label>Person</label>
+                <description>&lt;strong&gt;(when used as the subject of a resource)&lt;/strong&gt;
+
+                    The proper name of a person, referred to in order to indicate a subject of the resource.
+
+                    Recommended best practice is to cite an entry into a controlled vocabulary of people.
+                    However, textual names are acceptable and are expected to be commonly used.
+                    As with other subject identifiers, do not mark a resource for every person mentioned in the resource, only those which it is “about”.
+                    PRISM makes no recommendation on the issue of direct vs. sort order for names
+                    (in other words, we do not recommend “Smith, Jane Q.” vs. “Jane Q. Smith”).
+                </description>
+                <format>
+                    <description>bag Proper Name</description>
+                </format>
+            </tag>
+            <tag name="platform">
+                <label>Platform</label>
+                <description>
+                    The delivery platform where a resource was delivered.
+
+                    Recommended best practice is to cite an entry in the PRISM &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;Platform Controlled Vocabulary&lt;/a&gt;.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="productCode">
+                <label>Product Code</label>
+                <description>
+                    The product code, or bar code for a publication.
+                    This may be a bipad or even a full UPC or Magazine barcode for periodicals.
+                    For books the product code will be an EAN-13 barcode.</description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="profession">
+                <label>Profession</label>
+                <description>&lt;strong&gt;(as the subject of a resource)&lt;/strong&gt;
+
+                    Refines dc:subject.  Describes a profession.</description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="PublicationDateDate">
+                <label>Publication Date</label>
+                <description>
+                    This is the close date in date time format for a print publication and the post date for digital content; suitable for storing in a database field with a &apos;date&apos; data type.
+
+                    It is NOT the cover date. See prism:coverDate, and prism:coverDisplayDate for that information.
+                    This is not to be confused with pur:embargoDate which is very specific for usage rights.
+                    This is not to be confused with onSaleDate which specifies the day the content is available for sale.
+                    Because the publication date may vary by platform, it is the best practice to specify the platform using the PRISM Controlled Vocabulary for platform.
+                </description>
+                <format>
+                    <description>Date</description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-04-12</example><!-- date according to ISO 8601-1 -->
+                        <example pattern="yyyy-mm">1985-04</example><!-- month and year (YYYY-MM) -->
+                        <example pattern="yyyy">1985</example><!-- just year (YYYY) -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZ">1985-04-12T23:20:50.52Z</example><!-- date/time according to ISO 8601-1 -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZZZ">1985-04-12T23:20:50.52+00:02</example><!-- date/time according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="PublicationDateA-platform">
+                <label>Publication Date (Platform)</label>
+                <description>
+                    This is the close date in date time format for a print publication and the post date for digital content; suitable for storing in a database field with a &apos;date&apos; data type.
+
+                    It is NOT the cover date. See prism:coverDate, and prism:coverDisplayDate for that information.
+                    This is not to be confused with pur:embargoDate which is very specific for usage rights.
+                    This is not to be confused with onSaleDate which specifies the day the content is available for sale.
+                    Because the publication date may vary by platform, it is the best practice to specify the platform using the PRISM Controlled Vocabulary for platform.
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;prism:platform&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="PublicationDisplayDateDate">
+                <label>Publication Display Date</label>
+                <description>
+                    This is the close date in date time format for a print publication and the post date for digital content expressed as a text string.
+
+                    It is NOT the cover date. See prism:coverDate, and prism:coverDisplayDate for that information.
+                    This is not to be confused with pur:embargoDate which is very specific for usage rights.
+                    This is not to be confused with onSaleDate which specifies the day the content is available for sale.
+                    Because the publication date may vary by platform, it is the best practice to specify the platform using the PRISM Controlled Vocabulary for platform.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>January 25, 2011</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="PublicationDisplayDateA-platform">
+                <label>Publication Display Date (Platform)</label>
+                <description>
+                    This is the close date in date time format for a print publication and the post date for digital content expressed as a text string.
+
+                    It is NOT the cover date. See prism:coverDate, and prism:coverDisplayDate for that information.
+                    This is not to be confused with pur:embargoDate which is very specific for usage rights.
+                    This is not to be confused with onSaleDate which specifies the day the content is available for sale.
+                    Because the publication date may vary by platform, it is the best practice to specify the platform using the PRISM Controlled Vocabulary for platform.
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;prism:platform&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="publicationName">
+                <label>Publication Name</label>
+                <description>
+                    Title of the magazine, or other publication, in which a resource was/will be published.
+
+                    Typically this will be used to provide the name of the magazine an article appeared in, as metadata for the article,
+                    along with information such as the article title, the publisher, volume, number, and cover date.
+                    Note: Publication name can be used to differentiate between a print magazine and the online version if the names are different such as “magazine” and “magazine.com.”
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="publishingFrequency">
+                <label>Publishing Frequency</label>
+                <description>
+                    The frequency with which a magazine or serial publication is published
+
+                    Best practice is to use values from the PRISM &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347239"&gt;Publishing Frequency Controlled vocabulary&lt;/a&gt;.
+                </description>
+                <format>
+                    <description>Text. open choice (continually, daily, weekly, biweekly, monthly, bimonthly, quarterly, semiannually, annual, other)</description>
+                    <examples>
+                        <example value="annually">Published once a year</example>
+                        <example value="semiannually">Published twice a year</example>
+                        <example value="quarterly">Published every 3 months, or once a quarter</example>
+                        <example value="bimonthly">Published twice a month</example>
+                        <example value="monthly">Published once a month</example>
+                        <example value="biweekly">Published twice a week</example>
+                        <example value="weekly">Published once a week</example>
+                        <example value="daily">Published every day</example>
+                        <example value="continually">Published continually as new content is added; typical of websites and blogs, typically several times a day</example>
+                        <example value="irregularly">Published on an irregular schedule, such as every month except July and August</example>
+                        <example value="other">Published on another schedule not enumerated in this CV</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="rating">
+                <label>Rating</label>
+                <description>
+                    The rating of the media asset
+
+                    Media assets are often required to post a rating, especially when presented online or on mobile platforms.
+                    A number of different rating schemes are available.  Best practice is to provide the rating system using the attribute on this element.
+                    Example ratings schemes include ESRB (Entertainment Software Ratings Board) ,MPRS (Motion Picture Rating System) and TV Parental Guidelines.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="samplePageRange">
+                <label>Sample Page Range</label>
+                <description>
+                    Identifies the page range for sample pages of the resource that will be made freely available as a preview of the content.
+
+                    Sample page range is a string. Sequential pages are to be separated with a dash. Nonsequential pages are to be separated with a comma.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example pattern="p">7</example>
+                        <example pattern="pp-pp">14-15</example>
+                        <example pattern="pp-pp,pp-pp">7,14-15</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="section">
+                <label>Section</label>
+                <description>
+                    Name of the publication section in which the resource is categorized.
+                    A section is a logical subdivision of a publication which helps to identify the general subject domain of the contained content.
+
+                    In general, sections are named, may contain one or more stories, and may be either recurring or one-time.
+                    Stories may or may not be associated with a section.
+                    Corresponds to magazine and newspaper sections. Sections without story content, such as &quot;Table of Contents&quot; and &quot;Letters to the Editor&quot; are also possible.
+                    Some sections will have subsections – for example a section on “Economy” might have subsections for Europe, Asia, the US, and Latin America.
+                    See the prism:subsection1, prism:subsection2, prism:subsection3, and prism:subsection4 elements for marking subsections and sub-subsections.
+                    Some demographically-targeted editions may contain sections which are not available in the other editions of an issue.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="sellingAgency">
+                <label>Selling Agency</label>
+                <description>
+                    The agency that sells the publication.
+
+                    The organization or individual that is responsible for the sales of the publication
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="seriesNumber">
+                <label>Series Number</label>
+                <description>
+                    The number of an issue within a series of issues, typically focused on a special topic.
+
+                    The number of this issue within the series
+                </description>
+                <format>
+                    <description>Integer</description>
+                </format>
+            </tag>
+            <tag name="seriesTitle">
+                <label>Series Title</label>
+                <description>The title of a series of serial publications.</description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="sport">
+                <label>Sport</label>
+                <description>&lt;strong&gt;(as the subject of a resource)&lt;/strong&gt;
+
+                    Refines dc:subject.  Describes a sport, or an athletic activity requiring skill or physical prowess and often of a competitive nature.</description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="startingPage">
+                <label>Starting Page</label>
+                <description>
+                    Identifies the first page number for the published version of the resource.
+
+                    Provided to meet the needs of basic bibliographic citation of articles. A more complete description of an article’s pages is possible via prism:pageRange.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="subsection1">
+                <label>Sub-section1</label>
+                <description>
+                    Name of the subsection of the publication in which the resource appears.
+                    Should follow the prism:section element and precede the prism:subsection2 element (if one is given).
+
+                    The subsection relates to the section that it follows.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="subsection2">
+                <label>Sub-section2</label>
+                <description>
+                    Name of the subsection of the publication in which the resource appears.
+                    Should follow the prism:subsection1 element and precede the prism:subsection3 element (if one is given).
+
+                    The subsection2 relates to the subsection1 that it follows.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="subsection3">
+                <label>Sub-section3</label>
+                <description>
+                    Name of the subsection of the publication in which the resource appears.
+                    Should follow the prism:subsection2 element and precede the prism:subsection4 element (if one is given).
+
+                    The subsection3 relates to the subsection2 that it follows.
+                </description>
+                <format>
+                    <description>text</description>
+                </format>
+            </tag>
+            <tag name="subsection4">
+                <label>Sub-section4</label>
+                <description>
+                    Name of the subsection of the publication in which the resource appears. Should follow the prism:subsection3 element.
+
+                    The subsection4 relates to the subsection3 that it follows.
+                </description>
+                <format>
+                    <description>bag Text</description>
+                </format>
+            </tag>
+            <tag name="subtitle">
+                <label>Subtitle</label>
+                <description>
+                    The subtitle for the publication, typically a book.
+
+                    May also be used to identify the subtitle of an article
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="supplementDisplayID">
+                <label>Supplement Display Identifier</label>
+                <description>Identifies the supplement displayed on the supplement cover.</description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="supplementStartingPage">
+                <label>Supplement Starting Page</label>
+                <description>
+                    Identifies the first page number for an article within a supplement of a magazine.
+
+                    This metadata bears a unique field name because the starting page of an article within a supplement.
+                    The first article in a supplement typically starts on page 1 of the supplement.
+                    This page numbering is independent of the prism:startingPage that indicates the page number for an article within the context of a magazine.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="supplementTitle">
+                <label>Supplement Title</label>
+                <description>Identifies the title as displayed for the supplement published within a magazine.</description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="teaser">
+                <label>Teaser</label>
+                <description>
+                    A short description of the article designed to increase reader interest.
+
+                    This element provides a place for short descriptions, such as those given in an issue&apos;s Table of Contents,
+                    or displayed in the results of an online search, which try to entice readers to read the full article.
+                    Not to be confused with the prism:issueTeaser element.
+                </description>
+                <format>
+                    <description>bag Text (optionally qualified)</description>
+                </format>
+            </tag>
+            <tag name="ticker">
+                <label>Ticker</label>
+                <description>&lt;strong&gt;(as the subject of a resource)&lt;/strong&gt;
+
+                    Refines dc:subject.  Indicates a stock ticker symbol that is the subject of the article.
+
+                    pim:ticker may be used to identify instances of stock ticker symbols within the resource.
+                </description>
+                <format>
+                    <description>bag Text</description>
+                </format>
+            </tag>
+            <tag name="timePeriod">
+                <label>Time Period</label>
+                <description>&lt;strong&gt;(as the subject of a resource)&lt;/strong&gt;
+
+                    Refines dc:subject.  The temporal subject of the content of the resource.
+
+                    PRISM recommends use of prism:timePeriod instead of dc:coverage for temporal subjects of the resource.
+                    With PRISM 2.1, dc:coverage has been deprecated.
+                </description>
+                <format>
+                    <description>Text</description>
+                    <examples>
+                        <example>ca. 1200 B.C.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="UrlUrl">
+                <label>URL</label>
+                <description>
+                    This element provides the url for an article or unit of content.
+
+                    The attribute platform is optionally allowed for situations in which multiple URLs must be specified.
+                    PRISM recommends that a subset of the PCV platform values, namely “mobile” and “web”, be used in conjunction with this element.
+                </description>
+                <format>
+                    <description>URL</description>
+                </format>
+            </tag>
+            <tag name="UrlA-platform">
+                <label>URL (platform)</label>
+                <description>
+                    This element provides the url for an article or unit of content.
+
+                    The attribute platform is optionally allowed for situations in which multiple URLs must be specified.
+                    PRISM recommends that a subset of the PCV platform values, namely “mobile” and “web”, be used in conjunction with this element.
+                </description>
+                <format>
+                    <description>Text, closed choice &lt;a href="https://www.w3.org/submissions/prism/prism-cvs.html#_Toc46347236"&gt;prism:platform&lt;/a&gt; controlled vocabulary</description>
+                    <examples>
+                        <example value="broadcast">TV, Radio, PodCast (streaming audio and video).</example>
+                        <example value="email">Text and images delivered by internet email, such as a newsletter.</example>
+                        <example value="eReader">Content delivered to an eReader device</example>
+                        <example value="mobile">Text and images delivered to a mobile device, such as a cell phone.</example>
+                        <example value="other">A type not listed in this controlled vocabulary. Use is not recommended.</example>
+                        <example value="print">Text and static images delivered as print on paper or other printable substrate.</example>
+                        <example value="recordableMedia">Delivered on a recordable media such as CD or DVD.</example>
+                        <example value="smartPhone">Content delivered to a smart phone mobile device.</example>
+                        <example value="tablet">Content delivered to a tablet mobile device</example>
+                        <example value="web">Viewable on a website with a browser.</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="uspsNumber">
+                <label>USPS Number</label>
+                <description>
+                    A unique identifying code for a serial publication granted by the USPS when no ISSN exists.
+                    This can be used in place of the ISSN or can even be used as the unique dc:identifier.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="versionIdentifier">
+                <label>Version Identifier</label>
+                <description>
+                    This element provides an additional identifier, typically used to record a specific version of a resource.
+                    Best practice is to use a version identifier that implies sequence.
+
+                    This element provides an additional identifier, associating editorial versions of a resource with one another where a single dc:identifier is used.
+                    This identifier allows us to put the versions in sequence and provide historical data.
+                    For example, a morning edition/version and an evening edition.
+                    This is used to specify an intentional additional version, not a correction or an update/modification.
+                    This identifier could be used to track prices that change during the day, for example.
+                    This specialized element is used when historical data is required.
+                    Use of this element will be limited to a very specific instance where the historical reference of the data stream is to be archived.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+            <tag name="volume">
+                <label>Volume</label>
+                <description>
+                    Additional identifier for the publication where the resource appeared, providing the Volume portion of the common Volume, Number scheme.
+
+                    Provided for basic bibliographic citations.
+                    The content SHOULD NOT contain “Vol.” or other abbreviations for “Volume,” it should only be the alphanumeric volume identifier.
+                    The Number portion of the issue identification is specified in the prism:number element.
+                </description>
+                <format>
+                    <description>Text</description>
+                </format>
+            </tag>
+        </tags>
+    </family>
+</tag-collection>
+
