@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -79,11 +80,13 @@ public class Exiftool<R> {
             throw new ExiftoolException("Error starting Exiftool", exc, command);
         }
         try {
-            process.waitFor();
+            process.waitFor(30, TimeUnit.SECONDS);
         } catch (Exception exc) {
+            output.handleError(process);
             throw new ExiftoolException("Error while executing Exiftool", exc, command);
         }
         if (process.exitValue() != 0) {
+            output.handleError(process);
             throw new ExiftoolException("Exiftool exited with error status=" + process.exitValue(), command);
         }
         try {
@@ -140,6 +143,10 @@ public class Exiftool<R> {
         ProcessBuilder.Redirect redirectOutput();
 
         R handleOutput(Process process) throws IOException;
+
+        default void handleError(Process process) {
+
+        }
     }
 
     public static enum OutputFormat implements CliArgs {

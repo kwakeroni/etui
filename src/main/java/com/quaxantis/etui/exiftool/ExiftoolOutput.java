@@ -11,6 +11,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -97,21 +98,22 @@ public sealed abstract class ExiftoolOutput<R> {
         }
     }
 
-    public static ExiftoolOutput<TagSet> toTagSet() {
-        return TagSetOutput.INSTANCE_PLAIN;
-    }
-
     public static ExiftoolOutput<TagSet> toTagSet(TagRepository tagRepository) {
         return new TagSetOutput(tagRepository);
     }
 
     private static final class TagSetOutput extends ExiftoolOutput<TagSet> implements Exiftool.Output<TagSet> {
-        private static final TagSetOutput INSTANCE_PLAIN = new TagSetOutput(null);
 
         private final TagRepository tagRepository;
+        private final Path tempFile;
 
         public TagSetOutput(TagRepository tagRepository) {
             this.tagRepository = tagRepository;
+            try {
+                this.tempFile = Files.createTempFile("etui", ".out");
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
 
         @Override
@@ -121,14 +123,35 @@ public sealed abstract class ExiftoolOutput<R> {
 
         @Override
         public ProcessBuilder.Redirect redirectOutput() {
-            return ProcessBuilder.Redirect.PIPE;
+            return ProcessBuilder.Redirect.to(this.tempFile.toFile());
+        }
+
+        @Override
+        public void handleError(Process process) {
+            try {
+                Files.copy(this.tempFile, System.out);
+            } catch (IOException e) {
+                System.out.println("Unable to output process log");
+            } finally {
+                try {
+                    Files.delete(this.tempFile);
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
 
         @Override
         public TagSet handleOutput(Process process) throws IOException {
-            Reader reader = process.inputReader();
-//            reader = new SpyingReader(reader);
-            return toTagSet(reader, this.tagRepository);
+            try (Reader reader = Files.newBufferedReader(this.tempFile)) {
+                return toTagSet(reader, this.tagRepository);
+            } finally {
+                try {
+                    Files.delete(this.tempFile);
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
 
         @Override
