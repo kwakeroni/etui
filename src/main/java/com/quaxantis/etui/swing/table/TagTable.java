@@ -285,6 +285,7 @@ class TagTable extends JTable {
                     .enabledIf(activeTag(EditableTagValue::canBeReset), table::addCellSelectionListener)
                     .withAction(onActiveCell(cell -> table.setTag(cell.row(), cell.tag().reset())));
 
+            // TODO: BUG: using delete while editing in-line cause tag to be deleted
             this.deleteTag = ActionBuilder.withName("Delete tag")
                     .withMnemonic('d')
                     .withAccelerator(getKeyStroke(KeyEvent.VK_DELETE, 0, true))

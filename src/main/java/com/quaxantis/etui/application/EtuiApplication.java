@@ -75,10 +75,14 @@ public class EtuiApplication implements TagSetHandler {
 
     @Nullable
     @Override
-    public Path saveCurrentTagSet(Path file) {
-        return ui.getChanges()
-                .map(changes -> saveChanges(changes, file))
-                .orElse(null);
+    public Path saveCurrentTagSet(Path file) throws IOException {
+        try {
+            return ui.getChanges()
+                    .map(changes -> saveChanges(changes, file))
+                    .orElse(null);
+        } catch(UncheckedIOException uioe) {
+            throw uioe.getCause();
+        }
     }
 
     private Path saveChanges(TagSet changes, Path output) {

@@ -30,8 +30,8 @@ public class FileStateMachine {
         this.state.transition(state -> state.close(fileOperations, confirmAction));
     }
 
-    public void save() {
-        this.state.transition(fileState -> fileState.save(fileOperations));
+    public void save(Predicate<String> confirmAction) {
+        this.state.transition(fileState -> fileState.save(fileOperations, confirmAction));
     }
 
     public void saveAs(Path path, Predicate<String> confirmAction) {

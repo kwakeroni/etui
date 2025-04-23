@@ -1,5 +1,6 @@
 package com.quaxantis.etui.application.file;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -25,7 +26,7 @@ public interface FileState {
         }
     }
 
-    default FileState save(FileOperations operations) {
+    default FileState save(FileOperations operations, Predicate<String> confirmAction) {
         throw new IllegalStateException("Unsupported operation in state " + this.getClass().getSimpleName());
     }
 
@@ -57,29 +58,48 @@ public interface FileState {
         return confirmAction.test("There are unsaved changes in the current file. Any changes will be lost.\n\nDo you want to continue ?");
     }
 
-    private static FileState save(FileState currentState,  FileOperations operations) {
+    private static FileState save(FileState currentState, FileOperations operations, Predicate<String> confirmAction) {
         var inputPath = currentState.getOpenFile().orElseThrow();
-        Path savedpath = operations.save(inputPath);
-        if (savedpath != null) {
-            return currentState.open(operations, savedpath, _ -> true);
-        } else {
-            System.err.println("File could not be saved");
+
+        while (true) {
+            try {
+                Path savedpath = operations.save(inputPath);
+                if (savedpath != null) {
+                    return currentState.open(operations, savedpath, _ -> true);
+                } else {
+                    return currentState;
+                }
+            } catch (IOException exc) {
+                System.err.println("File could not be saved");
+                if (!confirmAction.test("Unable to save %s\n\nDo you want to retry ?".formatted(exc.getMessage()))) {
+                    return currentState;
+                }
+            }
         }
-        return currentState;
     }
 
 
     private static FileState saveAs(FileState currentState, FileOperations operations, Path destination, Predicate<String> confirmAction) {
         if (Files.notExists(destination) ||
             confirmAction.test("%s already exists.\n\nDo you want to replace it ?".formatted(destination.getFileName()))) {
-            Path savedpath = operations.saveAs(destination);
-            if (savedpath != null) {
-                return currentState.open(operations, savedpath, _ -> true);
-            } else {
-                System.err.println("File could not be saved");
+            while (true) {
+                try {
+                    Path savedpath = operations.saveAs(destination);
+                    if (savedpath != null) {
+                        return currentState.open(operations, savedpath, _ -> true);
+                    } else {
+                        return currentState;
+                    }
+                } catch (IOException exc) {
+                    System.err.println("File could not be saved");
+                    if (!confirmAction.test("Unable to save %s\n\nDo you want to retry ?".formatted(exc.getMessage()))) {
+                        return currentState;
+                    }
+                }
             }
+        } else {
+            return currentState;
         }
-        return currentState;
     }
 
 
@@ -152,8 +172,8 @@ public interface FileState {
             }
 
             @Override
-            public FileState save(FileOperations operations) {
-                return FileState.save(this, operations);
+            public FileState save(FileOperations operations, Predicate<String> confirmAction) {
+                return FileState.save(this, operations, confirmAction);
             }
 
             @Override

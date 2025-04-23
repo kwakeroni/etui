@@ -218,4 +218,15 @@ class SimpleParserTest {
         assertThat(parser.parse("${(publicationDate?:copyrightYear)?+'.'}"))
                 .isEqualTo(new OptSuffix(new Elvis(new Identifier("publicationDate"), new Identifier("copyrightYear")), new Text(".")));
     }
+
+    @Test
+    void parsersConsecutiveStringLiterals() {
+        assertThat(parser.parse("${\"${'A'}${'B'}\"}"))
+                .isEqualTo(new Concat(new Text("A"), new Text("B")));
+    }
+    @Test
+    void parsersNestedParentheses() {
+        assertThat(parser.parse("${\"${(one)}${(other)}\"}"))
+                .isEqualTo(new Concat(new Identifier("one"), new Identifier("other")));
+    }
 }

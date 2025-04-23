@@ -42,25 +42,23 @@ class FileOperations {
         handler.closeCurrentTagSet();
     }
 
-    Path saveAs(Path path) {
+    Path saveAs(Path path) throws IOException {
         return handler.saveCurrentTagSet(path);
     }
 
-    Path save(Path inputPath) {
+    Path save(Path inputPath) throws IOException {
         Path outputPath;
-        try {
-            var tempFile = Files.createTempFile("etui", "." + FilenameUtils.getExtension(inputPath.getFileName().toString()));
-            outputPath = handler.saveCurrentTagSet(tempFile);
-        } catch (IOException ioe) {
-            throw new UncheckedIOException(ioe);
-        }
+
+        var tempFile = Files.createTempFile("etui", "." + FilenameUtils.getExtension(inputPath.getFileName().toString()));
+        outputPath = handler.saveCurrentTagSet(tempFile);
 
         if (outputPath == null) {
             return null;
         }
 
+        Files.move(inputPath, inputPath.resolveSibling(inputPath.getFileName() + "~"), StandardCopyOption.REPLACE_EXISTING);
+
         try {
-            Files.move(inputPath, inputPath.resolveSibling(inputPath.getFileName() + "~"), StandardCopyOption.REPLACE_EXISTING);
             Files.move(outputPath, inputPath);
             return inputPath;
         } catch (IOException ioe) {

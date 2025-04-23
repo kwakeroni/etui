@@ -4,7 +4,6 @@ import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.application.file.FileStateMachine;
 import com.quaxantis.etui.swing.menu.ActionBuilder;
 import com.quaxantis.etui.swing.menu.Confirmation;
-import org.apache.commons.io.FilenameUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.Action;
@@ -12,9 +11,6 @@ import javax.swing.JFileChooser;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -58,7 +54,7 @@ public final class FileActions {
                 .withMnemonic('S')
                 .withAccelerator('S')
                 .enabledIf(fileStateMachine::hasOpenFileChanged, fileStateMachine::registerListener)
-                .withAction(event -> fileStateMachine.save());
+                .withAction(event -> fileStateMachine.save(confirmAction(windowAncestor(event).orElse(null), "Confirm Save")));
 
         this.saveAs = ActionBuilder.withName("Save as...")
                 .withMnemonic('A')
@@ -98,18 +94,7 @@ public final class FileActions {
     public Action exit() {
         return exit;
     }
-
-    private void saveTempFile() {
-        try {
-            // Save as temporary file for now (testing phase)
-            var inputPath = fileStateMachine.getOpenFile().orElseThrow();
-            Path output = Files.createTempFile("exiftoolui", "." + FilenameUtils.getExtension(inputPath.getFileName().toString()));
-            fileStateMachine.saveAs(output, _ -> true);
-        } catch (IOException ioe) {
-            throw new UncheckedIOException(ioe);
-        }
-    }
-
+    
     private void forceOpenDialog(@Nullable Component parent) {
         fileDialog(chooser -> chooser.showOpenDialog(parent),
                    file -> this.fileStateMachine.open(file, _ -> true));

@@ -143,6 +143,7 @@ public class TagInfoPanel extends JEditorPane {
     }
 
     public enum StandardInfoItem implements InfoItem {
+        // TODO: right aligned qualified tag with copy-to-clipboard handle
         LABEL(element -> (element instanceof Tag tag) ?
                 (element instanceof HasLabel hasLabel && hasLabel.label() != null && !hasLabel.label().equalsIgnoreCase(tag.tagName())) ?
                         "<b>%s:%s</b> (%s)".formatted(tag.groupName(), tag.tagName(), hasLabel.label()) :
