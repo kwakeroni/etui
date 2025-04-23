@@ -99,9 +99,14 @@ public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
     }
 
     private Optional<String> evaluateExpression(Variable var) {
-        return Optional.of(var)
-                .map(Variable::expression)
-                .map(expression -> expressionEvaluator.evaluate(expression, getData()));
+        try {
+            return Optional.of(var)
+                    .map(Variable::expression)
+                    .map(expression -> expressionEvaluator.evaluate(expression, getData()));
+        } catch (Exception exc) {
+            log.error("Error while evaluating variable {}", var.name(), exc);
+            return Optional.empty();
+        }
     }
 
     //  TAGSET
