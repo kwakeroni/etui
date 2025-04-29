@@ -1,6 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tag-collection xmlns="https://quaxantis.com/etui/tags" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://quaxantis.com/etui/tags tag-collection.xsd">
     <collection>Formats</collection>
+    <family name="gif" group="GIF" readonly="true">
+        <label>GIF</label>
+        <reference>https://www.w3.org/Graphics/GIF/spec-gif89a.txt</reference>
+        <description>
+            Information extracted from GIF images.
+        </description>
+        <tags>
+            <tag name="Comment" readonly="false" group="File" />
+            <tag name="Duration" />
+            <tag name="FrameCount" />
+            <tag name="GIFVersion" />
+            <tag name="Text" />
+            <tag name="TransparentColor" />
+            <tag name="MIDIControlVersion" />
+            <tag name="SequenceNumber" />
+            <tag name="MelodicPolyphony" />
+            <tag name="PercussivePolyphony" />
+            <tag name="ChannelUsage" />
+            <tag name="DelayTime" />
+            <tag name="AnimationIterations" />
+            <tag name="ImageWidth" />
+            <tag name="ImageHeight" />
+            <tag name="HasColorMap" />
+            <tag name="ColorResolutionDepth" />
+            <tag name="BitsPerPixel" />
+            <tag name="BackgroundColor" />
+            <tag name="PixelAspectRatio" />
+        </tags>
+    </family>
     <family name="png" group="PNG">
         <label>PNG</label>
         <reference>http://www.libpng.org/pub/png/spec/1.2/</reference>
