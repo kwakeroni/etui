@@ -11,7 +11,6 @@ import com.quaxantis.etui.tag.TagDescriptorBuilder;
 import com.quaxantis.etui.tag.TagRepository;
 import com.quaxantis.etui.template.AbstractTemplateTest;
 import com.quaxantis.etui.template.ExpressionEvaluator;
-import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Syntax;
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
@@ -63,23 +63,20 @@ class ConfiguredTemplateTest extends AbstractTemplateTest {
                                         </template>
                                         """);
 
-        assertThat(template.variableByName("myVar")).hasValueSatisfying(variable -> {
-            assertThat(variable)
-                    .returns("myVar", Template.Variable::name)
-                    .returns("myTagLabel", Template.Variable::label)
-                    .isInstanceOf(TagDescriptor.class)
-                    .extracting(TagDescriptor.class::cast)
-                    .returns("myDescription", TagDescriptor::description)
-                    .returns("myFormat", TagDescriptor::formatDescription)
-                    .extracting(TagDescriptor::examples)
-                    .satisfies(examples -> {
-                        assertThat(examples).extracting(TagDescriptor.Example::text, TagDescriptor.Example::pattern, TagDescriptor.Example::value)
-                                .containsExactly(tuple("myExample1", null, null),
-                                                 tuple("myExample2", "myPattern", null),
-                                                 tuple("myExample3", "myPattern", "myValue"),
-                                                 tuple("myExample4", null, "myValue"));
-                    });
-        });
+        assertThat(template.variableByName("myVar")).hasValueSatisfying(variable -> assertThat(variable)
+                .returns("myVar", Template.Variable::name)
+                .returns("myTagLabel", Template.Variable::label)
+                .isInstanceOf(TagDescriptor.class)
+                .extracting(TagDescriptor.class::cast)
+                .returns("myDescription", TagDescriptor::description)
+                .returns("myFormat", TagDescriptor::formatDescription)
+                .extracting(TagDescriptor::examples)
+                .satisfies(examples -> assertThat(examples)
+                        .extracting(TagDescriptor.Example::text, TagDescriptor.Example::pattern, TagDescriptor.Example::value)
+                        .containsExactly(tuple("myExample1", null, null),
+                                         tuple("myExample2", "myPattern", null),
+                                         tuple("myExample3", "myPattern", "myValue"),
+                                         tuple("myExample4", null, "myValue"))));
     }
 
     @Test
@@ -159,7 +156,7 @@ class ConfiguredTemplateTest extends AbstractTemplateTest {
                                             <label>test</label>
                                             <variable name="var" />
                                         </template>
-                                        """.formatted(GROUP_NAME, TAG_NAME));
+                                        """);
 
         assertThat(template.expressionEvaluator()).isInstanceOf(TestEvaluator.class);
 
@@ -186,11 +183,11 @@ class ConfiguredTemplateTest extends AbstractTemplateTest {
         }
     }
 
-    private Template getTemplate(String xml) {
+    private Template getTemplate(@Syntax("xml") String xml) {
         return getTemplate(xml, true);
     }
 
-    private Template getTemplate(String xml, boolean validate) {
+    private Template getTemplate(@Syntax("xml") String xml, boolean validate) {
         try {
             log.debug("Template XML:{}{}", System.lineSeparator(), xml);
             if (validate) {
