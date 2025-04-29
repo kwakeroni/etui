@@ -12,8 +12,10 @@ import java.util.Optional;
 public final class XMLTag implements Tag, TagDescriptor {
     @JsonProperty("name")
     private String tagName;
+    @JsonProperty("group")
+    private String group;
     @JsonProperty("readonly")
-    private boolean readOnly = false;
+    private Boolean readOnly = null;
     private String label;
     @JsonDeserialize(using = DescriptionDeserializer.class)
     private String description;
@@ -23,7 +25,13 @@ public final class XMLTag implements Tag, TagDescriptor {
 
     @Override
     public String groupName() {
-        return (family == null) ? null : family().group();
+        if (this.group != null) {
+            return this.group;
+        } else if (this.family != null) {
+            return this.family.group();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -38,7 +46,13 @@ public final class XMLTag implements Tag, TagDescriptor {
 
     @Override
     public boolean isReadOnly() {
-        return this.readOnly;
+        if (this.readOnly != null) {
+            return this.readOnly;
+        } else if (this.family != null && this.family.getReadonly() != null) {
+            return this.family.getReadonly();
+        } else {
+            return false;
+        }
     }
 
     public String label() {

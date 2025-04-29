@@ -14,6 +14,13 @@
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="group" type="xs:string" use="required"/>
+        <xs:attribute name="readonly" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Default readonly setting for tags in this family.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
     <xs:complexType name="TagCollection">
         <xs:sequence>
@@ -28,7 +35,14 @@
             <xs:element name="format" type="Format" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="readonly" type="xs:boolean" use="optional" default="false" />
+        <xs:attribute name="readonly" type="xs:boolean" use="optional" />
+        <xs:attribute name="group" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Overrides the group of the family.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
     <xs:complexType name="Tags">
         <xs:sequence>

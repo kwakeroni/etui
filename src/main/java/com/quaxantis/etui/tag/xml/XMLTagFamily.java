@@ -2,6 +2,7 @@ package com.quaxantis.etui.tag.xml;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.quaxantis.etui.HasDescription;
 import com.quaxantis.etui.HasLabel;
@@ -16,6 +17,9 @@ public final class XMLTagFamily implements TagFamily, HasLabel, HasDescription {
     private String name;
     private String group;
     private String label;
+    @JsonProperty("readonly")
+    private Boolean readonly;
+
     @JsonDeserialize(using = DescriptionDeserializer.class)
     private String description;
     @JsonManagedReference
@@ -65,6 +69,10 @@ public final class XMLTagFamily implements TagFamily, HasLabel, HasDescription {
 
     public void setTags(List<XMLTag> tags) {
         this.tags = tags;
+    }
+
+    Boolean getReadonly() {
+        return this.readonly;
     }
 
     @Override
