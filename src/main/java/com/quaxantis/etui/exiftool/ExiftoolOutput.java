@@ -175,7 +175,7 @@ public sealed abstract class ExiftoolOutput<R> {
                 throw new IllegalStateException("Expected exiftool output to be an array with an object");
             }
 
-            UnaryOperator<Tag> enrich = (tagRepository == null) ? UnaryOperator.identity() : tagRepository::enrichTag;
+            UnaryOperator<Tag> enrich = (tagRepository == null) ? UnaryOperator.identity() : tagRepository.cached()::enrichTag;
             Spliterator<Map.Entry<String, JsonNode>> spliterator = Spliterators.spliterator(json.fields(), json.size(), Spliterator.NONNULL);
             return StreamSupport.stream(spliterator, false)
                     .map(entry -> ofJsonKey(entry.getKey(), entry.getValue(), enrich))

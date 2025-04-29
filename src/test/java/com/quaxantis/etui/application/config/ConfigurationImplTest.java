@@ -1,6 +1,5 @@
 package com.quaxantis.etui.application.config;
 
-import org.apache.commons.text.translate.JavaUnicodeEscaper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -165,9 +164,9 @@ class ConfigurationImplTest {
         @DisplayName("has default templates directory")
         void testGetDefaultTemplatesDirectory(@TempDir Path tempDir) {
             var configuration = ConfigurationImpl.of(new Properties(), tempDir);
-            assertThat(configuration.getTemplateDefinitions()).containsExactly(tempDir.resolve("templates"));
+            assertThat(configuration.getTemplatePaths()).containsExactly(tempDir.resolve("templates").toString());
             // Ensure the result remains the same when called multiple times
-            assertThat(configuration.getTemplateDefinitions()).containsExactly(tempDir.resolve("templates"));
+            assertThat(configuration.getTemplatePaths()).containsExactly(tempDir.resolve("templates").toString());
         }
 
         @Test
@@ -175,7 +174,7 @@ class ConfigurationImplTest {
         void testDoNotExportDefaultTemplatesDirectory(@TempDir Path tempDir) {
             var configuration = ConfigurationImpl.of(new Properties(), tempDir);
 
-            assertThat(configuration.getTemplateDefinitions()).containsExactly(tempDir.resolve("templates"));
+            assertThat(configuration.getTemplatePaths()).containsExactly(tempDir.resolve("templates").toString());
 
             Properties properties = configuration.toProperties();
             assertThat(properties.toString()).doesNotContain("templates");
@@ -191,10 +190,10 @@ class ConfigurationImplTest {
 
             var configuration = ConfigurationImpl.of(properties, Path.of("."));
 
-            assertThat(configuration.getTemplateDefinitions()).containsExactly(
-                    Path.of("./templates"),
-                    Path.of("file2.png"),
-                    Path.of("file1.png"));
+            assertThat(configuration.getTemplatePaths()).containsExactly(
+                    "./templates",
+                    "file2.png",
+                    "file1.png");
         }
 //
 //        @Test

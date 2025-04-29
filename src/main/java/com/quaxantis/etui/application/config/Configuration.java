@@ -12,7 +12,7 @@ public interface Configuration {
 
     List<Path> getHistory();
     List<Path> getTagDefinitions();
-    List<Path> getTemplateDefinitions();
+    List<String> getTemplatePaths();
 
     void addConfigurationListener(ConfigurationListener listener);
 

@@ -55,7 +55,7 @@ public class TagEntryUI {
             }
 
             @Override
-            public List<Path> getTemplateDefinitions() {
+            public List<String> getTemplatePaths() {
                 return List.of();
             }
 

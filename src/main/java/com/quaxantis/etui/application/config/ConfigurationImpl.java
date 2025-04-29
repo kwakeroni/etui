@@ -106,11 +106,16 @@ public class ConfigurationImpl implements Configuration {
     }
 
     @Override
-    public List<Path> getTemplateDefinitions() {
-        List<Path> list = new LinkedList<>();
-        list.add(this.configDir.resolve("templates"));
-        list.addAll(getPathListSetting(Setting.TEMPLATE_DEFINITIONS));
+    public List<String> getTemplatePaths() {
+        List<String> list = new LinkedList<>();
+        list.add(this.configDir.resolve("templates").toString());
+        list.addAll(getStringListSetting(Setting.TEMPLATE_DEFINITIONS));
         return Collections.unmodifiableList(list);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getStringListSetting(Setting setting) {
+        return (List<String>) settings.computeIfAbsent(setting, ignored -> new LinkedList<>());
     }
 
     @SuppressWarnings("unchecked")
@@ -275,7 +280,7 @@ public class ConfigurationImpl implements Configuration {
         HISTORY(new ListSetting<>("history.entry", Path.class, Path::of, Path::toString)),
 
         TAG_DEFINITIONS(new ListSetting<>("tags.entry", Path.class, Path::of, Path::toString)),
-        TEMPLATE_DEFINITIONS(new ListSetting<>("templates.entry", Path.class, Path::of, Path::toString)),
+        TEMPLATE_DEFINITIONS(new ListSetting<>("templates.entry", String.class, Function.identity(), Function.identity())),
         ;
 
         private final ConfigurationListener.Item item;

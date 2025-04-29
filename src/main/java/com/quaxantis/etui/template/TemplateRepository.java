@@ -5,12 +5,13 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.quaxantis.etui.TagDescriptor;
 import com.quaxantis.etui.Template;
 import com.quaxantis.etui.Tag;
+import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.application.config.Configuration;
-import com.quaxantis.etui.application.config.ConfigurationImpl;
 import com.quaxantis.etui.swing.template.TemplateGroup;
 import com.quaxantis.etui.tag.TagRepository;
 import com.quaxantis.etui.template.xml.ConfiguredTemplate;
 import com.quaxantis.etui.template.xml.XMLTemplateCollection;
+import com.quaxantis.support.util.GlobMatcher;
 import com.quaxantis.support.util.StreamEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,32 +30,21 @@ import static java.util.function.Predicate.not;
 
 public class TemplateRepository {
 
-    public static void main() {
-
-
-        var configuration = ConfigurationImpl.of(new Properties(), Path.of("C:\\Users\\Eigenaar\\.etui"));
-        var repo = new TemplateRepository(configuration, new TagRepository(configuration));
-
-        repo.templates()
-                        .forEach(System.out::println);
-        System.out.println("---");
-        repo.templateGroups()
-                .forEach(System.out::println);
-    }
-
     private final Logger log = LoggerFactory.getLogger(TemplateRepository.class);
     private final ObjectMapper objectMapper = XmlMapper.builder().build();
     private final Configuration configuration;
-    private final TagRepository tagRepository;
+    private final TagRepository.Cache tagRepository;
 
     public TemplateRepository(Configuration configuration, TagRepository tagRepository) {
         this.configuration = configuration;
-        this.tagRepository =  tagRepository;
+        this.tagRepository =  tagRepository.cached();
     }
 
     public List<Template> templates() {
         try(var templates = Stream.concat(standardCollections(), configuredCollections())) {
             return templates.<Template> map(StreamEntry::value).toList();
+        } finally {
+            this.tagRepository.clear();
         }
     }
 
@@ -67,14 +57,10 @@ public class TemplateRepository {
     public List<TemplateGroup> templateGroups() {
         try(var templates = Stream.concat(standardCollections(), configuredCollections())) {
             return templates.collect(TemplateGroupCollector.collector());
+        } finally {
+            this.tagRepository.clear();
         }
     }
-
-    //    private Stream<TemplateGroup> standardCollectionsGrouped() {
-//        List<Qualified<String, Template>> templates = standardCollections()
-//                .toList();
-//        return Stream.of(new TemplateGroup("Tags", List.of(), templates));
-//    }
 
     private Stream<StreamEntry<String, Template>> standardCollections() {
         return tagRepository.getGroupedFamilies()
@@ -84,28 +70,23 @@ public class TemplateRepository {
                 .flatMap(StreamEntry.flatMapping(List::stream))
                 .map(StreamEntry.mapping(family -> ofTags(family.label(), family.tags())))
                 .map(StreamEntry.mappingKey(key -> "Tags / " + key));
-
-
-//        return tagRepository.getFamilies()
-//                .stream()
-//                .map(family -> ofTags(family.label(), family.tags()))
-//                .map(template -> new StreamEntry<>("Tags", template));
     }
 
-//    private Stream<TemplateGroup> configuredCollectionsGrouped() {
-//        Map<String, List<Template>> templates = configuredCollections()
-//                .collect(groupingBy(Qualified::key, mapping(Qualified::value, toList())));
-//
-//        return templates.entrySet().stream()
-//                .map(entry -> new TemplateGroup(entry.getKey(), List.of(), entry.getValue()));
-//    }
-
-    // TODO: support glob
     private Stream<StreamEntry<String, ConfiguredTemplate>> configuredCollections() {
-        return configuration.getTemplateDefinitions()
+//        var paths = configuration.getTemplatePaths();
+//        for (String path : paths) {
+//            GlobMatcher globMatcher = GlobMatcher.of(path);
+//            System.out.printf("Matcher: %s = %s%n", path, globMatcher);
+//            try (Stream<Path> files = walk(globMatcher.path())) {
+//                files.forEach(p -> System.out.printf("%s : %s%n", p, globMatcher.matches(p)));
+//            }
+//        }
+
+        return configuration.getTemplatePaths()
                 .stream()
-                .filter(Files::exists)
-                .flatMap(this::walk)
+                .map(pathPattern -> GlobMatcher.of(pathPattern, "**.xml"))
+                .filter(gm -> Files.exists(gm.path()))
+                .flatMap(GlobMatcher::walk)
                 .filter(not(Files::isDirectory))
                 .map(StreamEntry::of)
                 .map(StreamEntry.mapping(this::readCollection))
@@ -146,6 +127,20 @@ public class TemplateRepository {
             log.error("Error while reading template collection {}", path, exc);
             return null;
         }
+    }
+
+
+    public static void main(String[] args) {
+
+        var configuration = new ConfigOperations().getConfiguration();
+        System.out.println(configuration.getTemplatePaths());
+        var repo = new TemplateRepository(configuration, new TagRepository(configuration));
+
+        repo.templates()
+                .forEach(System.out::println);
+        System.out.println("---");
+        repo.templateGroups()
+                .forEach(System.out::println);
     }
 
 }

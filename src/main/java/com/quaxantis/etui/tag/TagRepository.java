@@ -19,6 +19,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -64,7 +65,7 @@ public class TagRepository {
     }
 
     public List<? extends TagFamily> getFamilies() {
-        try (var collections = Stream.concat(configuredCollections(), standardCollections())) {
+        try (var collections = readCollections()) {
             return collections
                     .map(StreamEntry::value)
                     .map(XMLTagCollection::families)
@@ -75,7 +76,7 @@ public class TagRepository {
 
     // TODO: filter by file format
     public SequencedMap<String, List<TagFamily>> getGroupedFamilies() {
-        try (var collections = Stream.concat(configuredCollections(), standardCollections())) {
+        try (var collections = readCollections()) {
             return collections
                     .map(StreamEntry.mapping(XMLTagCollection::families))
                     .flatMap(StreamEntry.flatMapping(List::stream))
@@ -83,6 +84,10 @@ public class TagRepository {
         }
 
 
+    }
+
+    protected Stream<StreamEntry<String, XMLTagCollection>> readCollections() {
+        return Stream.concat(configuredCollections(), standardCollections());
     }
 
     private Stream<StreamEntry<String, XMLTagCollection>> standardCollections() {
@@ -143,7 +148,29 @@ public class TagRepository {
         }
     }
 
-    public static void main() {
+    public Cache cached() {
+        return new Cache(this.configuration);
+    }
+
+    public class Cache extends TagRepository {
+        AtomicReference<List<StreamEntry<String, XMLTagCollection>>> collections = new AtomicReference<>();
+
+        private Cache(Configuration configuration) {
+            super(configuration);
+        }
+
+        @Override
+        protected Stream<StreamEntry<String, XMLTagCollection>> readCollections() {
+            return this.collections.updateAndGet(cached -> (cached != null)? cached : super.readCollections().toList()).stream();
+        }
+
+        public Cache clear() {
+            this.collections.set(null);
+            return this;
+        }
+    }
+
+    public static void main(String[] args) {
         Configuration configuration = new ConfigOperations().getConfiguration();
         var repo = new TagRepository(configuration);
 
