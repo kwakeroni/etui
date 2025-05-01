@@ -28,9 +28,7 @@ public class TemplateUI {
         var configuration = configOperations.getConfiguration();
         var repo = new TemplateRepository(configuration, new TagRepository(configuration));
 
-        TemplateUI templateUI = new TemplateUI(repo, configOperations, "Dump", tagSetSupplier -> e -> {
-            System.out.println(tagSetSupplier.get());
-        });
+        TemplateUI templateUI = new TemplateUI(repo, configOperations, "Dump", tagSetSupplier -> _ -> System.out.println(tagSetSupplier.get()));
         QuickJFrame.of(templateUI.getUIContainer())
                 .withTitle("Template UI")
                 .show();
@@ -72,13 +70,13 @@ public class TemplateUI {
                 .above(actionBar)
                 .atLeftSide()
                 .stretchToRightSide()
-                ;
+        ;
 
         organizer.add(actionBar)
                 .atBottom()
                 .atLeftSide()
                 .stretchToRightSide()
-                ;
+        ;
 
         panel.setPreferredSize(new Dimension(350, 200));
         tagInfoPanel.setPreferredSize(new Dimension(200, 200));
@@ -120,13 +118,12 @@ public class TemplateUI {
         panel.setBorder(BorderFactory.createEtchedBorder());
         panel.add(templateTree, BorderLayout.WEST);
         panel.setBackground(templateTree.getBackground());
-        // Todo: init template area when reopening with a selected template
-        templateTree.setExternalizedPath(configOperations.getConfiguration().getLastSelectedTemplate().orElse(null));
         templateTree.addTemplateSelectionListener((_, template) -> {
             tagInfoPanel.setTag(null);
             templatePanel.setTemplate(template);
         });
-        templateTree.addTreeSelectionListener(e -> configOperations.setLastSelectedTemplate(templateTree.getExternalizedPath()));
+        templateTree.addTreeSelectionListener(_ -> configOperations.setLastSelectedTemplate(templateTree.getExternalizedPath()));
+        templateTree.setExternalizedPath(configOperations.getConfiguration().getLastSelectedTemplate().orElse(null));
         panel.setMaximumSize(templateTree.getPreferredSize());
         return new JScrollPane(panel);
     }
@@ -140,9 +137,9 @@ public class TemplateUI {
         });
 
         JButton reset = new JButton("Reset");
-        reset.addActionListener(e -> templatePanel.resetForm());
+        reset.addActionListener(_ -> templatePanel.resetForm());
         JButton clear = new JButton("Clear");
-        clear.addActionListener(e -> templatePanel.clearForm());
+        clear.addActionListener(_ -> templatePanel.clearForm());
 
         JPanel panel = new JPanel();
         var organizer = SpringLayoutOrganizer.organize(panel).setDefaultPadding(PAD);
