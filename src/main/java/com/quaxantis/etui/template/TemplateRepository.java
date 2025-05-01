@@ -2,9 +2,9 @@ package com.quaxantis.etui.template;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.TagDescriptor;
 import com.quaxantis.etui.Template;
-import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.application.config.Configuration;
 import com.quaxantis.etui.swing.template.TemplateGroup;
@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
@@ -37,12 +39,12 @@ public class TemplateRepository {
 
     public TemplateRepository(Configuration configuration, TagRepository tagRepository) {
         this.configuration = configuration;
-        this.tagRepository =  tagRepository.cached();
+        this.tagRepository = tagRepository.cached();
     }
 
     public List<Template> templates() {
-        try(var templates = Stream.concat(standardCollections(), configuredCollections())) {
-            return templates.<Template> map(StreamEntry::value).toList();
+        try (var templates = Stream.concat(standardCollections(), configuredCollections())) {
+            return templates.<Template>map(StreamEntry::value).toList();
         } finally {
             this.tagRepository.clear();
         }
@@ -55,7 +57,7 @@ public class TemplateRepository {
 
     // TODO: filter by file format
     public List<TemplateGroup> templateGroups() {
-        try(var templates = Stream.concat(standardCollections(), configuredCollections())) {
+        try (var templates = Stream.concat(standardCollections(), configuredCollections())) {
             return templates.collect(TemplateGroupCollector.collector());
         } finally {
             this.tagRepository.clear();
@@ -69,6 +71,7 @@ public class TemplateRepository {
                 .map(StreamEntry::of)
                 .flatMap(StreamEntry.flatMapping(List::stream))
                 .map(StreamEntry.mapping(family -> ofTags(family.label(), family.tags())))
+                .flatMap(StreamEntry.flatMapping(Optional::stream))
                 .map(StreamEntry.mappingKey(key -> "Tags / " + key));
     }
 
@@ -91,7 +94,7 @@ public class TemplateRepository {
                 .map(StreamEntry::of)
                 .map(StreamEntry.mapping(this::readCollection))
                 .filter(StreamEntry::isNonNullValue)
-                .map(StreamEntry.mappingKey((path, collection) -> (collection.group() != null)?
+                .map(StreamEntry.mappingKey((path, collection) -> (collection.group() != null) ?
                         collection.group() : path.getFileName().toString()))
                 .map(StreamEntry.mapping(XMLTemplateCollection::templates))
                 .filter(StreamEntry::isNonNullValue)
@@ -107,15 +110,16 @@ public class TemplateRepository {
         }
     }
 
-    private static Template ofTags(String name, Collection<? extends Tag> tags) {
+    private static Optional<Template> ofTags(String name, Collection<? extends Tag> tags) {
         return tags.stream()
-                .filter(tag -> ! TagDescriptor.of(tag).isReadOnly())
+                .filter(tag -> !TagDescriptor.of(tag).isReadOnly())
                 .collect(Collector.of(() -> TemplateSupport.builder(name),
                                       (builder, tag) -> builder.addVariable(new VariableSupport(tag), tag),
-                                      (b1, b2) -> {
+                                      (_, _) -> {
                                           throw new UnsupportedOperationException();
                                       },
-                                      TemplateSupport.Builder::build));
+                                      builder -> Optional.of(builder.build())
+                                              .filter(not(template -> template.variables().isEmpty()))));
     }
 
     @Nullable

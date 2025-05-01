@@ -1,47 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tag-collection xmlns="https://quaxantis.com/etui/tags" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://quaxantis.com/etui/tags tag-collection.xsd">
     <collection>System</collection>
-    <family name="sourcefile" group="">
+    <family name="sourcefile" group="" readonly="true">
         <label>Source File attribute</label>
         <tags>
-            <tag name="SourceFile" readonly="true" />
+            <tag name="SourceFile" />
         </tags>
     </family>
-    <family name="exiftool" group="ExifTool">
+    <family name="exiftool" group="ExifTool" readonly="true">
         <label>Exiftool information</label>
         <reference>https://exiftool.org/TagNames/Extra.html</reference>
         <tags>
-            <tag name="ExifToolVersion" readonly="true" />
+            <tag name="ExifToolVersion" />
         </tags>
     </family>
-    <family name="file" group="File">
+    <family name="file" group="File" readonly="true">
         <label>File attributes</label>
         <reference>https://exiftool.org/TagNames/Extra.html</reference>
         <description>
             Represents some system attributes of the file.
         </description>
         <tags>
-            <tag name="FileName" readonly="true" />
-            <tag name="Directory" readonly="true" />
-            <tag name="FileSize" readonly="true" />
-            <tag name="FileModifyDate" readonly="true" />
-            <tag name="FileAccessDate" readonly="true" />
-            <tag name="FileCreateDate" readonly="true" />
-            <tag name="FilePermissions" readonly="true" />
-            <tag name="FileType" readonly="true" />
-            <tag name="FileTypeExtension" readonly="true" />
-            <tag name="MIMEType" readonly="true" />
+            <tag name="FileName" />
+            <tag name="Directory" />
+            <tag name="FileSize" />
+            <tag name="FileModifyDate" />
+            <tag name="FileAccessDate" />
+            <tag name="FileCreateDate" />
+            <tag name="FilePermissions" />
+            <tag name="FileType" />
+            <tag name="FileTypeExtension" />
+            <tag name="MIMEType" />
         </tags>
     </family>
-    <family name="composite" group="Composite">
+    <family name="composite" group="Composite" readonly="true">
         <label>Composite derived attributes</label>
         <reference>https://exiftool.org/TagNames/Composite.html</reference>
         <description>The values of the composite tags are Derived From the values of other tags.</description>
         <tags>
-            <tag name="ImageSize" readonly="true" />
-            <tag name="ImageWidth" readonly="true" />
-            <tag name="ImageHeight" readonly="true" />
-            <tag name="Megapixels" readonly="true" />
+            <tag name="ImageSize" />
+            <tag name="ImageWidth" />
+            <tag name="ImageHeight" />
+            <tag name="Megapixels" />
         </tags>
+    </family>
+    <family name="icc_profile" group="ICC_Profile" readonly="true">
+        <description>
+            ICC profile information is used in many different file types including
+            JPEG, TIFF, PDF, PostScript, Photoshop, PNG, MIFF, PICT, QuickTime, XCF and some RAW formats.
+            While the tags listed below are not individually writable, the entire profile itself can be accessed via the extra 'ICC_Profile' tag,
+            but this tag is neither extracted nor written unless specified explicitly.
+        </description>
     </family>
 </tag-collection>

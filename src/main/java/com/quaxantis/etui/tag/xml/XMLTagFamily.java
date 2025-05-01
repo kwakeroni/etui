@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @JsonIgnoreProperties({"homePage", "reference"})
 public final class XMLTagFamily implements TagFamily, HasLabel, HasDescription {
@@ -38,7 +39,7 @@ public final class XMLTagFamily implements TagFamily, HasLabel, HasDescription {
 
     @Override
     public String label() {
-        return label;
+        return (label != null)? label : name;
     }
 
     public String description() {
@@ -48,7 +49,7 @@ public final class XMLTagFamily implements TagFamily, HasLabel, HasDescription {
     @Override
     @JsonManagedReference
     public List<XMLTag> tags() {
-        return tags;
+        return (tags != null)? tags : List.of();
     }
 
     public void setDescription(String description) {
@@ -73,6 +74,16 @@ public final class XMLTagFamily implements TagFamily, HasLabel, HasDescription {
 
     Boolean getReadonly() {
         return this.readonly;
+    }
+
+    @Override
+    public Optional<String> defaultGroup() {
+        return Optional.ofNullable(this.group);
+    }
+
+    @Override
+    public boolean defaultReadOnly() {
+        return Boolean.TRUE.equals(this.readonly);
     }
 
     @Override

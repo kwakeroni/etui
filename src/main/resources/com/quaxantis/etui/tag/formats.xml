@@ -100,21 +100,22 @@
             <tag name="MIMEType" readonly="true" />
         </tags>
     </family>
-    <family name="webp" group="RIFF">
+    <family name="webp" group="RIFF" readonly="true">
+        <label>WEBP</label>
         <tags>
-            <tag name="AlphaPreprocessing" readonly="true" />
-            <tag name="AlphaFiltering" readonly="true" />
-            <tag name="AlphaCompression" readonly="true" />
-            <tag name="BackgroundColor" readonly="true" />
-            <tag name="AnimationLoopCount" readonly="true" />
-            <tag name="Duration" readonly="true" />
-            <tag name="VP8Version" readonly="true" />
-            <tag name="ImageWidth" readonly="true" />
-            <tag name="HorizontalScale" readonly="true" />
-            <tag name="ImageHeight" readonly="true" />
-            <tag name="VerticalScale" readonly="true" />
-            <tag name="AlphaIsUsed" readonly="true" />
-            <tag name="WebP_Flags" readonly="true" />
+            <tag name="AlphaPreprocessing" />
+            <tag name="AlphaFiltering" />
+            <tag name="AlphaCompression" />
+            <tag name="BackgroundColor" />
+            <tag name="AnimationLoopCount" />
+            <tag name="Duration" />
+            <tag name="VP8Version" />
+            <tag name="ImageWidth" />
+            <tag name="HorizontalScale" />
+            <tag name="ImageHeight" />
+            <tag name="VerticalScale" />
+            <tag name="AlphaIsUsed" />
+            <tag name="WebP_Flags" />
         </tags>
     </family>
     <family name="pdf" group="PDF">

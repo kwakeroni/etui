@@ -3,6 +3,7 @@ package com.quaxantis.etui.tag;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.quaxantis.etui.Tag;
+import com.quaxantis.etui.TagDescriptor;
 import com.quaxantis.etui.TagFamily;
 import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.application.config.Configuration;
@@ -18,11 +19,12 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.SequencedMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.function.Predicate.not;
@@ -41,6 +43,7 @@ public class TagRepository {
     private final Logger log = LoggerFactory.getLogger(TagRepository.class);
 
     private final Configuration configuration;
+
     public TagRepository(Configuration configuration) {
         this.configuration = configuration;
     }
@@ -48,7 +51,9 @@ public class TagRepository {
     private final ObjectMapper objectMapper = XmlMapper.builder().build();
 
     public Tag enrichTag(@Nonnull Tag tag) {
-        return findTag(tag).orElse(tag);
+        return findTag(tag)
+                .or(() -> enrichByFamily(tag))
+                .orElse(tag);
     }
 
     public Optional<Tag> findTagByQualifiedName(String qualifiedName) {
@@ -62,6 +67,21 @@ public class TagRepository {
                 .filter(referenceTag::isSameTagAs)
                 .findAny()
                 .map(Function.identity());
+    }
+
+    private Optional<Tag> enrichByFamily(@Nonnull Tag tag) {
+        System.out.println("NOT FOUND TAG " + tag);
+        List<Boolean> readOnlyValues = getFamilies()
+                .stream()
+                .filter(family -> family.defaultGroup().filter(group -> group.equalsIgnoreCase(tag.groupName())).isPresent())
+                .map(TagFamily::defaultReadOnly)
+                .distinct()
+                .toList();
+        if (readOnlyValues.size() == 1 && readOnlyValues.getFirst()) {
+            return Optional.of(TagDescriptor.of(tag).asReadOnly().asTag());
+        } else {
+            return Optional.empty();
+        }
     }
 
     public List<? extends TagFamily> getFamilies() {
@@ -103,7 +123,7 @@ public class TagRepository {
                 .map(StreamEntry.mappingKey((_, url) -> url))
                 .map(entry -> entry.map(this::readCollection))
                 .map(StreamEntry.mappingKey(
-                        (url, coll) -> (coll.collection() != null)? coll.collection() : getFilename(url)));
+                        (url, coll) -> (coll.collection() != null) ? coll.collection() : getFilename(url)));
 
 
     }
@@ -128,7 +148,7 @@ public class TagRepository {
                 .map(StreamEntry::of)
                 .map(entry -> entry.map(this::readCollection))
                 .map(StreamEntry.mappingKey(
-                        (path, coll) -> (coll.collection() != null)? coll.collection() : path.getFileName().toString()));
+                        (path, coll) -> (coll.collection() != null) ? coll.collection() : path.getFileName().toString()));
     }
 
     private XMLTagCollection readCollection(URL url) {
@@ -161,7 +181,7 @@ public class TagRepository {
 
         @Override
         protected Stream<StreamEntry<String, XMLTagCollection>> readCollections() {
-            return this.collections.updateAndGet(cached -> (cached != null)? cached : super.readCollections().toList()).stream();
+            return this.collections.updateAndGet(cached -> (cached != null) ? cached : super.readCollections().toList()).stream();
         }
 
         public Cache clear() {

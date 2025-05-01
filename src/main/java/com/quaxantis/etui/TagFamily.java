@@ -1,22 +1,28 @@
 package com.quaxantis.etui;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 public interface TagFamily extends HasLabel {
+    Optional<String> defaultGroup();
+
+    boolean defaultReadOnly();
+
     List<? extends Tag> tags();
 
-    static TagFamily of(String label, List<? extends Tag> tags) {
-        List<? extends Tag> tagsCopy = List.copyOf(tags);
-        return new TagFamily() {
-            @Override
-            public List<? extends Tag> tags() {
-                return tagsCopy;
+    default TagFamily filter(Predicate<Tag> predicate) {
+        List<? extends Tag> filtered = tags().stream().filter(predicate).toList();
+        class Filtered extends TagFamilyAdapter {
+            private Filtered() {
+                super(TagFamily.this);
             }
 
             @Override
-            public String label() {
-                return label;
+            public List<? extends Tag> tags() {
+                return filtered;
             }
-        };
+        }
+        return new Filtered();
     }
 }

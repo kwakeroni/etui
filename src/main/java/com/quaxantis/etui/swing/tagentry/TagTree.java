@@ -156,7 +156,7 @@ class TagTree extends JTree {
         }
 
         private List<TagFamily> filterFamilies(List<TagFamily> families, boolean removeReadOnlyTags) {
-            if (! removeReadOnlyTags) {
+            if (!removeReadOnlyTags) {
                 return families;
             }
 
@@ -167,8 +167,7 @@ class TagTree extends JTree {
         }
 
         private TagFamily removeReadOnlyTags(TagFamily tagFamily) {
-            var writableTags = tagFamily.tags().stream().filter(not(TagDescriptor::isReadOnly)).toList();
-            return TagFamily.of(tagFamily.label(), writableTags);
+            return tagFamily.filter(not(TagDescriptor::isReadOnly));
         }
 
         private List<?> getChildren(Object parent) {

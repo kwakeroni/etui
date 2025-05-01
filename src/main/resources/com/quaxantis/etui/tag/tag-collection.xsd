@@ -10,7 +10,7 @@
             <xs:element name="homePage" type="xs:string" minOccurs="0"/>
             <xs:element name="reference" type="xs:string" minOccurs="0"/>
             <xs:element name="description" type="xs:string" minOccurs="0"/>
-            <xs:element name="tags" type="Tags"/>
+            <xs:element name="tags" type="Tags" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="group" type="xs:string" use="required"/>
