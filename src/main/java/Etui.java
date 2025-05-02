@@ -8,6 +8,10 @@ import com.quaxantis.etui.application.EtuiApplication;
 import java.io.File;
 import java.nio.file.Path;
 
+// TODO: duplicate tag -> edit window
+// TODO: XMP & XMP-MM tags |- metadatadate
+// TODO: DC Format mimetypes
+// TODO: "now pattern" for time fields
 public final class Etui {
 
     @Parameter(description = "File to open", converter = FileConverter.class)

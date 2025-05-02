@@ -1,11 +1,16 @@
 package com.quaxantis.etui.swing.table;
 
+import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.TagSet;
 import com.quaxantis.etui.TagValue;
 import com.quaxantis.etui.application.config.Configuration;
 import com.quaxantis.etui.swing.menu.ActionBuilder;
 import com.quaxantis.etui.swing.tagentry.TagEntryUI;
 import com.quaxantis.etui.tag.TagRepository;
+import com.quaxantis.support.swing.util.SwingDebugUtils;
+import com.quaxantis.support.swing.util.TransferHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -13,6 +18,8 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.Frame;
 import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -31,6 +38,7 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 class TagTable extends JTable {
     private static final String POPUP_CELL = TagTableUI.class.getName() + "::POPUP_CELL";
+    private static final Logger log = LoggerFactory.getLogger(TagTable.class);
 
     private final Actions actions;
 
@@ -60,8 +68,9 @@ class TagTable extends JTable {
         setDefaultRenderer(String.class, new TagTableCellRenderer());
         setFillsViewportHeight(true);
         setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         setSurrendersFocusOnKeystroke(true);
+        setTransferHandler(new TagTransferHandler(super.getTransferHandler()));
         this.actions = new Actions(tagRepository);
 
     }
@@ -91,6 +100,11 @@ class TagTable extends JTable {
 
     public Actions actions() {
         return this.actions;
+    }
+
+    @Override
+    public TagTransferHandler getTransferHandler() {
+        return (TagTransferHandler) super.getTransferHandler();
     }
 
     @Override
@@ -219,12 +233,85 @@ class TagTable extends JTable {
     record Cell(int row, Column column, EditableTagValue tag) {
     }
 
+    private static class TagTransferHandler extends TransferHandlerAdapter {
+        enum PasteMode {
+            ADD,
+            MERGE
+        }
+
+        private TagTransferHandler(TransferHandler delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public boolean canImport(TransferSupport support) {
+            return support.getComponent() instanceof TagTable
+                   && support.getTransferable().isDataFlavorSupported(DataFlavor.stringFlavor);
+        }
+
+        @Override
+        public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+            if (comp instanceof TagTable) {
+                for (DataFlavor flavor : transferFlavors) {
+                    if (DataFlavor.stringFlavor.equals(flavor)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean importData(TransferSupport support) {
+            return support.getComponent() instanceof TagTable tagTable
+                   && importData(PasteMode.ADD, tagTable, support.getTransferable());
+        }
+
+        @Override
+        public boolean importData(JComponent comp, Transferable t) {
+            return comp instanceof TagTable tagTable
+                   && importData(PasteMode.ADD, tagTable, t);
+        }
+
+        public boolean importData(PasteMode pasteMode, TagTable tagTable, Transferable transferable) {
+            try {
+                if (canImport(tagTable, transferable.getTransferDataFlavors())) {
+                    TagSet tags = String.valueOf(transferable.getTransferData(DataFlavor.stringFlavor))
+                            .lines()
+                            .map(this::toTag)
+                            .collect(TagSet.toTagSet());
+
+                    switch (pasteMode) {
+                        case ADD -> tags.forEach(tagTable::addTag);
+                        case MERGE -> tagTable.mergeTags(tags);
+                    }
+
+                    return true;
+                }
+            } catch (Exception exc) {
+                log.error("Unable to paste data: {}", exc.toString());
+            }
+            return false;
+        }
+
+        private TagValue toTag(String pasteLine) {
+            String[] parts = pasteLine.split("\\t", -1);
+            if (parts.length != 3) {
+                throw new IllegalArgumentException("Unexpected text format does not match table: \"%s\"".formatted(pasteLine.replaceAll("\\t", "\\\\t")));
+            }
+            return TagValue.of(Tag.of(parts[0], parts[1]), parts[2]);
+        }
+    }
+
     public class Actions {
         private final Action addTag;
         private final Action editTagValue;
         private final Action editTagWithDialog;
         private final Action resetTag;
         private final Action deleteTag;
+        private final Action copyTags;
+        private final Action pasteTags;
+        private final Action pasteMergeTags;
 
         public Actions(TagRepository tagRepository) {
             disablePressedKeys(0, KeyEvent.VK_INSERT, KeyEvent.VK_ENTER, KeyEvent.VK_BACK_SPACE, KeyEvent.VK_DELETE);
@@ -297,6 +384,39 @@ class TagTable extends JTable {
                                     () -> table.deleteTag(cell.row())))
                     );
 
+            this.copyTags = ActionBuilder.withName("Copy tag(s)")
+                    .withMnemonic('c')
+                    .withAccelerator(getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK, true))
+                    .enabledIf(() -> table.getSelectedRows().length > 0, table::addCellSelectionListener)
+                    .withAction(e -> TransferHandler.getCopyAction().actionPerformed(
+                            new ActionEvent(table, e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers())
+                    ));
+
+            this.pasteTags = ActionBuilder.withName("Paste as new tag(s)")
+                    .withMnemonic('p')
+                    .withAccelerator(getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK, true))
+                    .enabledIf(() -> table.getTransferHandler().canImport(table, table.getToolkit().getSystemClipboard().getAvailableDataFlavors()))
+                    .withAction(e -> TransferHandler.getPasteAction().actionPerformed(
+                            new ActionEvent(table, e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers())
+                    ));
+
+            this.pasteMergeTags = ActionBuilder.withName("Paste as merged tag(s)")
+                    .withMnemonic('p')
+                    .withAccelerator(getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK, true))
+                    .bindTo(table, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                    .enabledIf(() -> table.getTransferHandler().canImport(table, table.getToolkit().getSystemClipboard().getAvailableDataFlavors()))
+                    .withAction(e -> {
+                        Transferable transferable = table.getToolkit().getSystemClipboard().getContents(null);
+                        table.getTransferHandler().importData(TagTransferHandler.PasteMode.MERGE, table, transferable);
+                    });
+
+            ActionBuilder.withName("info")
+                    .withAccelerator(getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK, true))
+                    .bindTo(table, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                    .withAction(e -> {
+                        System.out.println("Table Keys");
+                        SwingDebugUtils.getKeyMappings(table).forEach(System.out::println);
+                    });
         }
 
         private BooleanSupplier activeCell(Predicate<Cell> predicate) {
@@ -341,6 +461,18 @@ class TagTable extends JTable {
 
         public Action deleteTag() {
             return deleteTag;
+        }
+
+        public Action copyTags() {
+            return copyTags;
+        }
+
+        public Action pasteTags() {
+            return pasteTags;
+        }
+
+        public Action pasteMergeTags() {
+            return pasteMergeTags;
         }
     }
 }

@@ -2,10 +2,14 @@ package com.quaxantis.etui.swing.table;
 
 import com.quaxantis.etui.TagSet;
 import com.quaxantis.etui.application.config.Configuration;
+import com.quaxantis.etui.swing.menu.ActionBuilder;
 import com.quaxantis.etui.tag.TagRepository;
 import com.quaxantis.support.swing.Dimensions;
 
-import javax.swing.*;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -92,12 +96,18 @@ public class TagTableUI {
         menu.addSeparator();
         menu.add(new JMenuItem(table.actions().resetTag()));
         menu.add(new JMenuItem(table.actions().deleteTag()));
+        menu.addSeparator();
+        menu.add(new JMenuItem(table.actions().copyTags()));
+        menu.add(new JMenuItem(table.actions().pasteTags()));
+        menu.add(new JMenuItem(table.actions().pasteMergeTags()));
 
         menu.addPopupMenuListener(onPopupMenuCanceled(e -> table.popCellForPopup()));
         menu.addPopupMenuListener(onPopupMenuWillBecomeVisible(e -> {
             for (var component : menu.getComponents()) {
                 if (component instanceof TagActionMenuItem tagAction) {
                     tagAction.updateEnabled();
+                } else if (component instanceof JMenuItem menuItem && menuItem.getAction() instanceof ActionBuilder action) {
+                    action.updateEnabled();
                 }
             }
         }));
