@@ -19,11 +19,11 @@ record RangeFlex(IntRange start, IntRange end, int minLength) {
     }
 
     RangeFlex(int leftFrom, int leftToIncl, int rightFrom, int rightToIncl) {
-        this(new IntRange(leftFrom, leftToIncl + 1), new IntRange(rightFrom, rightToIncl + 1));
+        this(IntRange.ofClosed(leftFrom, leftToIncl), IntRange.ofClosed(rightFrom, rightToIncl));
     }
 
     public boolean contains(int i) {
-        return i >= start.from() && i < end.to();
+        return i >= start.from() && i < end.exclusiveTo();
     }
 
     public RangeFlex withMinLength(int minLength) {
@@ -47,14 +47,14 @@ record RangeFlex(IntRange start, IntRange end, int minLength) {
     }
 
     private static Optional<RuntimeException> validateConcat(RangeFlex left, RangeFlex right) {
-        int leftMaxEnd = left.end().to() - 1;
+        int leftMaxEnd = left.end().to();
         int rightMinStart = right.start().from();
         if (leftMaxEnd < rightMinStart - 1) {
             // the right flex must start at the very latest just after the left flex ends
             // or: if the highest rightmost value of the left flex is smaller than the smallest leftmost value of the right flex (by at least 1), then there is a gap
             return Optional.of(new IllegalArgumentException("Cannot concatenate flexes %s and %s: gap at [%s - %s]".formatted(left, right, leftMaxEnd + 1, rightMinStart - 1)));
         }
-        int rightMaxStart = right.start().to() - 1;
+        int rightMaxStart = right.start().to();
         int leftMinEnd = left.end().from();
         if (rightMaxStart <= leftMinEnd) {
             // the right flex cannot start before the left flex ends
@@ -66,8 +66,8 @@ record RangeFlex(IntRange start, IntRange end, int minLength) {
 
     @Override
     public String toString() {
-        String leftString = start.from() + ((start.from() == start.to() - 1) ? "" : ".." + (start.to() - 1));
-        String rightString = end.from() + ((end.from() == end.to() - 1) ? "" : ".." + (end.to() - 1));
+        String leftString = start.from() + ((start.from() == start.to()) ? "" : ".." + start.to());
+        String rightString = end.from() + ((end.from() == end.to()) ? "" : ".." + end.to());
         return "[" + leftString + " - " + rightString + "]";
     }
 }

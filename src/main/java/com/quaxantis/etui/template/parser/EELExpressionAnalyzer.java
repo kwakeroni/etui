@@ -84,7 +84,7 @@ public class EELExpressionAnalyzer {
         }
 
         static Match anyPartOf(String string) {
-            IntRange fullRange = new IntRange(0, string.length());
+            IntRange fullRange = IntRange.of(0, string.length());
             return new FlexMatch(fullRange, fullRange);
         }
 
@@ -93,7 +93,7 @@ public class EELExpressionAnalyzer {
         }
 
         static Match exactMatch(int start, int end) {
-            return new FlexMatch(new IntRange(start, start + 1), new IntRange(end, end + 1));
+            return new FlexMatch(IntRange.ofClosed(start, start), IntRange.ofClosed(end, end));
         }
 
         record NoMatch() implements Match {

@@ -119,12 +119,12 @@ class EELExpressionAnalyzerTest {
         assertThat(match).isInstanceOf(Match.FlexMatch.class);
         RangeFlex flex = ((Match.FlexMatch) match).flex();
 
-        String prefix = string.substring(flex.start().from(), flex.start().to());
+        String prefix = string.substring(flex.start().from(), flex.start().exclusiveTo());
         prefix = (prefix.length() < 2) ? prefix : '[' + prefix + ']';
 
-        String main = (flex.start().to() > flex.end().from()) ? "" : string.substring(flex.start().to(), flex.end().from());
+        String main = (flex.start().exclusiveTo() > flex.end().from()) ? "" : string.substring(flex.start().exclusiveTo(), flex.end().from());
 
-        String suffix = string.substring(flex.end().from(), flex.end().to());
+        String suffix = string.substring(flex.end().from(), flex.end().exclusiveTo());
         suffix = (suffix.length() < 2) ? suffix : '[' + suffix + ']';
 
         return prefix + main + suffix;

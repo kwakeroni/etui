@@ -16,26 +16,48 @@ class IntRangeTest {
         @Test
         @DisplayName("from an int to an int")
         void newIntRange() {
-            IntRange range = new IntRange(7, 18);
+            IntRange range = IntRange.ofClosed(7, 17);
             assertThat(range.from()).isEqualTo(7);
-            assertThat(range.to()).isEqualTo(18);
+            assertThat(range.to()).isEqualTo(17);
+            assertThat(range.exclusiveTo()).isEqualTo(18);
+            assertThat(range.isEmpty()).isFalse();
         }
-
 
         @Test
         @DisplayName("that is empty")
         void newIntRangeEmpty() {
-            IntRange range = new IntRange(18, 18);
+            IntRange range = IntRange.ofClosed(18, 17);
             assertThat(range.from()).isEqualTo(18);
-            assertThat(range.to()).isEqualTo(18);
+            assertThat(range.to()).isEqualTo(17);
+            assertThat(range.exclusiveTo()).isEqualTo(18);
+            assertThat(range.isEmpty()).isTrue();
         }
 
         @Test
         @DisplayName("throws when from > to")
         void newIntRangeWithFromGreaterThanTo() {
-            assertThatThrownBy(() -> new IntRange(18, 7))
+            assertThatThrownBy(() -> IntRange.of(18, 7))
                     .isInstanceOf(IllegalArgumentException.class);
         }
+
+        @Test
+        @DisplayName("using IntRange.of")
+        void of() {
+            IntRange range = IntRange.ofClosed(7, 17);
+            assertThat(range.from()).isEqualTo(7);
+            assertThat(range.to()).isEqualTo(17);
+            assertThat(range.exclusiveTo()).isEqualTo(18);
+        }
+
+        @Test
+        @DisplayName("using IntRange.ofClosed")
+        void ofClosed() {
+            IntRange range = IntRange.ofClosed(7, 18);
+            assertThat(range.from()).isEqualTo(7);
+            assertThat(range.to()).isEqualTo(18);
+            assertThat(range.exclusiveTo()).isEqualTo(19);
+        }
+
     }
 
     @Nested
@@ -45,43 +67,43 @@ class IntRangeTest {
         @Test
         @DisplayName("without change if there is no overlap")
         void noChangeWithoutOverlap() {
-            IntRange truncated = new IntRange(7, 18).truncateRight(new IntRange(20, 25));
-            assertThat(truncated).isEqualTo(new IntRange(7, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateRight(IntRange.of(20, 25));
+            assertThat(truncated).isEqualTo(IntRange.ofClosed(7, 17));
         }
 
         @Test
         @DisplayName("moving the end to the left if there is an overlap")
         void movingEndToLeft() {
-            IntRange truncated = new IntRange(7, 18).truncateRight(new IntRange(15, 25));
-            assertThat(truncated).isEqualTo(new IntRange(7, 15));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateRight(IntRange.of(15, 25));
+            assertThat(truncated).isEqualTo(IntRange.of(7, 15));
         }
 
         @Test
         @DisplayName("collapsing to empty range if overlap is complete")
         void toEmptyRange() {
-            IntRange truncated = new IntRange(7, 18).truncateRight(new IntRange(4, 25));
-            assertThat(truncated).isEqualTo(new IntRange(7, 7));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateRight(IntRange.of(4, 25));
+            assertThat(truncated).isEqualTo(IntRange.of(7, 7));
         }
 
         @Test
         @DisplayName("with a remaining overlap when requested")
         void withRemainingOverlap() {
-            IntRange truncated = new IntRange(7, 18).truncateRight(new IntRange(15, 25), 2);
-            assertThat(truncated).isEqualTo(new IntRange(7, 17));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateRight(IntRange.of(15, 25), 2);
+            assertThat(truncated).isEqualTo(IntRange.of(7, 17));
         }
 
         @Test
         @DisplayName("with a partial remaining overlap when requested")
         void withPartialRemainingOverlap() {
-            IntRange truncated = new IntRange(7, 18).truncateRight(new IntRange(10, 25), 10);
-            assertThat(truncated).isEqualTo(new IntRange(7, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateRight(IntRange.of(10, 25), 10);
+            assertThat(truncated).isEqualTo(IntRange.ofClosed(7, 17));
         }
 
         @Test
         @DisplayName("with a no remaining overlap if there is no overlap")
         void withNoRemainingOverlapIfNoOverlap() {
-            IntRange truncated = new IntRange(7, 18).truncateRight(new IntRange(18, 25), 2);
-            assertThat(truncated).isEqualTo(new IntRange(7, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateRight(IntRange.of(18, 25), 2);
+            assertThat(truncated).isEqualTo(IntRange.ofClosed(7, 17));
         }
 
         @Test
@@ -92,8 +114,8 @@ class IntRangeTest {
             // Or we consider it in the truncating range, in which case it concerns (4, 6(
             // and the result is still empty.
             // For new we choose the latter option.
-            IntRange truncated = new IntRange(7, 18).truncateRight(new IntRange(4, 25), 2);
-            assertThat(truncated).isEqualTo(new IntRange(7, 7));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateRight(IntRange.ofClosed(4, 24), 2);
+            assertThat(truncated).isEqualTo(IntRange.of(7, 7));
         }
     }
 
@@ -104,45 +126,45 @@ class IntRangeTest {
         @Test
         @DisplayName("without change if there is no overlap")
         void noChangeWithoutOverlap() {
-            IntRange truncated = new IntRange(7, 18).truncateLeft(new IntRange(2, 7));
-            assertThat(truncated).isEqualTo(new IntRange(7, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateLeft(IntRange.ofClosed(2, 6));
+            assertThat(truncated).isEqualTo(IntRange.ofClosed(7, 17));
         }
 
         @Test
         @DisplayName("moving the start to the right if there is an overlap")
         void movingEndToLeft() {
-            IntRange truncated = new IntRange(7, 18).truncateLeft(new IntRange(2, 9));
-            assertThat(truncated).isEqualTo(new IntRange(9, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateLeft(IntRange.ofClosed(2, 8));
+            assertThat(truncated).isEqualTo(IntRange.ofClosed(9, 17));
         }
 
 
         @Test
         @DisplayName("collapsing to empty range if overlap is complete")
         void toEmptyRange() {
-            IntRange truncated = new IntRange(7, 18).truncateLeft(new IntRange(2, 25));
-            assertThat(truncated).isEqualTo(new IntRange(18, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateLeft(IntRange.ofClosed(2, 24));
+            assertThat(truncated).isEqualTo(IntRange.of(18, 18));
         }
 
 
         @Test
         @DisplayName("with a remaining overlap when requested")
         void withRemainingOverlap() {
-            IntRange truncated = new IntRange(7, 18).truncateLeft(new IntRange(2, 12), 2);
-            assertThat(truncated).isEqualTo(new IntRange(10, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateLeft(IntRange.ofClosed(2, 11), 2);
+            assertThat(truncated).isEqualTo(IntRange.ofClosed(10, 17));
         }
 
         @Test
         @DisplayName("with a partial remaining overlap when requested")
         void withPartialRemainingOverlap() {
-            IntRange truncated = new IntRange(7, 18).truncateLeft(new IntRange(2, 15), 10);
-            assertThat(truncated).isEqualTo(new IntRange(7, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateLeft(IntRange.ofClosed(2, 14), 10);
+            assertThat(truncated).isEqualTo(IntRange.ofClosed(7, 17));
         }
 
         @Test
         @DisplayName("with a no remaining overlap if there is no overlap")
         void withNoRemainingOverlapIfNoOverlap() {
-            IntRange truncated = new IntRange(7, 18).truncateLeft(new IntRange(2, 7), 2);
-            assertThat(truncated).isEqualTo(new IntRange(7, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateLeft(IntRange.ofClosed(2, 6), 2);
+            assertThat(truncated).isEqualTo(IntRange.ofClosed(7, 17));
         }
 
         @Test
@@ -153,8 +175,8 @@ class IntRangeTest {
             // Or we consider it in the truncating range, in which case it concerns (23, 25(
             // and the result is still empty.
             // For new we choose the latter option.
-            IntRange truncated = new IntRange(7, 18).truncateLeft(new IntRange(2, 25), 2);
-            assertThat(truncated).isEqualTo(new IntRange(18, 18));
+            IntRange truncated = IntRange.ofClosed(7, 17).truncateLeft(IntRange.ofClosed(2, 24), 2);
+            assertThat(truncated).isEqualTo(IntRange.ofClosed(18, 17));
         }
     }
 }
