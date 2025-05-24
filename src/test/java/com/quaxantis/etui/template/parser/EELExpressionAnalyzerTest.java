@@ -8,7 +8,6 @@ import com.quaxantis.etui.template.parser.Expression.Elvis;
 import com.quaxantis.etui.template.parser.Expression.Identifier;
 import com.quaxantis.etui.template.parser.Expression.OptSuffix;
 import com.quaxantis.etui.template.parser.Expression.Text;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -201,25 +200,24 @@ class EELExpressionAnalyzerTest {
         }
 
 
-        @Disabled
         @Test
         @DisplayName("providing a match for an identifier with a literal suffix")
         void matchIdentifierWithLiteralSuffix() {
             var optSuffix = new OptSuffix(new Identifier("var1"), new Text(". with suffix"));
             var match = analyzer.match(optSuffix, "my test value. with suffix");
             // TODO: add knowledge that left side cannot be empty for optsuffix
-//            assertThat(match).as(match.toString()).returns("[my test value]. with suffix", whenAppliedTo("my test value. with suffix"));
-            assertThat(match).as(match.toString()).returns("[my test valu]e. with suffix", whenAppliedTo("my test value. with suffix"));
+            assertThat(match).as(match.toString()).returns("[my test value]. with suffix", whenAppliedTo("my test value. with suffix"));
+//            assertThat(match).as(match.toString()).returns("[my test valu]e. with suffix", whenAppliedTo("my test value. with suffix"));
         }
 
-        @Disabled
         @Test
         @DisplayName("no match for an empty identifier with a literal suffix")
         void nomatchForEmptyIdentifierWithLiteralSuffix() {
             var optSuffix = new OptSuffix(new Identifier("var1"), new Text(". with suffix"));
             var match = analyzer.match(optSuffix, ". with suffix");
             // TODO: add knowledge that left side cannot be empty for optsuffix
-            assertThat(match).as(match.toString()).returns(". with suffix", whenAppliedTo("my test value. with suffix"));
+            assertThat(match).isInstanceOf(NoMatch.class);
+//            assertThat(match).as(match.toString()).returns(". with suffix", whenAppliedTo(". with suffix"));
 //            assertThat(match).as(match.toString()).returns("[my test valu]e. with suffix", whenAppliedTo("my test value. with suffix"));
         }
 

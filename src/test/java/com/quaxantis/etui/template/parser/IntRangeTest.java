@@ -179,4 +179,10 @@ class IntRangeTest {
             assertThat(truncated).isEqualTo(IntRange.ofClosed(18, 17));
         }
     }
+
+    @Nested
+    @DisplayName("Can clamp the right side")
+    class ClampRight {
+
+    }
 }

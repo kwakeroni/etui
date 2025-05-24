@@ -2,6 +2,7 @@ package com.quaxantis.etui.template.parser;
 
 import com.quaxantis.etui.template.parser.EELExpressionAnalyzer.Match.FlexMatch;
 import com.quaxantis.etui.template.parser.EELExpressionAnalyzer.Match.NoMatch;
+import com.quaxantis.support.util.Result;
 
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +44,9 @@ public class EELExpressionAnalyzer {
     }
 
     private Match matchIdentifier(Expression.Identifier identifier, String resolvedExpression) {
-        return Match.anyPartOf(resolvedExpression);
+        IntRange fullRange = IntRange.of(0, resolvedExpression.length());
+        RangeFlex flex = RangeFlex.of(fullRange, fullRange).withMinLength(0);
+        return new FlexMatch(flex);
     }
 
     private Match matchText(Expression.Text textExpr, String string) {
@@ -51,13 +54,15 @@ public class EELExpressionAnalyzer {
         Objects.requireNonNull(string);
         String text = textExpr.literal();
         if (string.equals(text)) {
-            return Match.exactMatch(string);
+            int end = string.length() - 1;
+            return new FlexMatch(RangeFlex.ofFixed(0, end).withMinLength(end - 0 + 1));
         } else {
             int index = string.indexOf(text);
             if (index < 0) {
                 return new NoMatch();
             } else {
-                return Match.exactMatch(index, index + text.length() - 1);
+                int end = index + text.length() - 1;
+                return new FlexMatch(RangeFlex.ofFixed(index, end).withMinLength(end - index + 1));
             }
         }
     }
@@ -68,8 +73,10 @@ public class EELExpressionAnalyzer {
 
         if (leftMatch instanceof FlexMatch(var leftFlex)
             && rightMatch instanceof FlexMatch(var rightFlex)
-            && RangeFlex.canConcat(leftFlex, rightFlex)) {
-            return new FlexMatch(RangeFlex.concat(leftFlex/*.withMinLength(1)*/, rightFlex));
+            && RangeFlex.tryConcat(leftFlex.withMinLength(1), rightFlex) instanceof Result.Success(
+                var concatRangeFlex
+        )) {
+            return new FlexMatch(concatRangeFlex);
         } else {
             return Match.noMatch();
         }
@@ -83,26 +90,12 @@ public class EELExpressionAnalyzer {
             return NO_MATCH;
         }
 
-        static Match anyPartOf(String string) {
-            IntRange fullRange = IntRange.of(0, string.length());
-            return new FlexMatch(fullRange, fullRange);
-        }
-
-        static Match exactMatch(String string) {
-            return exactMatch(0, string.length() - 1);
-        }
-
-        static Match exactMatch(int start, int end) {
-            return new FlexMatch(IntRange.ofClosed(start, start), IntRange.ofClosed(end, end));
-        }
 
         record NoMatch() implements Match {
         }
 
         record FlexMatch(RangeFlex flex) implements Match {
-            FlexMatch(IntRange start, IntRange end) {
-                this(new RangeFlex(start, end));
-            }
+
         }
     }
 

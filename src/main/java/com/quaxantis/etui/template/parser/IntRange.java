@@ -28,6 +28,10 @@ record IntRange(int from, int exclusiveTo) {
         return from == exclusiveTo;
     }
 
+    public int length() {
+        return exclusiveTo - from;
+    }
+
     public IntRange trimLeft(int remove) {
         return new IntRange(from + remove, exclusiveTo);
     }
@@ -45,6 +49,11 @@ record IntRange(int from, int exclusiveTo) {
         return new IntRange(truncFrom, exclusiveTo);
     }
 
+    public IntRange limitLeft(int from) {
+        int limitFrom = Math.max(this.from, from);
+        return new IntRange(limitFrom, exclusiveTo);
+    }
+
     public IntRange truncateRight(IntRange onRight) {
         return truncateRight(onRight, 0);
     }
@@ -52,6 +61,15 @@ record IntRange(int from, int exclusiveTo) {
     public IntRange truncateRight(IntRange onRight, int overlap) {
         int truncTo = Math.max(this.from, Math.min(this.exclusiveTo, onRight.from + overlap));
         return new IntRange(from, truncTo);
+    }
+
+    public IntRange limitRight(int to) {
+        return limitRightExclusive(to + 1);
+    }
+
+    public IntRange limitRightExclusive(int toExclusive) {
+        int limitTo = Math.min(this.exclusiveTo, toExclusive);
+        return new IntRange(from, limitTo);
     }
 
     @Override
