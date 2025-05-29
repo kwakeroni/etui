@@ -25,7 +25,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 10)).allMatch(flex::contains);
             assertThat(IntStream.rangeClosed(6, 12)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123{[456]789[012]}3456789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(3, 9));
             assertThat(flex.toString()).isEqualTo("{[ 4- 6]  7- 9 [10-12]}");
@@ -34,17 +34,47 @@ class RangeFlexTest {
         @Test
         @DisplayName("between two flexible points that may overlap")
         void newRangeFlexWhenOverlap() {
-            // [4..9]-[7..11] -> [4-7]..[9-12]]
+            // [4..9]-[7..12] -> [4-7]..[9-12]]
             var flex = RangeFlex.of(4, 9, 7, 12);
 
             assertThat(IntStream.rangeClosed(4, 7)).allMatch(flex::contains);
             assertThat(IntStream.rangeClosed(9, 11)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123{[456[789]012]}3456789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(-3, 9));
             assertThat(flex.toString()).isEqualTo("{[ 4- 9]       [ 7-12]}");
         }
+
+        @Test
+        @DisplayName("between two flexible points where suffix is contained in prefix")
+        void newRangeFlexWhenSuffixInPrefix() {
+            // [4..12]-[7..9] -> [4-9]
+            var flex = RangeFlex.of(4, 12, 7, 9);
+
+            assertThat(IntStream.rangeClosed(4, 9)).allMatch(flex::contains);
+            assertThat(IntStream.of(3, 10)).noneMatch(flex::contains);
+            assertThat(apply(flex, "01234567890123456789"))
+                    .isEqualTo("0123{[456[789]}012]3456789");
+            assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(-6, 6));
+            assertThat(flex.toString()).isEqualTo("{[ 4-12]       [ 7- 9]}");
+        }
+
+
+        @Test
+        @DisplayName("between two flexible points where prefix is contained in suffix")
+        void newRangeFlexWhenPrefixInSuffix() {
+            // [7..9]-[4..12] -> [7-12]]
+            var flex = RangeFlex.of(7, 9, 4, 12);
+
+            assertThat(IntStream.rangeClosed(7, 12)).allMatch(flex::contains);
+            assertThat(IntStream.of(6, 13)).noneMatch(flex::contains);
+            assertThat(apply(flex, "01234567890123456789"))
+                    .isEqualTo("0123[456{[789]012]}3456789");
+            assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(-6, 6));
+            assertThat(flex.toString()).isEqualTo("{[ 7- 9]       [ 4-12]}");
+        }
+
 
         @Test
         @DisplayName("between two single affixes")
@@ -54,7 +84,7 @@ class RangeFlexTest {
 
             assertThat(IntStream.rangeClosed(4, 12)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123{[4]5678901[2]}3456789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(7, 9));
             assertThat(flex.toString()).isEqualTo("{[    4]  5-11 [   12]}");
@@ -68,7 +98,7 @@ class RangeFlexTest {
 
             assertThat(IntStream.rangeClosed(4, 12)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123{[]456789012[]}3456789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(9, 9));
             assertThat(flex.toString()).isEqualTo("{[     ]  4-12 [     ]}");
@@ -82,7 +112,7 @@ class RangeFlexTest {
 
             assertThat(IntStream.rangeClosed(4, 12)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123{[]456[789012]}3456789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(3, 9));
             assertThat(flex.toString()).isEqualTo("{[     ]  4- 6 [ 7-12]}");
@@ -96,7 +126,7 @@ class RangeFlexTest {
 
             assertThat(IntStream.rangeClosed(4, 12)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123{[4567]89012[]}3456789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(5, 9));
             assertThat(flex.toString()).isEqualTo("{[ 4- 7]  8-12 [     ]}");
@@ -110,7 +140,7 @@ class RangeFlexTest {
 
             assertThat(IntStream.rangeClosed(4, 5)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 6)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("0123456789"))
+            assertThat(apply(flex, "0123456789"))
                     .isEqualTo("0123{[4][5]}6789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(0, 2));
             assertThat(flex.toString()).isEqualTo("{[  4]     [  5]}");
@@ -124,7 +154,7 @@ class RangeFlexTest {
 
             assertThat(IntStream.rangeClosed(4, 5)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 6)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("0123456789"))
+            assertThat(apply(flex, "0123456789"))
                     .isEqualTo("0123{[]45[]}6789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(2, 2));
             assertThat(flex.toString()).isEqualTo("{[   ] 4-5 [   ]}");
@@ -138,7 +168,7 @@ class RangeFlexTest {
 
             assertThat(IntStream.of(4)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 5)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("0123456789"))
+            assertThat(apply(flex, "0123456789"))
                     .isEqualTo("0123{[[4]]}56789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(-1, 1));
             assertThat(flex.toString()).isEqualTo("{[  4]     [  4]}");
@@ -152,7 +182,7 @@ class RangeFlexTest {
 
             assertThat(IntStream.of(4)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 5)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("0123456789"))
+            assertThat(apply(flex, "0123456789"))
                     .isEqualTo("0123{[]4[]}56789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(1, 1));
             assertThat(flex.toString()).isEqualTo("{[   ]   4 [   ]}");
@@ -162,13 +192,13 @@ class RangeFlexTest {
         @Test
         @DisplayName("between two flexible points with negative overlap")
         void newRangeFlexWhenNegativeOverlap() {
-            // [7..12]-[4..7] -> [10]
+            // [7..12]-[4..7] -> [7]
             RangeFlex flex = RangeFlex.of(7, 12, 4, 7);
 
             assertThat(IntStream.rangeClosed(0, 6)).noneMatch(flex::contains);
             assertThat(IntStream.of(7)).allMatch(flex::contains);
             assertThat(IntStream.rangeClosed(8, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123[456{[7]}89012]3456789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(-9, 1));
             assertThat(flex.toString()).isEqualTo("{[ 7-12]       [ 4- 7]}");
@@ -176,11 +206,22 @@ class RangeFlexTest {
 
         @Test
         @DisplayName("that is empty")
-        void newRangeFlexWhenEmpty() {
+        void newEmptyRangeFlex() {
+            RangeFlex flex = RangeFlex.empty();
+            assertThat(IntStream.rangeClosed(0, 13)).noneMatch(flex::contains);
+            assertThat(apply(flex, "01234567890123456789"))
+                    .isEqualTo("{[][]}01234567890123456789");
+            assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(0, 0));
+            assertThat(flex.toString()).isEqualTo("{[][]}");
+        }
+
+        @Test
+        @DisplayName("that is empty when left comes after right")
+        void newRangeFlexIsEmptyWhenLeftIsAfterRight() {
             // [7..12]-[4..6] -> []
             RangeFlex flex = RangeFlex.of(7, 12, 4, 6);
             assertThat(IntStream.rangeClosed(0, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123[456]}{[789012]3456789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(-9, 0));
             assertThat(flex.toString()).isEqualTo("{[ 7-12]       [ 4- 6]}");
@@ -188,12 +229,12 @@ class RangeFlexTest {
 
 
         @Test
-        @DisplayName("that is empty when left is strictly greater than right")
-        void newRangeFlexIsEmptyWhenLeftIsGreaterThanRight() {
+        @DisplayName("that is empty when left comes after right with a gap")
+        void newRangeFlexIsEmptyWhenLeftIsAfterRightWithGap() {
             // [10..12]-[4-6]
             RangeFlex flex = RangeFlex.of(10, 12, 4, 6);
             assertThat(IntStream.rangeClosed(0, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123[456]}789{[012]3456789");
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(-9, -3));
             assertThat(flex.toString()).isEqualTo("{[10-12]       [ 4- 6]}");
@@ -208,7 +249,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 10)).allMatch(flex::contains);
             assertThat(IntStream.rangeClosed(6, 12)).allMatch(flex::contains);
             assertThat(IntStream.of(3, 13)).noneMatch(flex::contains);
-            assertThat(flex.applyTo("01234567890123456789"))
+            assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123{[456]789[012]}3456789");
             assertThat(flex.minLength()).isEqualTo(9);
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(9, 9));
@@ -265,7 +306,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 18)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(6, 20)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 21)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("012345678901234567890123456789"))
+            assertThat(apply(concat, "012345678901234567890123456789"))
                     .isEqualTo("0123{[456]78901234567[890]}123456789");
 
         }
@@ -286,7 +327,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 19)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(6, 21)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 22)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("012345678901234567890123456789"))
+            assertThat(apply(concat, "012345678901234567890123456789"))
                     .isEqualTo("0123{[456]789012345678[901]}23456789");
 
         }
@@ -322,7 +363,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 15)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(6, 17)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 18)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456]78901234[567]}89");
 
         }
@@ -343,7 +384,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 13)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(6, 15)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 16)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456]789012[345]}6789");
         }
 
@@ -379,7 +420,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 14)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(9, 16)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 17)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456789]0123[456]}789");
         }
 
@@ -399,7 +440,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 11)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(7, 13)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 14)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[4567]890[123]}456789");
         }
 
@@ -420,7 +461,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 7)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(4, 9)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 10)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[]456[789]}0123456789");
         }
 
@@ -441,7 +482,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 7)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(4, 8)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 9)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[]456[78]}90123456789");
         }
 
@@ -478,7 +519,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 11)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(6, 16)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 17)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456]7890[123456]}789");
         }
 
@@ -498,7 +539,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(7, 13)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(9, 16)).allMatch(concat::contains);
             assertThat(IntStream.of(6, 17)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123456{[789]012[3456]}789");
         }
 
@@ -519,7 +560,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(11, 16)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(13, 16)).allMatch(concat::contains);
             assertThat(IntStream.of(10, 17)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("01234567890{[123]456[]}789");
         }
 
@@ -540,7 +581,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(11, 16)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(13, 16)).allMatch(concat::contains);
             assertThat(IntStream.of(10, 17)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("01234567890{[123]456[]}789");
         }
 
@@ -575,7 +616,7 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 10)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(6, 14)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 15)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("012345678901234567890"))
+            assertThat(apply(concat, "012345678901234567890"))
                     .isEqualTo("0123{[456]78901[234]}567890");
         }
 
@@ -631,13 +672,13 @@ class RangeFlexTest {
             assertThat(IntStream.rangeClosed(4, 13)).allMatch(concat::contains);
             assertThat(IntStream.rangeClosed(6, 15)).allMatch(concat::contains);
             assertThat(IntStream.of(3, 16)).noneMatch(concat::contains);
-            assertThat(concat.applyTo("01234567890123456789"))
+            assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456]789012[345]}6789");
             assertThat(concat.lengthRange()).isEqualTo(IntRange.ofClosed(10, 12));
         }
 
         @Test
-        @DisplayName("with left length too small")
+        @DisplayName("throws when left length too small")
         void concatThrowsWhenLeftLengthIsTooSmall() {
             // [4..6  -  10...12]
             //     [7..9    -   13..15]
@@ -653,7 +694,7 @@ class RangeFlexTest {
         }
 
         @Test
-        @DisplayName("with right length too small")
+        @DisplayName("throws when right length too small")
         void concatThrowsWhenRightLengthIsTooSmall() {
             // [4..6  -  10...12]
             //     [7..9    -   13..15]
@@ -667,6 +708,12 @@ class RangeFlexTest {
                     .hasMessageContaining("shorter than the minimum length of 7");
 
         }
+    }
 
+    private static String apply(RangeFlex flex, String string) {
+        System.out.println(flex);
+        System.out.println(RangeFlexFormatter.defaultFormatter().format(flex, string));
+        System.out.println(RangeFlexFormatter.UNDERLINE_ONLY.format(flex, string));
+        return flex.applyTo(string);
     }
 }

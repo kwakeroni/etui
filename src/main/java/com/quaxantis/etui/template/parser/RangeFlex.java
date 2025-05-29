@@ -18,6 +18,9 @@ record RangeFlex(IntRange start, IntRange end, Integer minLength) {
 //            this.minLength = minLength;
 //            this.start = start;
 //        }
+public static RangeFlex empty() {
+    return ofFixed(0, -1);
+}
 
     public static RangeFlex of(int leftFrom, int leftToIncl, int rightFrom, int rightToIncl) {
         return of(IntRange.ofClosed(leftFrom, leftToIncl), IntRange.ofClosed(rightFrom, rightToIncl));
@@ -37,6 +40,15 @@ record RangeFlex(IntRange start, IntRange end, Integer minLength) {
 
     public static RangeFlex ofFixed(int from, int to) {
         return of(IntRange.of(from, from), IntRange.of(to + 1, to + 1));
+    }
+
+    public static RangeFlex ofComplete(String string) {
+        IntRange completeRange = IntRange.of(0, string.length());
+        return of(completeRange, completeRange);
+    }
+
+    public static RangeFlex ofCompleteFixed(String string) {
+        return ofFixed(0, string.length() - 1);
     }
 
     private static Result<Void, RuntimeException> verifyMinLengthConstraint(IntRange start, IntRange end, Integer minLength) {
@@ -135,61 +147,27 @@ record RangeFlex(IntRange start, IntRange end, Integer minLength) {
     }
 
     private static String toString(IntRange start, IntRange end, Integer minLength) {
-        int log10 = (int) Math.log10(Math.max(start.to(), end.to()));
-        int d = log10 + 1;
-        String rangePattern = "%" + d + "d-%" + d + "d";
-        String singletonPattern = "%" + (d * 2 + 1) + "d";
-        String empty = " ".repeat(d * 2 + 1);
+        double log10 = Math.log10(Math.max(start.to(), end.to()));
+        int d = Double.isFinite(log10) ? ((int) log10) + 1 : -1;
+        String rangePattern = (d > 0) ? "%" + d + "d-%" + d + "d" : "%s..%s";
+        String singletonPattern = (d > 0) ? "%" + (d * 2 + 1) + "d" : "%s";
+        String empty = (d > 0) ? " ".repeat(d * 2 + 1) : "";
         String leftString = (start.from() == start.to() ? singletonPattern : (start.from() < start.to()) ? rangePattern : empty)
                 .formatted(start.from(), start.to());
         String midString = ((start.to() + 1 == end.from() - 1) ? singletonPattern : (start.to() + 1 < end.from() - 1) ? rangePattern : empty).formatted(start.to() + 1, end.from() - 1);
+        String midSpace = (midString.isEmpty()) ? "" : " ";
         String rightString = (end.from() == end.to() ? singletonPattern : (end.from() < end.to()) ? rangePattern : empty).formatted(end.from(), end.to());
         String minLengthString = (minLength == null) ? "" : ("!" + minLength);
-        return "{[" + leftString + "] " + midString + " [" + rightString + "]" + minLengthString + "}";
+        return "{[" + leftString + "]" + midSpace + midString + midSpace + "[" + rightString + "]" + minLengthString + "}";
+    }
+
+    public String format(String string) {
+        return RangeFlexFormatter.defaultFormatter().format(this, string);
     }
 
     public String applyTo(String string) {
-        StringBuilder result = new StringBuilder();
-        if (start.from() <= end.from()) {
-            result.append(string.substring(0, start.from()));
-            result.append("{[");
-
-            if (start.exclusiveTo() <= end.from()) {
-                result.append(string.substring(start.from(), start.exclusiveTo()))
-                        .append("]")
-                        .append(string.substring(start.exclusiveTo(), end.from()))
-                        .append("[")
-                        .append(string.substring(end.from(), end.exclusiveTo()));
-            } else {
-                result.append(string.substring(start.from(), end.from()))
-                        .append("[")
-                        .append(string.substring(end.from(), start.exclusiveTo()))
-                        .append("]")
-                        .append(string.substring(start.exclusiveTo(), end.exclusiveTo()));
-            }
-            result.append("]}");
-            result.append(string.substring(end.exclusiveTo()));
-        } else {
-            result.append(string.substring(0, end.from()))
-                    .append("[");
-            if (end.exclusiveTo() <= start.from()) {
-                result.append(string.substring(end.from(), end.exclusiveTo()))
-                        .append("]}")
-                        .append(string.substring(end.exclusiveTo(), start.from()))
-                        .append("{[")
-                        .append(string.substring(start.from(), start.exclusiveTo()));
-            } else {
-                result.append(string.substring(end.from(), start.from()))
-                        .append("{[")
-                        .append(string.substring(start.from(), end.exclusiveTo()))
-                        .append("]}")
-                        .append(string.substring(end.exclusiveTo(), start.exclusiveTo()));
-            }
-            result.append("]");
-            result.append(string.substring(start.exclusiveTo()));
-        }
-
-
-        return result.toString();
+        return RangeFlexFormatter.SEPARATORS_ONLY.format(this, string);
     }
+
+
 }
