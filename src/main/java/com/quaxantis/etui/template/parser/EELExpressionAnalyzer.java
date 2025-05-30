@@ -1,8 +1,10 @@
 package com.quaxantis.etui.template.parser;
 
-import com.quaxantis.etui.template.parser.EELExpressionAnalyzer.Match.FlexMatch;
-import com.quaxantis.etui.template.parser.EELExpressionAnalyzer.Match.NoMatch;
+import com.quaxantis.etui.template.parser.Match.NoMatch;
+import com.quaxantis.etui.template.parser.Match.PartialMatch;
 import com.quaxantis.support.util.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +12,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 public class EELExpressionAnalyzer {
+
+    private static Logger log = LoggerFactory.getLogger(EELExpressionAnalyzer.class);
 
     public Bindings detectBindings(Expression expression, String resolvedExpression) {
         return switch (expression) {
@@ -34,19 +38,30 @@ public class EELExpressionAnalyzer {
     }
 
     public Match match(Expression expression, String string) {
+        Match match = doMatch(expression, string);
+        if (match instanceof NoMatch) {
+            log.debug("Match result for {}{}{}", expression.representationString(), System.lineSeparator(), match.multilineFormat("root"));
+        } else {
+            log.trace("Match result for {}{}{}", expression.representationString(), System.lineSeparator(), match.multilineFormat("root"));
+        }
+        return match;
+    }
+
+    Match doMatch(Expression expression, String string) {
         return switch (expression) {
             case Expression.Text text -> matchText(text, string);
             case Expression.Identifier identifier -> matchIdentifier(identifier, string);
 //            case Expression.Elvis elvis -> bindElvis(elvis, resolvedExpression);
             case Expression.OptSuffix optSuffix -> matchOptSuffix(optSuffix, string);
-            default -> new NoMatch();
+            default -> new NoMatch(string, "unknown expression: " + expression);
         };
     }
 
     private Match matchIdentifier(Expression.Identifier identifier, String resolvedExpression) {
+//        Match.RootMatch rootMatch = new Match.RootMatch(resolvedExpression);
         IntRange fullRange = IntRange.of(0, resolvedExpression.length());
         RangeFlex flex = RangeFlex.of(fullRange, fullRange).withMinLength(0);
-        return new FlexMatch(flex);
+        return new Match.BindingMatch(new Match.RootMatch(resolvedExpression).constrain(flex), identifier.name());
     }
 
     private Match matchText(Expression.Text textExpr, String string) {
@@ -55,48 +70,56 @@ public class EELExpressionAnalyzer {
         String text = textExpr.literal();
         if (string.equals(text)) {
             int end = string.length() - 1;
-            return new FlexMatch(RangeFlex.ofFixed(0, end).withMinLength(end - 0 + 1));
+            return new PartialMatch(new Match.RootMatch(string), RangeFlex.ofFixed(0, end).withMinLength(string.length()));
         } else {
             int index = string.indexOf(text);
             if (index < 0) {
-                return new NoMatch();
+                return new NoMatch(string, "literal expression not found: " + text);
             } else {
                 int end = index + text.length() - 1;
-                return new FlexMatch(RangeFlex.ofFixed(index, end).withMinLength(end - index + 1));
+                return new PartialMatch(new Match.RootMatch(string), RangeFlex.ofFixed(index, end).withMinLength(end - index + 1));
             }
         }
     }
 
     private Match matchOptSuffix(Expression.OptSuffix optSuffix, String string) {
-        Match leftMatch = match(optSuffix.expression(), string);
-        Match rightMatch = match(optSuffix.suffix(), string);
+        Match leftMatch = doMatch(optSuffix.expression(), string);
+        Match rightMatch = doMatch(optSuffix.suffix(), string);
 
-        if (leftMatch instanceof FlexMatch(var leftFlex)
-            && rightMatch instanceof FlexMatch(var rightFlex)
-            && RangeFlex.tryConcat(leftFlex.withMinLength(1), rightFlex) instanceof Result.Success(
-                var concatRangeFlex
-        )) {
-            return new FlexMatch(concatRangeFlex);
-        } else {
-            return Match.noMatch();
+        if (!(leftMatch instanceof NoMatch || rightMatch instanceof NoMatch)) {
+            var leftFlex = leftMatch.matchRange().withMinLength(1);
+            var rightFlex = rightMatch.matchRange();
+
+            var concatResult = RangeFlex.tryConcat(leftFlex, rightFlex);
+            if (concatResult instanceof Result.Success(RangeFlex.Concat concatRangeFlex)) {
+                Match constrainedLeftMatch = leftMatch.constrain(concatRangeFlex.left());
+                Match constrainedRightMatch = rightMatch.constrain(concatRangeFlex.right());
+                var concatMatch = new Match.ConcatMatch(constrainedLeftMatch, constrainedRightMatch, concatRangeFlex);
+                log.trace("""
+                          Matching {}
+                          with left ={}
+                          with right={}
+                          with match={}
+                          """, optSuffix, constrainedLeftMatch, constrainedRightMatch, concatMatch);
+                return concatMatch;
+            } else if (concatResult instanceof Result.Failure(RuntimeException exception)) {
+                log.trace("""
+                          Matching {}
+                          with left ={}
+                          with right={}
+                          with no match because {}
+                          """, this, leftMatch, rightMatch, exception.toString() + " at " + exception.getStackTrace()[0]);
+                return new NoMatch(string, exception + " at " + exception.getStackTrace()[0], leftMatch, rightMatch);
+            }
+//        }
         }
-    }
-
-    private static final Match NO_MATCH = new NoMatch();
-
-    public sealed interface Match {
-
-        static Match noMatch() {
-            return NO_MATCH;
-        }
-
-
-        record NoMatch() implements Match {
-        }
-
-        record FlexMatch(RangeFlex flex) implements Match {
-
-        }
+        log.trace("""
+                  Matching {}
+                  with left ={}
+                  with right={}
+                  with no match
+                  """, this, leftMatch, rightMatch);
+        return new NoMatch(string, null, leftMatch, rightMatch);
     }
 
     public record Binding(

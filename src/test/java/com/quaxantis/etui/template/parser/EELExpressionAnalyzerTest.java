@@ -2,12 +2,11 @@ package com.quaxantis.etui.template.parser;
 
 import com.quaxantis.etui.template.parser.EELExpressionAnalyzer.Binding;
 import com.quaxantis.etui.template.parser.EELExpressionAnalyzer.Bindings;
-import com.quaxantis.etui.template.parser.EELExpressionAnalyzer.Match;
-import com.quaxantis.etui.template.parser.EELExpressionAnalyzer.Match.NoMatch;
 import com.quaxantis.etui.template.parser.Expression.Elvis;
 import com.quaxantis.etui.template.parser.Expression.Identifier;
 import com.quaxantis.etui.template.parser.Expression.OptSuffix;
 import com.quaxantis.etui.template.parser.Expression.Text;
+import com.quaxantis.etui.template.parser.Match.NoMatch;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,14 +24,17 @@ class EELExpressionAnalyzerTest {
     @DisplayName("Detects bindings for an unknown expression")
     void unknownExpressionBinding() {
         var bindings = analyzer.detectBindings(new Expression.Concat(), "");
-        assertThat(bindings.isEmpty());
+        assertThat(bindings.isEmpty()).isTrue();
     }
 
     @Test
     @DisplayName("Detects no match for an unknown expression")
     void unknownExpressionNoMatch() {
-        var match = analyzer.match(new Expression.Concat(), "");
-        assertThat(match).isEqualTo(new NoMatch());
+        var match = analyzer.match(new Expression.Concat(), "test value");
+        assertThat(match).isInstanceOfSatisfying(NoMatch.class, noMatch -> {
+            assertThat(noMatch.reason()).contains("unknown expression", "Concat");
+            assertThat(noMatch.hasBoundVariables()).isFalse();
+        });
     }
 
     @Nested
@@ -51,7 +53,10 @@ class EELExpressionAnalyzerTest {
         void fullMatch() {
             var text = new Text("my literal value");
             var match = analyzer.match(text, "my literal value");
-            assertThat(match).returns("my literal value", whenAppliedTo("my literal value"));
+            assertThat(match)
+                    .returns(true, Match::isFullMatch)
+                    .returns(false, Match::hasBoundVariables)
+                    .returns("{[]my literal value[]}", Match::matchRepresentation);
         }
 
         @Test
@@ -59,7 +64,9 @@ class EELExpressionAnalyzerTest {
         void noMatch() {
             var text = new Text("my literal value");
             var match = analyzer.match(text, "my other value");
-            assertThat(match).isInstanceOf(NoMatch.class);
+            assertThat(match).isInstanceOf(NoMatch.class)
+                    .returns(false, Match::isFullMatch)
+                    .returns(false, Match::hasBoundVariables);
         }
 
         @Test
@@ -67,7 +74,10 @@ class EELExpressionAnalyzerTest {
         void partialMatchLeft() {
             var text = new Text("my lite");
             var match = analyzer.match(text, "my literal value");
-            assertThat(match).returns("my lite", whenAppliedTo("my literal value"));
+            assertThat(match)
+                    .returns(false, Match::isFullMatch)
+                    .returns(false, Match::hasBoundVariables)
+                    .returns("{[]my lite[]}ral value", Match::matchRepresentation);
         }
 
         @Test
@@ -75,7 +85,10 @@ class EELExpressionAnalyzerTest {
         void partialMatchRight() {
             var text = new Text("al value");
             var match = analyzer.match(text, "my literal value");
-            assertThat(match).returns("al value", whenAppliedTo("my literal value"));
+            assertThat(match)
+                    .returns(false, Match::isFullMatch)
+                    .returns(false, Match::hasBoundVariables)
+                    .returns("my liter{[]al value[]}", Match::matchRepresentation);
         }
 
 
@@ -84,7 +97,10 @@ class EELExpressionAnalyzerTest {
         void partialMatchMid() {
             var text = new Text("eral val");
             var match = analyzer.match(text, "my literal value");
-            assertThat(match).returns("eral val", whenAppliedTo("my literal value"));
+            assertThat(match)
+                    .returns(false, Match::isFullMatch)
+                    .returns(false, Match::hasBoundVariables)
+                    .returns("my lit{[]eral val[]}ue", Match::matchRepresentation);
         }
 
         // TODO: multiple partial matches
@@ -106,27 +122,13 @@ class EELExpressionAnalyzerTest {
         @DisplayName("providing a match")
         void match() {
             var match = analyzer.match(new Identifier("testVar"), "my test value");
-            assertThat(match).returns("[my test value][my test value]", whenAppliedTo("my test value"));
+            assertThat(match)
+                    .returns(true, Match::isFullMatch)
+                    .returns(true, Match::hasBoundVariables)
+                    .returns("my test value", valueOf("testVar"))
+                    .returns("{[[my test value]]}", Match::matchRepresentation);
+
         }
-    }
-
-    Function<Match, String> whenAppliedTo(String string) {
-        return match -> apply(match, string);
-    }
-
-    String apply(Match match, String string) {
-        assertThat(match).isInstanceOf(Match.FlexMatch.class);
-        RangeFlex flex = ((Match.FlexMatch) match).flex();
-
-        String prefix = string.substring(flex.start().from(), flex.start().exclusiveTo());
-        prefix = (prefix.length() < 2) ? prefix : '[' + prefix + ']';
-
-        String main = (flex.start().exclusiveTo() > flex.end().from()) ? "" : string.substring(flex.start().exclusiveTo(), flex.end().from());
-
-        String suffix = string.substring(flex.end().from(), flex.end().exclusiveTo());
-        suffix = (suffix.length() < 2) ? suffix : '[' + suffix + ']';
-
-        return prefix + main + suffix;
     }
 
     @Nested
@@ -149,22 +151,27 @@ class EELExpressionAnalyzerTest {
     @Nested
     @DisplayName("Analyzes an OptSuffix expression")
     class OptSuffixExpression {
-//        @Test
-//        @DisplayName("provides bindings for an identifier with a literal suffix")
-//        void identifierWithLiteralSuffix() {
-//            var optSuffix = new OptSuffix(new Identifier("var1"), new Text(". with suffix"));
-//            var bindings = analyzer.detectBindings(optSuffix, "my test value. with suffix");
-//            assertThat(bindings).containsExactly(
-//                    new Binding("var1", "my test value")
-//            );
-//        }
 
         @Test
         @DisplayName("providing a match for a literal with a literal suffix")
         void matchLiteralWithLiteralSuffix() {
             var optSuffix = new OptSuffix(new Text("a literal"), new Text(". with a suffix"));
             var match = analyzer.match(optSuffix, "a literal. with a suffix");
-            assertThat(match).returns("a literal. with a suffix", whenAppliedTo("a literal. with a suffix"));
+            assertThat(match)
+                    .returns(true, Match::isFullMatch)
+                    .returns(false, Match::hasBoundVariables)
+                    .returns("{[]a literal. with a suffix[]}", Match::matchRepresentation);
+        }
+
+        @Test
+        @DisplayName("providing a partial match for a literal with a literal suffix")
+        void partialMatchLiteralWithLiteralSuffix() {
+            var optSuffix = new OptSuffix(new Text("a literal"), new Text(". with a suffix"));
+            var match = analyzer.match(optSuffix, "also a literal. with a suffix");
+            assertThat(match)
+                    .returns(false, Match::isFullMatch)
+                    .returns(false, Match::hasBoundVariables)
+                    .returns("also {[]a literal. with a suffix[]}", Match::matchRepresentation);
         }
 
         @Test
@@ -205,21 +212,67 @@ class EELExpressionAnalyzerTest {
         void matchIdentifierWithLiteralSuffix() {
             var optSuffix = new OptSuffix(new Identifier("var1"), new Text(". with suffix"));
             var match = analyzer.match(optSuffix, "my test value. with suffix");
-            // TODO: add knowledge that left side cannot be empty for optsuffix
-            assertThat(match).as(match.toString()).returns("[my test value]. with suffix", whenAppliedTo("my test value. with suffix"));
-//            assertThat(match).as(match.toString()).returns("[my test valu]e. with suffix", whenAppliedTo("my test value. with suffix"));
+            assertThat(match).as(match.toString())
+                    .returns(true, Match::isFullMatch)
+                    .returns(true, Match::hasBoundVariables)
+                    .returns("my test value", valueOf("var1"))
+                    .returns("{[my test value]. with suffix[]}", Match::matchRepresentation);
         }
 
         @Test
-        @DisplayName("no match for an empty identifier with a literal suffix")
+        @DisplayName("providing a match for a literal with an identifier suffix")
+        void matchLiteralWithIdentifierSuffix() {
+            var optSuffix = new OptSuffix(new Text("prefix with "), new Identifier("var1"));
+            var match = analyzer.match(optSuffix, "prefix with my test value");
+            assertThat(match).as(match.toString())
+                    .returns(true, Match::isFullMatch)
+                    .returns(true, Match::hasBoundVariables)
+                    .returns("my test value", valueOf("var1"))
+                    .returns("{[]prefix with [my test value]}", Match::matchRepresentation);
+        }
+
+        @Test
+        @DisplayName("providing a match for an identifier with an identifier suffix")
+        void matchIdentifierWithIdentifierSuffix() {
+            var optSuffix = new OptSuffix(new Identifier("var1"), new Identifier("var2"));
+            var match = analyzer.match(optSuffix, "my test value");
+            assertThat(match).as(match.toString())
+                    .returns(true, Match::isFullMatch)
+                    .returns(true, Match::hasBoundVariables)
+                    .returns("my test value", valueOf("var1"))
+                    .returns("my test value", valueOf("var2"))
+                    .returns("{[[my test value]]}", Match::matchRepresentation);
+        }
+
+        @Test
+        @DisplayName("providing no match for an empty identifier with a literal suffix")
         void nomatchForEmptyIdentifierWithLiteralSuffix() {
             var optSuffix = new OptSuffix(new Identifier("var1"), new Text(". with suffix"));
             var match = analyzer.match(optSuffix, ". with suffix");
-            // TODO: add knowledge that left side cannot be empty for optsuffix
             assertThat(match).isInstanceOf(NoMatch.class);
-//            assertThat(match).as(match.toString()).returns(". with suffix", whenAppliedTo(". with suffix"));
-//            assertThat(match).as(match.toString()).returns("[my test valu]e. with suffix", whenAppliedTo("my test value. with suffix"));
         }
 
+
+        @Test
+        @DisplayName("providing a match for an identifier with a complex suffix")
+        void matchIdentifierWithComplexSuffix() {
+            var optSuffix = new OptSuffix(new Identifier("var1"), new OptSuffix(new Text(" with suffix "), new Identifier("var2")));
+            var match = analyzer.match(optSuffix, "my test value with suffix another value");
+            assertThat(match).as(match.toString())
+                    .returns(true, Match::isFullMatch)
+                    .returns(true, Match::hasBoundVariables)
+                    .returns("my test value", valueOf("var1"))
+                    .returns("another value", valueOf("var2"))
+                    .returns("{[my test value] with suffix [another value]}", Match::matchRepresentation);
+        }
+    }
+
+
+    private static Function<Match, String> valueOf(String variable) {
+        return match -> {
+            var optionalValue = match.valueOf(variable);
+            assertThat(optionalValue).isNotEmpty();
+            return optionalValue.orElseThrow();
+        };
     }
 }

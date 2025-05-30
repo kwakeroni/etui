@@ -308,7 +308,7 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 21)).noneMatch(concat::contains);
             assertThat(apply(concat, "012345678901234567890123456789"))
                     .isEqualTo("0123{[456]78901234567[890]}123456789");
-
+            System.out.println(concat.toString());
         }
 
         @Test

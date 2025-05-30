@@ -1,6 +1,7 @@
 package com.quaxantis.support.util;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public sealed interface Result<T, E extends Exception> {
 
@@ -12,12 +13,24 @@ public sealed interface Result<T, E extends Exception> {
 
     <F extends Exception> T orElseThrow(Function<E, F> exceptionMapper) throws F;
 
+    static <E extends Exception> Result<Void, E> ofVoid() {
+        return of(null);
+    }
+
     static <T, E extends Exception> Result<T, E> of(T t) {
         return new Success<>(t);
     }
 
     static <T, E extends Exception> Result<T, E> ofFailure(E exception) {
         return new Failure<>(exception);
+    }
+
+    static <T, E extends RuntimeException> Result<T, E> ofTry(Supplier<? extends T> supplier) {
+        try {
+            return of(supplier.get());
+        } catch (RuntimeException rte) {
+            return ofFailure((E) rte);
+        }
     }
 
     record Success<T, E extends Exception>(T value)
