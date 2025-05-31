@@ -240,7 +240,7 @@ sealed interface RangeFlex {
 
         @Override
         public String toString() {
-            return left + "+" + right + "=" + RangeFlex.toString(start(), end(), minLength);
+            return RangeFlex.toString(start(), end(), minLength) + " = " + left + " + " + right;
         }
 
         private static Integer optSum(Integer left, Integer right) {

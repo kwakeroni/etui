@@ -2,6 +2,7 @@ package com.quaxantis.etui.template.parser;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -11,8 +12,6 @@ public sealed interface Match {
 
     String matchedString();
 
-    String simpleFormat();
-
     String multilineFormat(String context);
 
     String matchRepresentation();
@@ -20,6 +19,10 @@ public sealed interface Match {
     RangeFlex matchRange();
 
     Match constrain(RangeFlex constraint);
+
+    default String simpleFormat() {
+        return matchRange().format(fullString());
+    }
 
     default boolean isFullMatch() {
         RangeFlex range = matchRange();
@@ -30,11 +33,10 @@ public sealed interface Match {
 
     Optional<String> valueOf(String variable);
 
-    record NoMatch(@Nonnull String testString, @Nullable String reason, Match... mismatches) implements Match {
+    record NoMatch(@Nonnull String fullString, @Nullable String reason, List<Match> mismatches) implements Match {
 
-        @Override
-        public String fullString() {
-            return testString;
+        public NoMatch(@Nonnull String fullString, @Nullable String reason, Match... mismatches) {
+            this(fullString, reason, List.of(mismatches));
         }
 
         @Override
@@ -65,11 +67,6 @@ public sealed interface Match {
         @Override
         public Optional<String> valueOf(String variable) {
             return Optional.empty();
-        }
-
-        @Override
-        public String simpleFormat() {
-            return matchRange().format(testString);
         }
 
         @Override
@@ -118,11 +115,6 @@ public sealed interface Match {
         @Override
         public Optional<String> valueOf(String variable) {
             return Optional.empty();
-        }
-
-        @Override
-        public String simpleFormat() {
-            return fullString;
         }
 
         @Override
@@ -238,22 +230,18 @@ public sealed interface Match {
         }
 
         @Override
-        public String simpleFormat() {
-            return range.format(fullString());
-        }
-
-        @Override
         public String multilineFormat(String context) {
             return simpleFormat() + " < " + getClass().getSimpleName() + " < " + context;
         }
     }
 
-    record ConcatMatch(@Nonnull Match left, @Nonnull Match right, @Nonnull RangeFlex.Concat range) implements Match {
+    record ConcatMatch(@Nonnull Match left, @Nonnull Match right,
+                       @Nonnull RangeFlex.Concat matchRange) implements Match {
         @SuppressWarnings("StringEquality") // Identity match on purpose
         public ConcatMatch {
             Objects.requireNonNull(left, "left");
             Objects.requireNonNull(right, "right");
-            Objects.requireNonNull(range, "range");
+            Objects.requireNonNull(matchRange, "range");
             if (left instanceof NoMatch || right instanceof NoMatch) {
                 throw new IllegalArgumentException("Cannot concat matches:%n%s%n%s%n".formatted(left, right));
             }
@@ -268,23 +256,18 @@ public sealed interface Match {
         }
 
         @Override
-        public RangeFlex matchRange() {
-            return range;
-        }
-
-        @Override
         public String matchedString() {
-            return range.extractFrom(fullString());
+            return matchRange.extractFrom(fullString());
         }
 
         @Override
         public Match constrain(RangeFlex constraint) {
-            return new ConcatMatch(left.constrain(constraint), right.constrain(constraint), range.constrain(constraint));
+            return new ConcatMatch(left.constrain(constraint), right.constrain(constraint), matchRange.constrain(constraint));
         }
 
         @Override
         public String matchRepresentation() {
-            return range.applyTo(fullString());
+            return matchRange.applyTo(fullString());
         }
 
         @Override
@@ -310,12 +293,7 @@ public sealed interface Match {
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "[" + left + " + " + right + " = " + simpleFormat() + "]";
-        }
-
-        @Override
-        public String simpleFormat() {
-            return range.format(fullString());
+            return getClass().getSimpleName() + "[" + simpleFormat() + " = " + left + " + " + right + "]";
         }
 
         @Override

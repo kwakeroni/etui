@@ -1,62 +1,50 @@
 package com.quaxantis.etui.template.parser;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
 
-@Nested
 @DisplayName("EELExpressionAnalyzer analyzes a text expression")
-class EELExpressionAnalyzerTextExpressionTest extends AbstractEELExpressionAnalyzerTest {
-    @Test
-    @DisplayName("providing no bindings")
-    void noBinding() {
-        var text = new Expression.Text("my literal value");
-        var bindings = analyzer.detectBindings(text, "my literal value");
-        assertThat(bindings).isEmpty();
-    }
+class EELExpressionAnalyzerTextExpressionTest {
 
     @Test
     @DisplayName("providing a full match")
     void fullMatch() {
         var text = new Expression.Text("my literal value");
-        assertThat(match(text, "my literal value"))
-                .returns(true, Match::isFullMatch)
-                .returns(false, Match::hasBoundVariables)
-                .returns("{[]my literal value[]}", Match::matchRepresentation);
+        assertThat(text).matching("my literal value")
+                .isFullMatch()
+                .hasNoBoundVariables()
+                .hasMatchRepresentation("{[]my literal value[]}");
     }
 
     @Test
     @DisplayName("providing no match")
     void noMatch() {
         var text = new Expression.Text("my literal value");
-        var match = match(text, "my other value");
-        assertThat(match).isInstanceOf(Match.NoMatch.class)
-                .returns(false, Match::isFullMatch)
-                .returns(false, Match::hasBoundVariables);
+        assertThat(text).matching("my other value").isNoMatch()
+                .isNotFullMatch()
+                .hasNoBoundVariables();
     }
 
     @Test
     @DisplayName("providing a partial match from the left")
     void partialMatchLeft() {
         var text = new Expression.Text("my lite");
-        var match = match(text, "my literal value");
-        assertThat(match)
-                .returns(false, Match::isFullMatch)
-                .returns(false, Match::hasBoundVariables)
-                .returns("{[]my lite[]}ral value", Match::matchRepresentation);
+        assertThat(text).matching("my literal value")
+                .isNotFullMatch()
+                .hasNoBoundVariables()
+                .hasMatchRepresentation("{[]my lite[]}ral value");
     }
 
     @Test
     @DisplayName("providing a partial match from the right")
     void partialMatchRight() {
         var text = new Expression.Text("al value");
-        var match = match(text, "my literal value");
-        assertThat(match)
-                .returns(false, Match::isFullMatch)
-                .returns(false, Match::hasBoundVariables)
-                .returns("my liter{[]al value[]}", Match::matchRepresentation);
+        assertThat(text).matching("my literal value")
+                .isNotFullMatch()
+                .hasNoBoundVariables()
+                .hasMatchRepresentation("my liter{[]al value[]}");
     }
 
 
@@ -64,11 +52,10 @@ class EELExpressionAnalyzerTextExpressionTest extends AbstractEELExpressionAnaly
     @DisplayName("providing a partial match in the middle")
     void partialMatchMid() {
         var text = new Expression.Text("eral val");
-        var match = match(text, "my literal value");
-        assertThat(match)
-                .returns(false, Match::isFullMatch)
-                .returns(false, Match::hasBoundVariables)
-                .returns("my lit{[]eral val[]}ue", Match::matchRepresentation);
+        assertThat(text).matching("my literal value")
+                .isNotFullMatch()
+                .hasNoBoundVariables()
+                .hasMatchRepresentation("my lit{[]eral val[]}ue");
     }
 
     // TODO: multiple partial matches
