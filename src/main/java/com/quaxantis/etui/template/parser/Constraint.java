@@ -1,5 +1,7 @@
 package com.quaxantis.etui.template.parser;
 
+import java.util.function.Consumer;
+
 sealed interface Constraint {
 
     static RangeLimit toRange(RangeFlex range) {
@@ -34,6 +36,18 @@ sealed interface Constraint {
         return new MaxLength(maxLength);
     }
 
+    static PrecedeBy precedeBy(RangeFlex range) {
+        return new PrecedeBy(range);
+    }
+
+    static SucceedBy succeedBy(RangeFlex range) {
+        return new SucceedBy(range);
+    }
+
+    static Satisfying satisfying(Consumer<RangeFlex> verification) {
+        return new Satisfying(verification);
+    }
+
     default Constraint and(Constraint constraint) {
         return new And(this, constraint);
     }
@@ -53,6 +67,14 @@ sealed interface Constraint {
     record MinLength(int minLength) implements Constraint {}
 
     record MaxLength(int maxLength) implements Constraint {}
+
+    record PrecedeBy(RangeFlex range) implements Constraint {}
+
+    record SucceedBy(RangeFlex range) implements Constraint {}
+
+    record Satisfying(Consumer<RangeFlex> verification) implements Constraint {}
+
+    ;
 
     record And(Constraint one, Constraint two) implements Constraint {}
 }

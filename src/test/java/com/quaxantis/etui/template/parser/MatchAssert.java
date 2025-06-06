@@ -3,8 +3,11 @@ package com.quaxantis.etui.template.parser;
 import com.quaxantis.support.ide.API;
 import com.quaxantis.support.util.ANSI;
 import org.assertj.core.api.AbstractObjectAssert;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.presentation.StandardRepresentation;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -12,6 +15,12 @@ import java.util.function.Function;
 
 @SuppressWarnings("UnusedReturnValue")
 public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
+
+    @API
+    public static MatchAssert assertThat(Match match) {
+        return new MatchAssert(match);
+    }
+
     public MatchAssert(Match match) {
         super(match, MatchAssert.class);
         StandardRepresentation.registerFormatterForType(FormattedMatch.class, FormattedMatch::formatted);
@@ -76,6 +85,18 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
     }
 
     @API
+    public MatchAssert hasMatchRepresentation(String expected, String expectedLength) {
+        String fullRepresentation = actual.matchRepresentation();
+        String expectedRepresentationWithLength = expected + "!" + expectedLength;
+        if (!expectedRepresentationWithLength.equals(fullRepresentation)) {
+            failWithDerivedActualAndMessage(_ -> fullRepresentation, actual, expected, "Expected actual representation to be equal to");
+        }
+        return myself;
+    }
+
+
+    @API
+    @Deprecated
     public MatchAssert hasVariableValue(String variable, String expected) {
         Optional<String> actualValue = actual.valueOf(variable);
         if (actualValue.isEmpty()) {
@@ -85,6 +106,24 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
         }
         return myself;
     }
+
+    @SafeVarargs
+    public final MatchAssert hasBindings(Map<String, String>... bindings) {
+        Assertions.assertThat(actual.bindings())
+                .extracting(Binding::asMap)
+                .containsExactlyInAnyOrder(bindings);
+        return myself;
+    }
+
+    public MatchAssert isChoiceOfSatisfying(Consumer<List<Match>> consumer) {
+        if (!(actual instanceof Match.ChoiceMatch(var choices))) {
+            failWithActualAndMessage("Expected to be an instance of Match.ChoiceMatch, but was not");
+        } else {
+            consumer.accept(choices);
+        }
+        return myself;
+    }
+
 
     protected void failWithActualAndMessage(String errorMessageFormat, Object... arguments) {
         failWithMessage(appendActualMatch(errorMessageFormat, actual), arguments);

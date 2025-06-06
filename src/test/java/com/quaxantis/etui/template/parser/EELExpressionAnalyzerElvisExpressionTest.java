@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("EELExpressionAnalyzer analyzes an Elvis expression")
 class EELExpressionAnalyzerElvisExpressionTest {
@@ -80,11 +79,10 @@ class EELExpressionAnalyzerElvisExpressionTest {
         assertThat(elvis).matching("my value")
                 .isFullMatch()
                 .hasMatchRepresentation("{[[my value]]}")
-                .satisfies(match -> assertThat(match.bindings()).extracting(Binding::asMap)
-                        .containsExactlyInAnyOrder(
-                                Map.of("var1", "my value"),
-                                Map.of("var1", "", "var2", "my value")
-                        ));
+                .hasBindings(
+                        Map.of("var1", "my value"),
+                        Map.of("var1", "", "var2", "my value")
+                );
     }
 
     @Test
@@ -94,11 +92,10 @@ class EELExpressionAnalyzerElvisExpressionTest {
         assertThat(elvis).matching("my value")
                 .isFullMatch()
                 .hasMatchRepresentation("{[[my value]]}")
-                .satisfies(match -> assertThat(match.bindings()).extracting(Binding::asMap)
-                        .containsExactlyInAnyOrder(
-                                Map.of("var1", "my value"),
-                                Map.of("var1", "", "var2", "my value"),
-                                Map.of("var1", "", "var2", "", "var3", "my value")
-                        ));
+                .hasBindings(
+                        Map.of("var1", "my value"),
+                        Map.of("var1", "", "var2", "my value"),
+                        Map.of("var1", "", "var2", "", "var3", "my value")
+                );
     }
 }

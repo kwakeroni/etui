@@ -53,13 +53,13 @@ public class EELExpressionAnalyzer {
             case Expression.Text text -> matchText(text, string);
             case Expression.Identifier identifier -> matchIdentifier(identifier, string);
             case Expression.Elvis elvis -> matchElvis(elvis, string);
-            case Expression.OptSuffix optSuffix -> matchOptSuffix(optSuffix, string);
+            case Expression.OptPrefix optPrefix -> matchOptPrefix(optPrefix, string);
+            case Expression.OptSuffix optSuffix -> matchOptSuffixAlternative(optSuffix, string);
             default -> new NoMatch(string, "unknown expression: " + expression);
         };
     }
 
     private Match matchIdentifier(Expression.Identifier identifier, String resolvedExpression) {
-//        Match.RootMatch rootMatch = new Match.RootMatch(resolvedExpression);
         IntRange fullRange = IntRange.of(0, resolvedExpression.length());
         RangeFlex flex = RangeFlex.of(fullRange, fullRange);
         return Match.of(resolvedExpression)
@@ -122,6 +122,65 @@ public class EELExpressionAnalyzer {
         }
     }
 
+    private Match matchOptPrefix(Expression.OptPrefix optPrefix, String string) {
+        Match leftMatch = doMatch(optPrefix.prefix(), string);
+        Match rightMatch = doMatch(optPrefix.expression(), string);
+
+        if (rightMatch instanceof NoMatch) {
+            return new NoMatch(string, null, leftMatch, rightMatch);
+        }
+
+        Match mainMatch = rightMatch.constrain(toMinLength(1));
+        Match emptyMainMatch = rightMatch.constrain(toMaxLength(0));
+        Match concatMatch;
+
+        if (mainMatch instanceof NoMatch || leftMatch instanceof NoMatch) {
+            concatMatch = new NoMatch(string, null, mainMatch, leftMatch);
+        } else {
+
+            var leftFlex = leftMatch.matchRange();
+            var rightFlex = mainMatch.matchRange();
+
+            var concatResult = Result.ofTry(() -> RangeFlex.concatAlternative(leftFlex, rightFlex));
+            concatMatch = switch (concatResult) {
+                case Result.Success(var concat) -> new Match.CombinedMatch(string,
+                                                                           leftMatch.constrain(toRange(concat.left())),
+                                                                           mainMatch.constrain(toRange(concat.right())),
+                                                                           concat.combined());
+                case Result.Failure(var exc) -> new NoMatch(string,
+                                                            exc + " at " + exc.getStackTrace()[0],
+                                                            leftMatch,
+                                                            rightMatch);
+            };
+        }
+
+        return Match.ChoiceMatch.ofPossibleMatches(concatMatch, emptyMainMatch)
+                .orElseGet(() -> new NoMatch(string, null, leftMatch, mainMatch));
+    }
+
+    private Match matchOptSuffixAlternative(Expression.OptSuffix optSuffix, String string) {
+        Match leftMatch = doMatch(optSuffix.expression(), string);
+        Match rightMatch = doMatch(optSuffix.suffix(), string);
+
+        if (leftMatch instanceof NoMatch || rightMatch instanceof NoMatch) {
+            return new NoMatch(string, null, leftMatch, rightMatch);
+        }
+
+        var leftFlex = leftMatch.matchRange().constrain(toMinLength(1));
+        var rightFlex = rightMatch.matchRange();
+
+        var concatResult = Result.ofTry(() -> RangeFlex.concatAlternative(leftFlex, rightFlex));
+        return switch (concatResult) {
+            case Result.Success(var concat) -> new Match.CombinedMatch(string,
+                                                                       leftMatch.constrain(toRange(concat.left())),
+                                                                       rightMatch.constrain(toRange(concat.right())),
+                                                                       concat.combined());
+            case Result.Failure(var exc) -> new NoMatch(string,
+                                                        exc + " at " + exc.getStackTrace()[0],
+                                                        leftMatch,
+                                                        rightMatch);
+        };
+    }
     private Match matchOptSuffix(Expression.OptSuffix optSuffix, String string) {
         Match leftMatch = doMatch(optSuffix.expression(), string);
         Match rightMatch = doMatch(optSuffix.suffix(), string);

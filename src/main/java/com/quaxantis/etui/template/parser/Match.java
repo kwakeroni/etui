@@ -490,7 +490,7 @@ public sealed interface Match {
         @Override
         public RangeFlex matchRange() {
             RangeFlex result = RangeFlex.expand(matches.stream().map(Match::matchRange).toList());
-            Integer minLength = matches.stream().map(Match::matchRange).map(RangeFlex::minLength).map(Optional::ofNullable)
+            Integer minLength = matches.stream().map(Match::matchRange).map(RangeFlex::minLength)
                     .reduce((opt1, opt2) -> opt1.flatMap(l1 -> opt2.map(l2 -> Math.min(l1, l2))))
                     .flatMap(o -> o)
                     .orElse(null);
@@ -498,7 +498,7 @@ public sealed interface Match {
                 result = result.constrain(Constraint.toMinLength(minLength));
             }
 
-            Integer maxLength = matches.stream().map(Match::matchRange).map(RangeFlex::maxLength).map(Optional::ofNullable)
+            Integer maxLength = matches.stream().map(Match::matchRange).map(RangeFlex::maxLength)
                     .reduce((opt1, opt2) -> opt1.flatMap(l1 -> opt2.map(l2 -> Math.max(l1, l2))))
                     .flatMap(o -> o)
                     .orElse(null);

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.function.BinaryOperator;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -257,7 +257,7 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 13)).noneMatch(flex::contains);
             assertThat(apply(flex, "01234567890123456789"))
                     .isEqualTo("0123{[456]789[012]}3456789");
-            assertThat(flex.minLength()).isEqualTo(9);
+            assertThat(flex.minLength()).hasValue(9);
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(9, 9));
             assertThat(flex.toString()).isEqualTo("{[ 4- 6]  7- 9 [10-12]!9<}");
         }
@@ -280,6 +280,32 @@ class RangeFlexTest {
     @DisplayName("Can concatenate two flexes")
     class Concat {
 
+        record ConcatResult(RangeFlex left, RangeFlex right, RangeFlex combined) {}
+
+        ConcatResult altConcat(RangeFlex left, RangeFlex right) {
+            var leftConstrained = left.tryConstrain(Constraint.succeedBy(right))
+                    .orElseThrow(exc -> new IllegalArgumentException("Cannot concatenate flexes %s and %s: %s".formatted(left, right, exc.getMessage()), exc));
+            var rightConstrained = right.constrain(Constraint.precedeBy(left));
+            var minLength = leftConstrained.minLength().map(minLeft -> minLeft + rightConstrained.minLength().orElse(0))
+                    .orElse(rightConstrained.minLength().orElse(null));
+
+            var maxLength = leftConstrained.maxLength().flatMap(maxLeft -> rightConstrained.maxLength().map(maxRight -> maxLeft + maxRight))
+                    .orElse(null);
+
+            RangeFlex combined = new RangeFlex.Simple(leftConstrained.start(), rightConstrained.end(), minLength, maxLength);
+            return new ConcatResult(leftConstrained, rightConstrained, combined);
+        }
+
+        void assertEqualConcat(RangeFlex.Concat expected, ConcatResult actual) {
+            assertThat(actual.left()).describedAs("left range").isEqualTo(expected.left());
+            assertThat(actual.right()).describedAs("right range").isEqualTo(expected.right());
+            assertThat(actual.combined().start()).describedAs("combined start").isEqualTo(expected.start());
+            assertThat(actual.combined().end()).describedAs("combined end").isEqualTo(expected.end());
+            assertThat(actual.combined.minLength()).describedAs("combined minLength").isEqualTo(expected.minLength());
+            assertThat(actual.combined.maxLength()).describedAs("combined maxLength").isEqualTo(expected.maxLength());
+            assertThat(actual.combined.lengthRange()).describedAs("combined lengthRange").isEqualTo(expected.lengthRange());
+        }
+
         @Test
         @DisplayName("with an overlap")
         void concatWithOverlap() {
@@ -298,7 +324,8 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 21)).noneMatch(concat::contains);
             assertThat(apply(concat, "012345678901234567890123456789"))
                     .isEqualTo("0123{[456]78901234567[890]}123456789");
-            System.out.println(concat.toString());
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
         }
 
         @Test
@@ -320,6 +347,7 @@ class RangeFlexTest {
             assertThat(apply(concat, "012345678901234567890123456789"))
                     .isEqualTo("0123{[456]789012345678[901]}23456789");
 
+            assertEqualConcat(concat, altConcat(flex1, flex2));
         }
 
         @Test
@@ -334,7 +362,17 @@ class RangeFlexTest {
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
             assertThatThrownBy(() -> concat(flex1, flex2))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("[13 - 13]");
+                    .hasMessageContaining("[13 - 13]")
+                    .satisfies(expected -> {
+                        assertThatThrownBy(() -> altConcat(flex1, flex2))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("[13 - 13]")
+                                .hasMessage(expected.getMessage());
+
+                    });
+
+
+
         }
 
         @Test
@@ -356,6 +394,8 @@ class RangeFlexTest {
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456]78901234[567]}89");
 
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
@@ -376,6 +416,9 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 16)).noneMatch(concat::contains);
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456]789012[345]}6789");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
@@ -390,7 +433,16 @@ class RangeFlexTest {
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
             assertThatThrownBy(() -> concat(flex1, flex2))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("[9 - 9]");
+                    .hasMessageContaining("[9 - 9]")
+                    .satisfies(expected -> {
+                        assertThatThrownBy(() -> altConcat(flex1, flex2))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("[9 - 9]")
+                                .hasMessage(expected.getMessage());
+
+                    });
+
+
         }
 
         @Test
@@ -412,6 +464,9 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 17)).noneMatch(concat::contains);
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456789]0123[456]}789");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
@@ -432,6 +487,9 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 14)).noneMatch(concat::contains);
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[4567]890[123]}456789");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
@@ -452,6 +510,9 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 10)).noneMatch(concat::contains);
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[]456[789]}0123456789");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
@@ -472,11 +533,14 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 9)).noneMatch(concat::contains);
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[]456[78]}90123456789");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
-        @DisplayName("with an optional left flex reduced to empty with a negative overlap by the right main part")
-        void concatLeftOptFlexWithCompleteNegativeMainOverlap() {
+        @DisplayName("throws when an optional left flex reduced to empty with a negative overlap by the right main part")
+        void concatThrowsLeftOptFlexWithCompleteNegativeMainOverlap() {
             //  [4..9 - 4..9]
             // [3  -  6..8]
             // [X  - 6..8]
@@ -486,7 +550,16 @@ class RangeFlexTest {
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
             assertThatThrownBy(() -> concat(flex1, flex2))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("[3 - 3]");
+                    .hasMessageContaining("[3 - 3]")
+                    .satisfies(expected -> {
+                        assertThatThrownBy(() -> altConcat(flex1, flex2))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("[3 - 3]")
+                                .hasMessage(expected.getMessage());
+                    });
+
+
+
         }
 
         @Test
@@ -507,6 +580,9 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 17)).noneMatch(concat::contains);
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456]7890[123456]}789");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
@@ -527,6 +603,9 @@ class RangeFlexTest {
             assertThat(IntStream.of(6, 17)).noneMatch(concat::contains);
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123456{[789]012[3456]}789");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
@@ -547,6 +626,9 @@ class RangeFlexTest {
             assertThat(IntStream.of(10, 17)).noneMatch(concat::contains);
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("01234567890{[123]456[]}789");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
@@ -567,11 +649,14 @@ class RangeFlexTest {
             assertThat(IntStream.of(10, 17)).noneMatch(concat::contains);
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("01234567890{[123]456[]}789");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
-        @DisplayName("with an optional right flex reduced to empty with a negative overlap by the left main part")
-        void concatRightOptFlexWithCompleteNegativeMainOverlap() {
+        @DisplayName("throws when an optional right flex reduced to empty with a negative overlap by the left main part")
+        void concatThrowsRightOptFlexWithCompleteNegativeMainOverlap() {
             //  [12..14     -    18..20]
             // [11..16 - 11..16]
             //  [12..14    -   X 18..20]
@@ -581,7 +666,16 @@ class RangeFlexTest {
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
             assertThatThrownBy(() -> concat(flex1, flex2))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("[17 - 17]");
+                    .hasMessageContaining("[17 - 17]")
+                    .satisfies(expected -> {
+                        assertThatThrownBy(() -> altConcat(flex1, flex2))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("[17 - 17]")
+                                .hasMessage(expected.getMessage());
+                    });
+
+
+
         }
 
         @Test
@@ -602,11 +696,14 @@ class RangeFlexTest {
             assertThat(IntStream.of(3, 15)).noneMatch(concat::contains);
             assertThat(apply(concat, "012345678901234567890"))
                     .isEqualTo("0123{[456]78901[234]}567890");
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
 
         @Test
-        @DisplayName("with the right prefix and suffix overlapping the left main part")
-        void concatRightPrefixAndSuffixMainOverlap() {
+        @DisplayName("throws with the right prefix and suffix overlapping the left main part")
+        void concatThrowsRightPrefixAndSuffixMainOverlap() {
             // [4..6  -  10...12]
             //    [6..8-9.......14]
             // [4..6   -X.......14]
@@ -616,12 +713,21 @@ class RangeFlexTest {
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
             assertThatThrownBy(() -> concat(flex1, flex2))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("[9 - 9]");
+                    .hasMessageContaining("[9 - 9]")
+                    .satisfies(expected -> {
+                        assertThatThrownBy(() -> altConcat(flex1, flex2))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("[9 - 9]")
+                                .hasMessage(expected.getMessage());
+
+                    });
+
+
         }
 
         @Test
-        @DisplayName("with the right prefix and suffix overlapping the left prefix")
-        void concatRightPrefixAndSuffixLeftPrefixOverlap() {
+        @DisplayName("throws with the right prefix and suffix overlapping the left prefix")
+        void concatThrowsRightPrefixAndSuffixLeftPrefixOverlap() {
             // [4....6 - 10...12]
             // [4..5-6.....11]
             // [4..5-X.....11]
@@ -631,7 +737,16 @@ class RangeFlexTest {
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
             assertThatThrownBy(() -> concat(flex1, flex2))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("[6 - 9]");
+                    .hasMessageContaining("[6 - 9]")
+                    .satisfies(expected -> {
+                        assertThatThrownBy(() -> altConcat(flex1, flex2))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("[6 - 9]")
+                                .hasMessage(expected.getMessage());
+
+
+                    });
+
         }
 
         @Test
@@ -647,10 +762,7 @@ class RangeFlexTest {
 
             assertThat(RangeFlex.canConcat(flex1, flex2)).isTrue();
 
-            System.out.println(flex1.lengthRange());
-            System.out.println(flex2.lengthRange());
             var concat = concat(flex1, flex2);
-            System.out.println(concat.lengthRange());
 
             assertThat(concat).hasStartBetween(4, 6).hasEndBetween(13, 15);
             assertThat(IntStream.rangeClosed(4, 13)).allMatch(concat::contains);
@@ -659,7 +771,93 @@ class RangeFlexTest {
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[456]789012[345]}6789");
             assertThat(concat.lengthRange()).isEqualTo(IntRange.ofClosed(10, 12));
+            assertThat(concat.minLengthValue()).isEqualTo(10);
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
         }
+
+        @Test
+        @DisplayName("with maximum lengths")
+        void concatAccountsForMaxLength() {
+            // [4..6  -  10...12]
+            //     [7..9    -   13..15]
+            // [4..6     -      13..15]
+            RangeFlex rangeFlex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex1 = rangeFlex1.constrain(Constraint.toMaxLength(5));
+            RangeFlex rangeFlex = RangeFlex.of(7, 9, 13, 15);
+            var flex2 = rangeFlex.constrain(Constraint.toMaxLength(6));
+
+            assertThat(RangeFlex.canConcat(flex1, flex2)).isTrue();
+
+            var concat = concat(flex1, flex2);
+
+            assertThat(concat).hasStartBetween(4, 6).hasEndBetween(13, 15);
+            assertThat(IntStream.rangeClosed(4, 13)).allMatch(concat::contains);
+            assertThat(IntStream.rangeClosed(6, 15)).allMatch(concat::contains);
+            assertThat(IntStream.of(3, 16)).noneMatch(concat::contains);
+            assertThat(apply(concat, "01234567890123456789"))
+                    .isEqualTo("0123{[456]789012[345]}6789");
+            assertThat(concat.lengthRange()).isEqualTo(IntRange.ofClosed(6, 11));
+            assertThat(concat.maxLengthValue()).isEqualTo(11);
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
+        }
+
+        @Test
+        @DisplayName("with left maximum length only")
+        void concatAccountsForMaxLengthLeftOnly() {
+            // [4..6  -  10...12]
+            //     [7..9    -   13..15]
+            // [4..6     -      13..15]
+            var flex1 = RangeFlex.of(4, 6, 10, 12).constrain(Constraint.toMaxLength(5));
+            var flex2 = RangeFlex.of(7, 9, 13, 15);
+
+            assertThat(RangeFlex.canConcat(flex1, flex2)).isTrue();
+
+            var concat = concat(flex1, flex2);
+
+            assertThat(concat).hasStartBetween(4, 6).hasEndBetween(13, 15);
+            assertThat(IntStream.rangeClosed(4, 13)).allMatch(concat::contains);
+            assertThat(IntStream.rangeClosed(6, 15)).allMatch(concat::contains);
+            assertThat(IntStream.of(3, 16)).noneMatch(concat::contains);
+            assertThat(apply(concat, "01234567890123456789"))
+                    .isEqualTo("0123{[456]789012[345]}6789");
+            assertThat(concat.lengthRange()).isEqualTo(IntRange.ofClosed(6, 12));
+            assertThat(concat.maxLengthValue()).isNull();
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
+        }
+
+
+        @Test
+        @DisplayName("with right maximum length only")
+        void concatAccountsForMaxLengthRightOnly() {
+            // [4..6  -  10...12]
+            //     [7..9    -   13..15]
+            // [4..6     -      13..15]
+            var flex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex2 = RangeFlex.of(7, 9, 13, 15).constrain(Constraint.toMaxLength(5));
+
+            assertThat(RangeFlex.canConcat(flex1, flex2)).isTrue();
+
+            var concat = concat(flex1, flex2);
+
+            assertThat(concat).hasStartBetween(4, 6).hasEndBetween(13, 15);
+            assertThat(IntStream.rangeClosed(4, 13)).allMatch(concat::contains);
+            assertThat(IntStream.rangeClosed(6, 15)).allMatch(concat::contains);
+            assertThat(IntStream.of(3, 16)).noneMatch(concat::contains);
+            assertThat(apply(concat, "01234567890123456789"))
+                    .isEqualTo("0123{[456]789012[345]}6789");
+            assertThat(concat.lengthRange()).isEqualTo(IntRange.ofClosed(6, 12));
+            assertThat(concat.maxLengthValue()).isNull();
+
+            assertEqualConcat(concat, altConcat(flex1, flex2));
+
+        }
+
 
         @Test
         @DisplayName("throws when left length too small")
@@ -674,7 +872,14 @@ class RangeFlexTest {
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
             assertThatThrownBy(() -> concat(flex1, flex2))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("shorter than the minimum length of 7");
+                    .hasMessageContaining("shorter than the minimum length of 7")
+                    .satisfies(expected -> {
+                        assertThatThrownBy(() -> altConcat(flex1, flex2))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("shorter than the minimum length of 7")
+                        /*.hasMessage(expected.getMessage()) Actual message is better */;
+                    });
+
 
         }
 
@@ -691,11 +896,17 @@ class RangeFlexTest {
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
             assertThatThrownBy(() -> concat(flex1, flex2))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("shorter than the minimum length of 7");
+                    .hasMessageContaining("shorter than the minimum length of 7")
+                    .satisfies(expected -> {
+                        assertThatThrownBy(() -> altConcat(flex1, flex2))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("shorter than the minimum length of 7")
+                                .hasMessage(expected.getMessage());
+                    });
 
         }
 
-        static RangeFlex concat(RangeFlex left, RangeFlex right) {
+        static RangeFlex.Concat concat(RangeFlex left, RangeFlex right) {
             return calculate(RangeFlex::concat, left, right);
         }
     }
@@ -876,14 +1087,14 @@ class RangeFlexTest {
         }
     }
 
-    static RangeFlex calculate(BinaryOperator<RangeFlex> calculation, RangeFlex range1, RangeFlex range2) {
+    static <R extends RangeFlex> R calculate(BiFunction<RangeFlex, RangeFlex, R> calculation, RangeFlex range1, RangeFlex range2) {
         return calculate(rfs -> calculation.apply(rfs[0], rfs[1]), range1, range2);
     }
 
-    static RangeFlex calculate(Function<RangeFlex[], RangeFlex> calculation, RangeFlex... ranges) {
+    static <R extends RangeFlex> R calculate(Function<RangeFlex[], R> calculation, RangeFlex... ranges) {
         String string = "012345678901234567890123456789";
         try {
-            RangeFlex result = calculation.apply(ranges);
+            R result = calculation.apply(ranges);
             System.out.println(
                     Stream.of(ranges)
                             .map(range -> "%s   %s".formatted(range.format(string), range))

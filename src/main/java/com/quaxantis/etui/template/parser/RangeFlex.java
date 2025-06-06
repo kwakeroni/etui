@@ -5,6 +5,7 @@ import com.quaxantis.support.util.Result;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 sealed interface RangeFlex {
 
@@ -109,15 +110,37 @@ sealed interface RangeFlex {
         });
     }
 
+    record ConcatResult(RangeFlex left, RangeFlex right, RangeFlex combined) {
+
+    }
+
+    static ConcatResult concatAlternative(RangeFlex left, RangeFlex right) {
+        var leftConstrained = left.tryConstrain(Constraint.succeedBy(right))
+                .orElseThrow(exc -> new IllegalArgumentException("Cannot concatenate flexes %s and %s: %s".formatted(left, right, exc.getMessage()), exc));
+        var rightConstrained = right.constrain(Constraint.precedeBy(left));
+        var minLength = leftConstrained.minLength().map(minLeft -> minLeft + rightConstrained.minLength().orElse(0))
+                .orElse(rightConstrained.minLength().orElse(null));
+
+        var maxLength = leftConstrained.maxLength().flatMap(maxLeft -> rightConstrained.maxLength().map(maxRight -> maxLeft + maxRight))
+                .orElse(null);
+
+        RangeFlex combined = new RangeFlex.Simple(leftConstrained.start(), rightConstrained.end(), minLength, maxLength);
+        return new ConcatResult(leftConstrained, rightConstrained, combined);
+    }
+
     IntRange start();
 
     IntRange end();
 
-    Integer minLength();
+    Optional<Integer> minLength();
 
-    Integer maxLength();
+    Optional<Integer> maxLength();
 
     RangeFlex constrain(Constraint constraint);
+
+    default Result<? extends RangeFlex, RuntimeException> tryConstrain(Constraint constraint) {
+        return Result.ofTry(() -> constrain(constraint));
+    }
 
     default Optional<IntRange> main() {
         if (start().to() < end().from()) {
@@ -133,17 +156,19 @@ sealed interface RangeFlex {
 
     default IntRange lengthRange() {
 
-        int minimum = end().from() - start().exclusiveTo();
-        minimum = (this.minLength() == null) ? minimum : Math.max(this.minLength(), minimum);
-        int maximum = end().exclusiveTo() - start().from();
-        maximum = (this.maxLength() == null) ? maximum : Math.min(this.maxLength(), maximum);
+        int minRange = end().from() - start().exclusiveTo();
+        int maxRange = end().exclusiveTo() - start().from();
+
+        int minimum = this.minLength().map(min -> Math.max(min, minRange)).orElse(minRange);
+        int maximum = this.maxLength().map(max -> Math.min(max, maxRange)).orElse(maxRange);
         return IntRange.ofClosed(minimum, maximum);
     }
 
 
     default String extractFrom(String string) {
         // TODO what about fuzzy strings and other length constraints ?
-        if (maxLength() instanceof Integer max && max == 0) {
+
+        if (maxLength().filter(max -> max == 0).isPresent()) {
             return "";
         } else if (start().from() <= end().exclusiveTo()) {
             return string.substring(start().from(), end().exclusiveTo());
@@ -183,17 +208,32 @@ sealed interface RangeFlex {
         return "{[" + leftString + "]" + midSpace + midString + midSpace + "[" + rightString + "]" + minLengthString + "}";
     }
 
+    private static <R> R verify(R range, Consumer<? super R> verification) {
+        verification.accept(range);
+        return range;
+    }
 
-    record Simple(IntRange start, IntRange end, Integer minLength, Integer maxLength) implements RangeFlex {
+
+    record Simple(IntRange start, IntRange end, Integer minLengthValue, Integer maxLengthValue) implements RangeFlex {
 
         public Simple {
             Objects.requireNonNull(start, "start");
             Objects.requireNonNull(end, "end");
-            verifyLengthConstraints(start, end, minLength, maxLength).orElseThrow();
+            verifyLengthConstraints(start, end, minLengthValue, maxLengthValue).orElseThrow();
         }
 
         Simple(IntRange start, IntRange end) {
             this(start, end, null, null);
+        }
+
+        @Override
+        public Optional<Integer> minLength() {
+            return Optional.ofNullable(minLengthValue);
+        }
+
+        @Override
+        public Optional<Integer> maxLength() {
+            return Optional.ofNullable(maxLengthValue);
         }
 
         public RangeFlex constrain(Constraint constraint) {
@@ -206,6 +246,9 @@ sealed interface RangeFlex {
                 case Constraint.FixedRange _ -> toFixedRange();
                 case Constraint.FixPrefix _ -> fixPrefix();
                 case Constraint.FixSuffix _ -> fixSuffix();
+                case Constraint.PrecedeBy(var predecessor) -> constrainWithPredecessor(predecessor);
+                case Constraint.SucceedBy(var successor) -> constrainWithSuccessor(successor);
+                case Constraint.Satisfying(var verification) -> verify(this, verification);
                 case Constraint.And(var one, var two) -> constrain(one).constrain(two);
             };
         }
@@ -227,23 +270,23 @@ sealed interface RangeFlex {
         }
 
         private RangeFlex constrainMinLength(Integer minLength) {
-            return new Simple(start, end, (this.minLength == null) ? minLength : Math.max(this.minLength, minLength), this.maxLength);
+            return new Simple(start, end, (this.minLengthValue == null) ? minLength : Math.max(this.minLengthValue, minLength), this.maxLengthValue);
         }
 
         private Simple constrainMaxLength(int maxLength) {
-            return new Simple(start, end, this.minLength, (this.maxLength == null) ? maxLength : Math.min(this.maxLength, maxLength));
+            return new Simple(start, end, this.minLengthValue, (this.maxLengthValue == null) ? maxLength : Math.min(this.maxLengthValue, maxLength));
         }
 
         private RangeFlex limitLeft(int limit) {
             IntRange limitStart = start().limitLeft(limit);
             IntRange limitEnd = end().limitLeft(limit);
-            return new RangeFlex.Simple(limitStart, limitEnd, minLength(), maxLength());
+            return new RangeFlex.Simple(limitStart, limitEnd, minLengthValue(), maxLengthValue());
         }
 
         private RangeFlex limitRight(int limit) {
             IntRange limitStart = start().limitRight(limit);
             IntRange limitEnd = end().limitRight(limit);
-            return new RangeFlex.Simple(limitStart, limitEnd, minLength(), maxLength());
+            return new RangeFlex.Simple(limitStart, limitEnd, minLengthValue(), maxLengthValue());
         }
 
         private RangeFlex constrainToRange(RangeFlex constraint) {
@@ -251,12 +294,35 @@ sealed interface RangeFlex {
             int right = constraint.end().to();
             IntRange limitStart = start().limitLeft(left).limitRight(right);
             IntRange limitEnd = end().limitLeft(left).limitRight(right);
-            return new RangeFlex.Simple(limitStart, limitEnd, minLength(), maxLength());
+            return new RangeFlex.Simple(limitStart, limitEnd, minLengthValue(), maxLengthValue());
+        }
+
+        private RangeFlex constrainWithSuccessor(RangeFlex successor) {
+            return tryConstrain(Constraint.limitRight(successor.start().to()))
+                    .orElseThrow(cause -> {
+                        // TODO: this could be nicer
+                        if (cause.getStackTrace()[0].getClassName().equals(IntRange.class.getName())) {
+                            return new IllegalArgumentException("incompatible overlap at [%s - %s]".formatted(successor.start().to() + 1, this.end().from() - 1), cause);
+                        }
+                        return cause;
+
+                    })
+                    .tryConstrain(Constraint.satisfying(range -> {
+                        if (range.end().exclusiveTo() < successor.start().from()) {
+                            throw new IllegalArgumentException("gap at [%s - %s]".formatted(range.end().to() + 1, successor.start().from() - 1));
+                        }
+                    }))
+                    .orElseThrow();
+        }
+
+        private RangeFlex constrainWithPredecessor(RangeFlex predecessor) {
+            // TODO Compared with constrainWithSuccessor it feels like some tests are missing here
+            return constrain(Constraint.limitLeft(predecessor.end().from()));
         }
 
         @Override
         public String toString() {
-            return RangeFlex.toString(start, end, minLength, maxLength);
+            return RangeFlex.toString(start, end, minLengthValue, maxLengthValue);
         }
 
     }
@@ -269,23 +335,24 @@ sealed interface RangeFlex {
         } else if (maxLength != null && maxLength < lowestLength) {
             return Result.ofFailure(new IllegalArgumentException("Range %s with lowest length of %d is strictly longer than the maximum length of %d".formatted(RangeFlex.toString(start, end), lowestLength, maxLength)));
         } else if (minLength != null && maxLength != null && minLength > maxLength) {
-            return Result.ofFailure(new IllegalArgumentException("Range %s cannot have lenght constraints where minimum length of %d is greater than maximum length of %d".formatted(RangeFlex.toString(start, end), minLength, maxLength)));
+            return Result.ofFailure(new IllegalArgumentException("Range %s cannot have length constraints where minimum length of %d is greater than maximum length of %d".formatted(RangeFlex.toString(start, end), minLength, maxLength)));
         } else {
             return Result.ofVoid();
         }
     }
 
-    record Concat(RangeFlex left, RangeFlex right, Integer minLength, Integer maxLength) implements RangeFlex {
+    record Concat(RangeFlex left, RangeFlex right, Integer minLengthValue,
+                  Integer maxLengthValue) implements RangeFlex {
 
 
         public Concat {
             Objects.requireNonNull(left, "start");
             Objects.requireNonNull(right, "end");
-            verifyLengthConstraints(left.start(), right.end(), minLength, maxLength).orElseThrow();
+            verifyLengthConstraints(left.start(), right.end(), minLengthValue, maxLengthValue).orElseThrow();
         }
 
         public Concat(RangeFlex left, RangeFlex right) {
-            this(left, right, optSum(left.minLength(), right.minLength()), optSumOrNull(left.maxLength(), right.maxLength()));
+            this(left, right, optSum(left.minLength().orElse(null), right.minLength().orElse(null)), optSumOrNull(left.maxLength().orElse(null), right.maxLength().orElse(null)));
         }
 
         @Override
@@ -298,6 +365,21 @@ sealed interface RangeFlex {
             return right.end();
         }
 
+        @Override
+        public Optional<Integer> minLength() {
+            return Optional.ofNullable(minLengthValue);
+        }
+
+        @Override
+        public Optional<Integer> maxLength() {
+            return Optional.ofNullable(maxLengthValue);
+        }
+
+        @Override
+        public Result<Concat, RuntimeException> tryConstrain(Constraint constraint) {
+            return Result.ofTry(() -> constrain(constraint));
+        }
+
         public Concat constrain(Constraint constraint) {
             return switch (constraint) {
                 case Constraint.MinLength(int min) -> constrainMinLength(min);
@@ -308,45 +390,63 @@ sealed interface RangeFlex {
                 case Constraint.FixedRange _ -> toFixedRange();
                 case Constraint.FixPrefix _ -> fixPrefix();
                 case Constraint.FixSuffix _ -> fixSuffix();
+                case Constraint.PrecedeBy(var predecessor) -> constrainWithPredecessor(predecessor);
+                case Constraint.SucceedBy(var successor) -> constrainWithSuccessor(successor);
+                case Constraint.Satisfying(var verification) -> verify(this, verification);
                 case Constraint.And(var one, var two) -> constrain(one).constrain(two);
             };
         }
 
         private Concat toFixedRange() {
-            return new Concat(left.constrain(Constraint.fixPrefix()), right.constrain(Constraint.fixSuffix()), minLength, maxLength);
+            return new Concat(left.constrain(Constraint.fixPrefix()), right.constrain(Constraint.fixSuffix()), minLengthValue, maxLengthValue);
         }
 
         private Concat fixPrefix() {
-            return new Concat(left.constrain(Constraint.fixPrefix()), right, minLength, maxLength);
+            return new Concat(left.constrain(Constraint.fixPrefix()), right, minLengthValue, maxLengthValue);
         }
 
         private Concat fixSuffix() {
-            return new Concat(left, right.constrain(Constraint.fixSuffix()), minLength, maxLength);
+            return new Concat(left, right.constrain(Constraint.fixSuffix()), minLengthValue, maxLengthValue);
         }
 
         private Concat constrainMinLength(int minLength) {
-            return new Concat(left, right, (this.minLength == null) ? minLength : Math.max(this.minLength, minLength), this.maxLength);
+            return new Concat(left, right, (this.minLengthValue == null) ? minLength : Math.max(this.minLengthValue, minLength), this.maxLengthValue);
         }
 
         private Concat constrainMaxLength(Integer maxLength) {
-            return new Concat(left, right, this.minLength, (this.maxLength == null) ? maxLength : Math.min(this.maxLength, maxLength));
+            return new Concat(left, right, this.minLengthValue, (this.maxLengthValue == null) ? maxLength : Math.min(this.maxLengthValue, maxLength));
         }
 
         private Concat limitLeft(Constraint.LimitLeft limitLeft) {
-            return new Concat(left.constrain(limitLeft), right.constrain(limitLeft), this.minLength, this.maxLength);
+            return new Concat(left.constrain(limitLeft), right.constrain(limitLeft), this.minLengthValue, this.maxLengthValue);
         }
 
         private Concat limitRight(Constraint.LimitRight limitRight) {
-            return new Concat(left.constrain(limitRight), right.constrain(limitRight), this.minLength, this.maxLength);
+            return new Concat(left.constrain(limitRight), right.constrain(limitRight), this.minLengthValue, this.maxLengthValue);
         }
 
         private Concat constrainToRange(RangeFlex constraint) {
-            return new RangeFlex.Concat(left.constrain(Constraint.toRange(constraint)), right.constrain(Constraint.toRange(constraint)), minLength(), maxLength())/*.withMinLength(constraint.minLength()).withMaxLength(constraint.maxLength()) */;
+            return new RangeFlex.Concat(left.constrain(Constraint.toRange(constraint)), right.constrain(Constraint.toRange(constraint)), minLengthValue(), maxLengthValue())/*.withMinLength(constraint.minLength()).withMaxLength(constraint.maxLength()) */;
+        }
+
+        private Concat constrainWithSuccessor(RangeFlex successor) {
+            return tryConstrain(Constraint.limitRight(successor.start().to()))
+                    .orElseThrow(cause -> new IllegalArgumentException("incompatible overlap at [%s - %s]".formatted(successor.start().to() + 1, this.end().from() - 1), cause))
+                    .tryConstrain(Constraint.satisfying(range -> {
+                        if (range.end().exclusiveTo() < successor.start().from()) {
+                            throw new IllegalArgumentException("gap at [%s - %s]".formatted(range.end().to() + 1, successor.start().from() - 1));
+                        }
+                    }))
+                    .orElseThrow();
+        }
+
+        private Concat constrainWithPredecessor(RangeFlex predecessor) {
+            return constrain(Constraint.limitLeft(predecessor.end().from()));
         }
 
         @Override
         public String toString() {
-            return RangeFlex.toString(start(), end(), minLength, maxLength) + " = " + left + " + " + right;
+            return RangeFlex.toString(start(), end(), minLengthValue, maxLengthValue) + " = " + left + " + " + right;
         }
 
         private static Integer optSum(Integer left, Integer right) {
