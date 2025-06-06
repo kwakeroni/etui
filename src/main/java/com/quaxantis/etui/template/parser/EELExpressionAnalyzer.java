@@ -1,7 +1,6 @@
 package com.quaxantis.etui.template.parser;
 
 import com.quaxantis.etui.template.parser.Match.NoMatch;
-import com.quaxantis.etui.template.parser.Match.PartialMatch;
 import com.quaxantis.support.util.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import static com.quaxantis.etui.template.parser.Constraint.*;
 
 public class EELExpressionAnalyzer {
 
@@ -51,7 +52,7 @@ public class EELExpressionAnalyzer {
         return switch (expression) {
             case Expression.Text text -> matchText(text, string);
             case Expression.Identifier identifier -> matchIdentifier(identifier, string);
-//            case Expression.Elvis elvis -> bindElvis(elvis, resolvedExpression);
+            case Expression.Elvis elvis -> matchElvis(elvis, string);
             case Expression.OptSuffix optSuffix -> matchOptSuffix(optSuffix, string);
             default -> new NoMatch(string, "unknown expression: " + expression);
         };
@@ -60,25 +61,64 @@ public class EELExpressionAnalyzer {
     private Match matchIdentifier(Expression.Identifier identifier, String resolvedExpression) {
 //        Match.RootMatch rootMatch = new Match.RootMatch(resolvedExpression);
         IntRange fullRange = IntRange.of(0, resolvedExpression.length());
-        RangeFlex flex = RangeFlex.of(fullRange, fullRange).withMinLength(0);
-        return new Match.BindingMatch(new Match.RootMatch(resolvedExpression).constrain(flex), identifier.name());
+        RangeFlex flex = RangeFlex.of(fullRange, fullRange);
+        return Match.of(resolvedExpression)
+                .constrain(toRange(flex).and(toMinLength(0)))
+                .binding(identifier.name());
     }
 
     private Match matchText(Expression.Text textExpr, String string) {
         Objects.requireNonNull(textExpr);
         Objects.requireNonNull(string);
         String text = textExpr.literal();
+        RangeFlex matchRange;
+        int matchLength;
+
         if (string.equals(text)) {
             int end = string.length() - 1;
-            return new PartialMatch(new Match.RootMatch(string), RangeFlex.ofFixed(0, end).withMinLength(string.length()));
+            matchRange = RangeFlex.ofFixed(0, end);
+            matchLength = end + 1;
         } else {
             int index = string.indexOf(text);
             if (index < 0) {
                 return new NoMatch(string, "literal expression not found: " + text);
             } else {
                 int end = index + text.length() - 1;
-                return new PartialMatch(new Match.RootMatch(string), RangeFlex.ofFixed(index, end).withMinLength(end - index + 1));
+                matchRange = RangeFlex.ofFixed(index, end);
+                matchLength = end - index + 1;
             }
+        }
+        System.out.println(Match.of(string).constrain(toRange(matchRange).and(toFixedRange())));
+        System.out.println(new Match.PartialMatch(new Match.RootMatch(string), matchRange));
+        return Match.of(string).constrain(
+                toRange(matchRange)
+                        .and(toFixedRange())
+                        .and(toMinLength(matchLength))
+                        .and(toMaxLength(matchLength)));
+    }
+
+    private Match matchElvis(Expression.Elvis elvis, String string) {
+
+        Match leftMatch = match(elvis.expression(), string);
+        Match mainMatch = leftMatch.constrain(toMinLength(1));
+        Match emptyMainMatch = leftMatch.constrain(toMaxLength(0));
+        if (emptyMainMatch instanceof NoMatch) {
+            return mainMatch;
+        } else {
+            Match fallbackMatch = match(elvis.orElse(), string); // TODO copy bindings
+//            emptyMainMatch.bindings().map(binding -> {
+//                Match boundMatch = fallbackMatch;
+//                binding.boundVariables().reduce(fallbackMatch, m -> new Match.BindingMatch(m, ))
+//            })
+
+            RangeFlex.Concat concatRange = RangeFlex.concat(emptyMainMatch.matchRange(), fallbackMatch.matchRange());
+            Match constrainedEmptyMatch = emptyMainMatch.constrain(toRange(concatRange.left()));
+            Match constrainedFallbackMatch = fallbackMatch.constrain(toRange(concatRange.right()));
+            Match combined = constrainedFallbackMatch.andThen(fallback -> new Match.ConcatMatch(constrainedEmptyMatch, fallback, concatRange));
+//            Match combined = fallbackMatch.andThen(fallback ->  new Match.CombinedMatch(string, emptyMainMatch, fallback, RangeFlex.concat(emptyMainMatch.matchRange(), fallback.matchRange())));
+
+            return Match.ChoiceMatch.ofPossibleMatches(mainMatch, combined)
+                    .orElseGet(() -> new NoMatch(string, null, mainMatch, fallbackMatch));
         }
     }
 
@@ -87,13 +127,13 @@ public class EELExpressionAnalyzer {
         Match rightMatch = doMatch(optSuffix.suffix(), string);
 
         if (!(leftMatch instanceof NoMatch || rightMatch instanceof NoMatch)) {
-            var leftFlex = leftMatch.matchRange().withMinLength(1);
+            var leftFlex = leftMatch.matchRange().constrain(toMinLength(1));
             var rightFlex = rightMatch.matchRange();
 
             var concatResult = RangeFlex.tryConcat(leftFlex, rightFlex);
             if (concatResult instanceof Result.Success(RangeFlex.Concat concatRangeFlex)) {
-                Match constrainedLeftMatch = leftMatch.constrain(concatRangeFlex.left());
-                Match constrainedRightMatch = rightMatch.constrain(concatRangeFlex.right());
+                Match constrainedLeftMatch = leftMatch.constrain(toRange(concatRangeFlex.left()));
+                Match constrainedRightMatch = rightMatch.constrain(toRange(concatRangeFlex.right()));
                 var concatMatch = new Match.ConcatMatch(constrainedLeftMatch, constrainedRightMatch, concatRangeFlex);
                 log.trace("""
                           Matching {}

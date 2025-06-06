@@ -1,5 +1,6 @@
 package com.quaxantis.support.util;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -8,6 +9,8 @@ public sealed interface Result<T, E extends Exception> {
     boolean isSuccess();
 
     boolean isFailure();
+
+    Optional<T> ifSuccess();
 
     T orElseThrow() throws E;
 
@@ -46,6 +49,11 @@ public sealed interface Result<T, E extends Exception> {
         }
 
         @Override
+        public Optional<T> ifSuccess() {
+            return Optional.ofNullable(value);
+        }
+
+        @Override
         public T orElseThrow() throws E {
             return value;
         }
@@ -66,6 +74,11 @@ public sealed interface Result<T, E extends Exception> {
         @Override
         public boolean isSuccess() {
             return false;
+        }
+
+        @Override
+        public Optional<T> ifSuccess() {
+            return Optional.empty();
         }
 
         @Override

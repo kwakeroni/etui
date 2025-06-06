@@ -1,5 +1,7 @@
 package com.quaxantis.etui.template.parser;
 
+import java.util.function.BiFunction;
+
 record IntRange(int from, int exclusiveTo) {
 
     public static IntRange of(int from, int exclusiveTo) {
@@ -26,6 +28,10 @@ record IntRange(int from, int exclusiveTo) {
 
     public boolean isEmpty() {
         return from == exclusiveTo;
+    }
+
+    public boolean contains(int i) {
+        return i >= from && i < exclusiveTo;
     }
 
     public int length() {
@@ -75,5 +81,12 @@ record IntRange(int from, int exclusiveTo) {
     @Override
     public String toString() {
         return "(" + from + "," + exclusiveTo + "(";
+    }
+
+    /**
+     * Applies the {@link #from()} and {@link #to()} values to the given functions
+     */
+    public <T> T transform(BiFunction<Integer, Integer, T> function) {
+        return function.apply(from(), to());
     }
 }

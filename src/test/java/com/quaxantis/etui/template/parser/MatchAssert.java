@@ -67,9 +67,10 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
     }
 
     @API
-    public MatchAssert hasMatchRepresentation(String representation) {
-        if (!representation.equals(actual.matchRepresentation())) {
-            failWithDerivedActualAndMessage(Match::matchRepresentation, actual, representation, "Expected actual representation to be equal to");
+    public MatchAssert hasMatchRepresentation(String expected) {
+        String fullRepresentation = actual.matchRepresentation().replaceFirst("!\\d*<\\d*$", "");
+        if (!expected.equals(fullRepresentation)) {
+            failWithDerivedActualAndMessage(_ -> fullRepresentation, actual, expected, "Expected actual representation to be equal to");
         }
         return myself;
     }

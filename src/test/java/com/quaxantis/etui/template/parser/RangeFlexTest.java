@@ -4,9 +4,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static com.quaxantis.etui.template.parser.RangeFlexAssert.assertThat;
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -244,7 +249,8 @@ class RangeFlexTest {
         @DisplayName("with a minimal length")
         void withMinimalLength() {
             // [4..6]-[10..12] -> [4-10]..[6-12]
-            var flex = RangeFlex.of(4, 6, 10, 12).withMinLength(9);
+            RangeFlex rangeFlex = RangeFlex.of(4, 6, 10, 12);
+            var flex = rangeFlex.constrain(Constraint.toMinLength(9));
 
             assertThat(IntStream.rangeClosed(4, 10)).allMatch(flex::contains);
             assertThat(IntStream.rangeClosed(6, 12)).allMatch(flex::contains);
@@ -253,13 +259,16 @@ class RangeFlexTest {
                     .isEqualTo("0123{[456]789[012]}3456789");
             assertThat(flex.minLength()).isEqualTo(9);
             assertThat(flex.lengthRange()).isEqualTo(IntRange.ofClosed(9, 9));
-            assertThat(flex.toString()).isEqualTo("{[ 4- 6]  7- 9 [10-12]!9}");
+            assertThat(flex.toString()).isEqualTo("{[ 4- 6]  7- 9 [10-12]!9<}");
         }
 
         @Test
         @DisplayName("cannot create a rangeflex smaller than the minimal length")
         void throwsWhenSmallerThanMinimalLength() {
-            assertThatThrownBy(() -> RangeFlex.of(4, 6, 10, 12).withMinLength(10))
+            assertThatThrownBy(() -> {
+                RangeFlex rangeFlex = RangeFlex.of(4, 6, 10, 12);
+                rangeFlex.constrain(Constraint.toMinLength(10));
+            })
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("highest length of 9 is strictly shorter than the minimum length of 10");
 
@@ -270,25 +279,6 @@ class RangeFlexTest {
     @Nested
     @DisplayName("Can concatenate two flexes")
     class Concat {
-
-        static RangeFlex concat(RangeFlex left, RangeFlex right) {
-            try {
-                RangeFlex result = RangeFlex.concat(left, right);
-                System.out.printf("""
-                                    %s
-                                  + %s
-                                  = %s
-                                  """, left, right, result);
-                return result;
-            } catch (Exception exc) {
-                System.out.printf("""
-                                    %s
-                                  + %s
-                                  = %s
-                                  """, left, right, exc);
-                throw exc;
-            }
-        }
 
         @Test
         @DisplayName("with an overlap")
@@ -444,7 +434,6 @@ class RangeFlexTest {
                     .isEqualTo("0123{[4567]890[123]}456789");
         }
 
-
         @Test
         @DisplayName("with an optional left flex reduced to empty by the right main part")
         void concatLeftOptFlexWithCompleteMainOverlap() {
@@ -464,7 +453,6 @@ class RangeFlexTest {
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("0123{[]456[789]}0123456789");
         }
-
 
         @Test
         @DisplayName("with an optional left flex reduced to empty by the right main part with a prefix")
@@ -486,7 +474,6 @@ class RangeFlexTest {
                     .isEqualTo("0123{[]456[78]}90123456789");
         }
 
-
         @Test
         @DisplayName("with an optional left flex reduced to empty with a negative overlap by the right main part")
         void concatLeftOptFlexWithCompleteNegativeMainOverlap() {
@@ -501,7 +488,6 @@ class RangeFlexTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("[3 - 3]");
         }
-
 
         @Test
         @DisplayName("with an optional right flex and an overlap on the left suffix")
@@ -543,7 +529,6 @@ class RangeFlexTest {
                     .isEqualTo("0123456{[789]012[3456]}789");
         }
 
-
         @Test
         @DisplayName("with an optional right flex reduced to empty by the left main part")
         void concatRightOptFlexWithCompleteMainOverlap() {
@@ -563,7 +548,6 @@ class RangeFlexTest {
             assertThat(apply(concat, "01234567890123456789"))
                     .isEqualTo("01234567890{[123]456[]}789");
         }
-
 
         @Test
         @DisplayName("with an optional right flex reduced to empty by the left main part with a suffix")
@@ -635,7 +619,6 @@ class RangeFlexTest {
                     .hasMessageContaining("[9 - 9]");
         }
 
-
         @Test
         @DisplayName("with the right prefix and suffix overlapping the left prefix")
         void concatRightPrefixAndSuffixLeftPrefixOverlap() {
@@ -651,15 +634,16 @@ class RangeFlexTest {
                     .hasMessageContaining("[6 - 9]");
         }
 
-
         @Test
         @DisplayName("with minimum lengths")
         void concatAccountsForMinLength() {
             // [4..6  -  10...12]
             //     [7..9    -   13..15]
             // [4..6     -      13..15]
-            var flex1 = RangeFlex.of(4, 6, 10, 12).withMinLength(5);
-            var flex2 = RangeFlex.of(7, 9, 13, 15).withMinLength(5);
+            RangeFlex rangeFlex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex1 = rangeFlex1.constrain(Constraint.toMinLength(5));
+            RangeFlex rangeFlex = RangeFlex.of(7, 9, 13, 15);
+            var flex2 = rangeFlex.constrain(Constraint.toMinLength(5));
 
             assertThat(RangeFlex.canConcat(flex1, flex2)).isTrue();
 
@@ -683,7 +667,8 @@ class RangeFlexTest {
             // [4..6  -  10...12]
             //     [7..9    -   13..15]
             // [4..6     -      13..15]
-            var flex1 = RangeFlex.of(4, 6, 10, 12).withMinLength(7);
+            RangeFlex rangeFlex = RangeFlex.of(4, 6, 10, 12);
+            var flex1 = rangeFlex.constrain(Constraint.toMinLength(7));
             var flex2 = RangeFlex.of(7, 9, 13, 15);
 
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
@@ -700,7 +685,8 @@ class RangeFlexTest {
             //     [7..9    -   13..15]
             // [4..6     -      13..15]
             var flex1 = RangeFlex.of(4, 6, 10, 12);
-            var flex2 = RangeFlex.of(7, 9, 13, 15).withMinLength(7);
+            RangeFlex rangeFlex = RangeFlex.of(7, 9, 13, 15);
+            var flex2 = rangeFlex.constrain(Constraint.toMinLength(7));
 
             assertThat(RangeFlex.canConcat(flex1, flex2)).isFalse();
             assertThatThrownBy(() -> concat(flex1, flex2))
@@ -708,12 +694,218 @@ class RangeFlexTest {
                     .hasMessageContaining("shorter than the minimum length of 7");
 
         }
+
+        static RangeFlex concat(RangeFlex left, RangeFlex right) {
+            return calculate(RangeFlex::concat, left, right);
+        }
+    }
+
+    @Nested
+    @DisplayName("Can expand two flexes")
+    class Expand {
+        @Test
+        @DisplayName("without an overlap")
+        void expandWithoutOverlap() {
+            // [4..6 - 10...12]
+            //                 [15..17 - 21..23]
+            // [4..23         -           4..23]
+            var flex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex2 = RangeFlex.of(15, 17, 21, 23);
+
+            var expand = expand(flex1, flex2);
+
+            assertThat(expand).hasStartBetween(4, 23).hasEndBetween(4, 23);
+            assertThat(IntStream.rangeClosed(4, 23)).allMatch(expand::contains);
+            assertThat(IntStream.of(3, 24)).noneMatch(expand::contains);
+            assertThat(apply(expand, "012345678901234567890123456789"))
+                    .isEqualTo("0123{[[45678901234567890123]]}456789");
+
+            var expand2 = expand(flex2, flex1);
+            assertThat(expand2).isEqualTo(expand);
+        }
+
+
+        @Test
+        @DisplayName("that are adjacent")
+        void expandAdjacent() {
+            // [4..6 - 10...12]
+            //               [13..15 - 19..21]
+            // [4..21         -         4..21]
+            var flex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex2 = RangeFlex.of(13, 15, 19, 21);
+
+            var expand = expand(flex1, flex2);
+
+            assertThat(expand).hasStartBetween(4, 21).hasEndBetween(4, 21);
+            assertThat(IntStream.rangeClosed(4, 21)).allMatch(expand::contains);
+            assertThat(IntStream.of(3, 22)).noneMatch(expand::contains);
+            assertThat(apply(expand, "012345678901234567890123456789"))
+                    .isEqualTo("0123{[[456789012345678901]]}23456789");
+
+            var expand2 = expand(flex2, flex1);
+            assertThat(expand2).isEqualTo(expand);
+        }
+
+        @Test
+        @DisplayName("with an overlap in affixes")
+        void expandWithAffixOverlap() {
+            // [4..6 - 10...12]
+            //            [11..13 - 17..19]
+            // [4..19       -        4..19]
+            var flex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex2 = RangeFlex.of(11, 13, 17, 19);
+
+            var expand = expand(flex1, flex2);
+
+            assertThat(expand).hasStartBetween(4, 19).hasEndBetween(4, 19);
+            assertThat(IntStream.rangeClosed(4, 19)).allMatch(expand::contains);
+            assertThat(IntStream.of(3, 20)).noneMatch(expand::contains);
+            assertThat(apply(expand, "012345678901234567890123456789"))
+                    .isEqualTo("0123{[[4567890123456789]]}0123456789");
+
+            var expand2 = expand(flex2, flex1);
+            assertThat(expand2).isEqualTo(expand);
+        }
+
+        @Test
+        @DisplayName("with an overlap in main content")
+        void expandWithMainOverlap() {
+            // [4..6  -  10..12]
+            //  [5..7  -  11..13]
+            // [4...7  - 10...13]
+            var flex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex2 = RangeFlex.of(5, 7, 11, 13);
+
+            var expand = expand(flex1, flex2);
+
+            assertThat(expand).hasStartBetween(4, 7).hasEndBetween(10, 13);
+            assertThat(IntStream.rangeClosed(4, 10)).allMatch(expand::contains);
+            assertThat(IntStream.rangeClosed(7, 13)).allMatch(expand::contains);
+            assertThat(IntStream.of(3, 14)).noneMatch(expand::contains);
+            assertThat(apply(expand, "012345678901234567890123456789"))
+                    .isEqualTo("0123{[4567]89[0123]}4567890123456789");
+
+            var expand2 = expand(flex2, flex1);
+            assertThat(expand2).isEqualTo(expand);
+        }
+
+        @Test
+        @DisplayName("with adjacent main content")
+        void expandWithMainAdjacent() {
+            // [4..6  -  10..12]
+            //      [7..9  -  13..15]
+            // [4...15    -    4..15]
+            var flex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex2 = RangeFlex.of(7, 9, 13, 15);
+
+            var expand = expand(flex1, flex2);
+
+            assertThat(expand).hasStartBetween(4, 15).hasEndBetween(4, 15);
+            assertThat(IntStream.rangeClosed(4, 15)).allMatch(expand::contains);
+            assertThat(IntStream.of(3, 16)).noneMatch(expand::contains);
+            assertThat(apply(expand, "012345678901234567890123456789"))
+                    .isEqualTo("0123{[[456789012345]]}67890123456789");
+
+            var expand2 = expand(flex2, flex1);
+            assertThat(expand2).isEqualTo(expand);
+        }
+
+        static RangeFlex expand(RangeFlex range1, RangeFlex range2) {
+            return calculate(RangeFlex::expand, range1, range2);
+        }
+    }
+
+    @Nested
+    @DisplayName("Can expand multiple flexes")
+    class ExpandMultiple {
+        @Test
+        @DisplayName("without an overlap")
+        void expandWithoutOverlap() {
+            // [4..6 - 10..12]
+            //    [6..8  - 12..14]
+            //        [10..12  -  16..18]
+            //                   [16..18 - 22..24]
+            // [4..24           -           4..24]
+            var flex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex2 = RangeFlex.of(6, 8, 12, 14);
+            var flex3 = RangeFlex.of(10, 12, 16, 18);
+            var flex4 = RangeFlex.of(16, 18, 22, 24);
+
+            var expand = expand(flex1, flex2, flex3, flex4);
+
+            assertThat(expand).hasStartBetween(4, 24).hasEndBetween(4, 24);
+            assertThat(IntStream.rangeClosed(4, 24)).allMatch(expand::contains);
+            assertThat(IntStream.of(3, 25)).noneMatch(expand::contains);
+            assertThat(apply(expand, "012345678901234567890123456789"))
+                    .isEqualTo("0123{[[456789012345678901234]]}56789");
+
+            var expand2 = expand(flex4, flex3, flex2, flex1);
+            assertThat(expand2).isEqualTo(expand);
+        }
+
+
+        @Test
+        @DisplayName("with an overlap in main content")
+        void expandWithMainOverlap() {
+            // [4..5 - 11..12]
+            //    [5..6  - 12..13]
+            //       [6..7  -  13..14]
+            //          [7..8  -   14..15]
+            // [4..24           -           4..24]
+            var flex1 = RangeFlex.of(4, 5, 11, 12);
+            var flex2 = RangeFlex.of(5, 6, 12, 13);
+            var flex3 = RangeFlex.of(6, 7, 13, 14);
+            var flex4 = RangeFlex.of(7, 8, 14, 15);
+
+            var expand = expand(flex1, flex2, flex3, flex4);
+
+            assertThat(expand).hasStartBetween(4, 8).hasEndBetween(11, 15);
+            assertThat(IntStream.rangeClosed(4, 11)).allMatch(expand::contains);
+            assertThat(IntStream.rangeClosed(8, 15)).allMatch(expand::contains);
+            assertThat(IntStream.of(3, 16)).noneMatch(expand::contains);
+            assertThat(apply(expand, "012345678901234567890123456789"))
+                    .isEqualTo("0123{[45678]90[12345]}67890123456789");
+
+            var expand2 = expand(flex4, flex3, flex2, flex1);
+            assertThat(expand2).isEqualTo(expand);
+        }
+
+
+        static RangeFlex expand(RangeFlex... ranges) {
+            return calculate(rfs -> RangeFlex.expand(List.of(rfs)), ranges);
+        }
+    }
+
+    static RangeFlex calculate(BinaryOperator<RangeFlex> calculation, RangeFlex range1, RangeFlex range2) {
+        return calculate(rfs -> calculation.apply(rfs[0], rfs[1]), range1, range2);
+    }
+
+    static RangeFlex calculate(Function<RangeFlex[], RangeFlex> calculation, RangeFlex... ranges) {
+        String string = "012345678901234567890123456789";
+        try {
+            RangeFlex result = calculation.apply(ranges);
+            System.out.println(
+                    Stream.of(ranges)
+                            .map(range -> "%s   %s".formatted(range.format(string), range))
+                            .collect(joining("%n+ ".formatted(),
+                                             "  ",
+                                             "%n= %s   %s%n".formatted(result.format(string), result))));
+            return result;
+        } catch (Exception exc) {
+            System.out.println(
+                    Stream.of(ranges)
+                            .map(range -> "%s   %s".formatted(range.format(string), range))
+                            .collect(joining("%n+ ".formatted(),
+                                             "  ",
+                                             "%n= %s".formatted(exc))));
+            throw exc;
+        }
     }
 
     private static String apply(RangeFlex flex, String string) {
-        System.out.println(flex);
-        System.out.println(RangeFlexFormatter.defaultFormatter().format(flex, string));
-        System.out.println(RangeFlexFormatter.UNDERLINE_ONLY.format(flex, string));
+//        System.out.println(flex);
+//        System.out.println(RangeFlexFormatter.defaultFormatter().format(flex, string));
+//        System.out.println(RangeFlexFormatter.UNDERLINE_ONLY.format(flex, string));
         return flex.applyTo(string);
     }
 }
