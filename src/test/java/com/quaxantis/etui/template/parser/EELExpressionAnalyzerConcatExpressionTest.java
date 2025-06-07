@@ -18,6 +18,7 @@ public class EELExpressionAnalyzerConcatExpressionTest {
                 .isNotInstanceOf(Match.NoMatch.class)
                 .isNotFullMatch()
                 .hasNoBoundVariables()
+                .hasOnlyBindingsMatchingOrEmpty(concat)
                 .hasMatchRepresentation("{[][]}an expression");
     }
 
@@ -29,6 +30,7 @@ public class EELExpressionAnalyzerConcatExpressionTest {
         assertThat(concat).matching("an expression")
                 .isFullMatch()
                 .hasNoBoundVariables()
+                .hasOnlyBindingsMatching(concat)
                 .hasMatchRepresentation("{[]an expression[]}");
     }
 
@@ -39,6 +41,7 @@ public class EELExpressionAnalyzerConcatExpressionTest {
         assertThat(concat).matching("one expression")
                 .isFullMatch()
                 .hasNoBoundVariables()
+                .hasOnlyBindingsMatching(concat)
                 .hasMatchRepresentation("{[]one expression[]}");
     }
 
@@ -54,6 +57,7 @@ public class EELExpressionAnalyzerConcatExpressionTest {
         assertThat(concat).matching("one two three four five expressions")
                 .isFullMatch()
                 .hasNoBoundVariables()
+                .hasOnlyBindingsMatching(concat)
                 .hasMatchRepresentation("{[]one two three four five expressions[]}");
     }
 
@@ -71,7 +75,8 @@ public class EELExpressionAnalyzerConcatExpressionTest {
                 .isFullMatch()
                 .hasBoundVariables()
                 .hasMatchRepresentation("{[]one two three four five expressions[]}")
-                .hasBindings(Map.of("var1", "three"));
+                .hasBindings(Map.of("var1", "three"))
+                .hasOnlyBindingsMatching(concat);
     }
 
     @Test
@@ -87,7 +92,8 @@ public class EELExpressionAnalyzerConcatExpressionTest {
                 .isFullMatch()
                 .hasBoundVariables()
                 .hasMatchRepresentation("{[]one two three four five expressions[]}")
-                .hasBindings(Map.of("var1", "three", "var2", "five"));
+                .hasBindings(Map.of("var1", "three", "var2", "five"))
+                .hasOnlyBindingsMatching(concat);
     }
 
 }

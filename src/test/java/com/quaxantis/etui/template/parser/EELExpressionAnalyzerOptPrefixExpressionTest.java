@@ -46,7 +46,8 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
         assertThat(optPrefix).matching("a prefix and ")
                 .isNotFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("{[][]}a prefix and ");
+                .hasMatchRepresentation("{[][]}a prefix and ")
+                .hasOnlyBindingsMatchingOrEmpty(optPrefix);
     }
 
 
@@ -57,7 +58,8 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
         assertThat(optPrefix).matching("a prefix and my text")
                 .isFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("{[]a prefix and my text[]}");
+                .hasMatchRepresentation("{[]a prefix and my text[]}")
+                .hasOnlyBindingsMatching(optPrefix);
     }
 
     @Test
@@ -71,6 +73,7 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
                 .hasBindings(Map.of("var1", "my text"),
                              Map.of("var1", "")
                 )
+                .hasOnlyBindingsMatchingOrEmpty(optPrefix)
                 .isChoiceOfSatisfying(choices -> assertThat(choices)
                         .satisfiesExactlyInAnyOrder(
                                 matchWithVar -> assertThat(matchWithVar)
@@ -81,6 +84,18 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
                                         .hasBindings(Map.of("var1", ""))
                         )
                 );
+    }
+
+    @Test
+    @DisplayName("providing a match if the prefix is a variable")
+    void matchPrefixVariable() {
+        var optPrefix = new Expression.OptPrefix(new Expression.Identifier("var1"), new Expression.Text("my text"));
+        assertThat(optPrefix).matching("a prefix and my text")
+                .isFullMatch()
+                .hasBoundVariables()
+                .hasMatchRepresentation("{[a prefix and ]my text[]}")
+                .hasBindings(Map.of("var1", "a prefix and "))
+                .hasOnlyBindingsMatching(optPrefix);
     }
 
 
@@ -95,6 +110,7 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
                 .hasBindings(Map.of("var1", "my text", "var2", "a prefix"),
                              Map.of("var1", "")
                 )
+                .hasOnlyBindingsMatchingOrEmpty(optPrefix)
                 .isChoiceOfSatisfying(choices -> assertThat(choices)
                         .satisfiesExactlyInAnyOrder(
                                 matchWithVar -> assertThat(matchWithVar)

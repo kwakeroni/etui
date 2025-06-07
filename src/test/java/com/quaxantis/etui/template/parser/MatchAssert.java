@@ -8,8 +8,6 @@ import org.assertj.core.presentation.StandardRepresentation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -94,19 +92,6 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
         return myself;
     }
 
-
-    @API
-    @Deprecated
-    public MatchAssert hasVariableValue(String variable, String expected) {
-        Optional<String> actualValue = actual.valueOf(variable);
-        if (actualValue.isEmpty()) {
-            failWithActualAndMessage("Expected variable '%s' to be bound, but was not", variable);
-        } else if (!Objects.equals(expected, actualValue.get())) {
-            failWithActualAndMessage("Expected variable '%s' to have expected value", variable);
-        }
-        return myself;
-    }
-
     @SafeVarargs
     public final MatchAssert hasBindings(Map<String, String>... bindings) {
         Assertions.assertThat(actual.bindings())
@@ -114,6 +99,38 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
                 .containsExactlyInAnyOrder(bindings);
         return myself;
     }
+
+    public final MatchAssert hasOnlyBindingsMatching(Expression expression) {
+        Assertions.assertThat(
+                        actual.bindings()
+                                .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
+                                .map(resolver -> resolver.resolve(expression))
+                                .distinct())
+                .containsExactly(actual.fullString());
+        return myself;
+    }
+
+    public final MatchAssert hasOnlyBindingsMatchingOrEmpty(Expression expression) {
+        Assertions.assertThat(
+                        actual.bindings()
+                                .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
+                                .map(resolver -> resolver.resolve(expression))
+                                .distinct())
+                .containsAnyOf(actual.fullString(), "");
+        return myself;
+    }
+
+    public final MatchAssert hasOnlyBindingsPartiallyMatching(Expression expression) {
+        Assertions.assertThat(
+                        actual.bindings()
+                                .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
+                                .map(resolver -> resolver.resolve(expression))
+                                .distinct())
+                .allMatch(matchString -> actual.fullString().contains(matchString), "is part of \"" + actual.fullString() + '"');
+        return myself;
+    }
+
+
 
     public MatchAssert isChoiceOfSatisfying(Consumer<List<Match>> consumer) {
         if (!(actual instanceof Match.ChoiceMatch(var choices))) {

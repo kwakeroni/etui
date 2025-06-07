@@ -3,7 +3,11 @@ package com.quaxantis.etui.template.parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
+import static com.quaxantis.etui.template.parser.MatchAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("EELExpressionAnalyzer analyzes an OptSuffix expression")
 class EELExpressionAnalyzerOptSuffixExpressionTest {
@@ -15,7 +19,8 @@ class EELExpressionAnalyzerOptSuffixExpressionTest {
         assertThat(optSuffix).matching("a literal. with a suffix")
                 .isFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("{[]a literal. with a suffix[]}");
+                .hasMatchRepresentation("{[]a literal. with a suffix[]}")
+                .hasOnlyBindingsMatching(optSuffix);
     }
 
     @Test
@@ -25,7 +30,8 @@ class EELExpressionAnalyzerOptSuffixExpressionTest {
         assertThat(optSuffix).matching("also a literal. with a suffix")
                 .isNotFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("also {[]a literal. with a suffix[]}");
+                .hasMatchRepresentation("also {[]a literal. with a suffix[]}")
+                .hasOnlyBindingsPartiallyMatching(optSuffix);
     }
 
     @Test
@@ -58,24 +64,37 @@ class EELExpressionAnalyzerOptSuffixExpressionTest {
 
 
     @Test
-    @DisplayName("providing a match for an identifier with a literal suffix")
-    void matchIdentifierWithLiteralSuffix() {
+    @DisplayName("providing a match if the main expression is a variable")
+    void matchMainVariable() {
         var optSuffix = new Expression.OptSuffix(new Expression.Identifier("var1"), new Expression.Text(". with suffix"));
         assertThat(optSuffix).matching("my test value. with suffix")
                 .isFullMatch()
                 .hasBoundVariables()
-                .hasVariableValue("var1", "my test value")
-                .hasMatchRepresentation("{[my test value]. with suffix[]}");
+                .hasMatchRepresentation("{[[my test value. with suffix]]}")
+                .hasBindings(Map.of("var1", "my test value"),
+                             Map.of("var1", ""))
+                .hasOnlyBindingsMatchingOrEmpty(optSuffix)
+                .isChoiceOfSatisfying(choices -> assertThat(choices)
+                        .satisfiesExactlyInAnyOrder(
+                                matchWithVar -> assertThat(matchWithVar)
+                                        .hasMatchRepresentation("{[my test value]. with suffix[]}")
+                                        .hasBindings(Map.of("var1", "my test value")),
+                                emptyMatch -> assertThat(emptyMatch)
+                                        .hasMatchRepresentation("{[[my test value. with suffix]]}", "0<0")
+                                        .hasBindings(Map.of("var1", ""))
+                        )
+                );
     }
 
     @Test
-    @DisplayName("providing a match for a literal with an identifier suffix")
-    void matchLiteralWithIdentifierSuffix() {
+    @DisplayName("providing a match if the suffix is a variable")
+    void matchSuffixVariable() {
         var optSuffix = new Expression.OptSuffix(new Expression.Text("prefix with "), new Expression.Identifier("var1"));
         assertThat(optSuffix).matching("prefix with my test value")
                 .isFullMatch()
                 .hasBoundVariables()
-                .hasVariableValue("var1", "my test value")
+                .hasBindings(Map.of("var1", "my test value"))
+                .hasOnlyBindingsMatching(optSuffix)
                 .hasMatchRepresentation("{[]prefix with [my test value]}");
     }
 
@@ -86,8 +105,9 @@ class EELExpressionAnalyzerOptSuffixExpressionTest {
         assertThat(optSuffix).matching("my test value")
                 .isFullMatch()
                 .hasBoundVariables()
-                .hasVariableValue("var1", "my test value")
-                .hasVariableValue("var2", "my test value")
+                .hasBindings(Map.of("var1", "my test value", "var2", "my test value"),
+                             Map.of("var1", ""))
+                .hasOnlyBindingsMatchingOrEmpty(optSuffix)
                 .hasMatchRepresentation("{[[my test value]]}");
     }
 
@@ -95,7 +115,11 @@ class EELExpressionAnalyzerOptSuffixExpressionTest {
     @DisplayName("providing no match for an empty identifier with a literal suffix")
     void nomatchForEmptyIdentifierWithLiteralSuffix() {
         var optSuffix = new Expression.OptSuffix(new Expression.Identifier("var1"), new Expression.Text(". with suffix"));
-        assertThat(optSuffix).matching(". with suffix").isNoMatch();
+        assertThat(optSuffix).matching(". with suffix")
+                .isNotFullMatch()
+                .hasBoundVariables()
+                .hasBindings(Map.of("var1", ""))
+                .hasOnlyBindingsMatchingOrEmpty(optSuffix);
     }
 
 
@@ -106,8 +130,9 @@ class EELExpressionAnalyzerOptSuffixExpressionTest {
         assertThat(optSuffix).matching("my test value with suffix another value")
                 .isFullMatch()
                 .hasBoundVariables()
-                .hasVariableValue("var1", "my test value")
-                .hasVariableValue("var2", "another value")
-                .hasMatchRepresentation("{[my test value] with suffix [another value]}");
+                .hasBindings(Map.of("var1", "my test value", "var2", "another value"),
+                             Map.of("var1", ""))
+                .hasOnlyBindingsMatchingOrEmpty(optSuffix)
+                .hasMatchRepresentation("{[[my test value with suffix another value]]}");
     }
 }

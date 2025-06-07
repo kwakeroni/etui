@@ -15,14 +15,16 @@ class EELExpressionAnalyzerTextExpressionTest {
         assertThat(text).matching("my literal value")
                 .isFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("{[]my literal value[]}");
+                .hasMatchRepresentation("{[]my literal value[]}")
+                .hasOnlyBindingsMatching(text);
     }
 
     @Test
     @DisplayName("providing no match")
     void noMatch() {
         var text = new Expression.Text("my literal value");
-        assertThat(text).matching("my other value").isNoMatch()
+        assertThat(text).matching("my other value")
+                .isNoMatch()
                 .isNotFullMatch()
                 .hasNoBoundVariables();
     }
@@ -34,7 +36,8 @@ class EELExpressionAnalyzerTextExpressionTest {
         assertThat(text).matching("my literal value")
                 .isNotFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("{[]my lite[]}ral value");
+                .hasMatchRepresentation("{[]my lite[]}ral value")
+                .hasOnlyBindingsPartiallyMatching(text);
     }
 
     @Test
@@ -44,7 +47,8 @@ class EELExpressionAnalyzerTextExpressionTest {
         assertThat(text).matching("my literal value")
                 .isNotFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("my liter{[]al value[]}");
+                .hasMatchRepresentation("my liter{[]al value[]}")
+                .hasOnlyBindingsPartiallyMatching(text);
     }
 
 
@@ -55,7 +59,8 @@ class EELExpressionAnalyzerTextExpressionTest {
         assertThat(text).matching("my literal value")
                 .isNotFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("my lit{[]eral val[]}ue");
+                .hasMatchRepresentation("my lit{[]eral val[]}ue")
+                .hasOnlyBindingsPartiallyMatching(text);
     }
 
     // TODO: multiple partial matches

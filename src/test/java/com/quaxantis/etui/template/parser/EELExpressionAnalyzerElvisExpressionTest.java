@@ -45,17 +45,19 @@ class EELExpressionAnalyzerElvisExpressionTest {
         assertThat(elvis).matching("my fallback")
                 .isFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("{[]my fallback[]}");
+                .hasMatchRepresentation("{[]my fallback[]}")
+                .hasOnlyBindingsMatching(elvis);
     }
 
     @Test
     @DisplayName("providing a match for a variable")
     void matchVariable() {
         var elvis = new Expression.Elvis(new Expression.Identifier("var1"), new Expression.Text("my fallback"));
-        assertThat(elvis).matching("my value")
-                .isFullMatch()
-                .hasVariableValue("var1", "my value")
-                .hasMatchRepresentation("{[[my value]]}");
+        MatchAssert matchAssert = assertThat(elvis).matching("my value")
+                .isFullMatch();
+        matchAssert.hasBindings(Map.of("var1", "my value"))
+                .hasMatchRepresentation("{[[my value]]}")
+                .hasOnlyBindingsMatching(elvis);
     }
 
     @Test
@@ -67,9 +69,9 @@ class EELExpressionAnalyzerElvisExpressionTest {
                 .satisfies(match -> {
                     List<Map<String, String>> list = match.bindings().map(Binding::asMap).toList();
                     System.out.println(list);
-                })
-                .hasVariableValue("var1", "my value")
-                .hasMatchRepresentation("{[][my value]}");
+                }).hasBindings(Map.of("var1", "my value"))
+                .hasMatchRepresentation("{[][my value]}")
+                .hasOnlyBindingsMatching(elvis);
     }
 
     @Test
@@ -82,7 +84,8 @@ class EELExpressionAnalyzerElvisExpressionTest {
                 .hasBindings(
                         Map.of("var1", "my value"),
                         Map.of("var1", "", "var2", "my value")
-                );
+                )
+                .hasOnlyBindingsMatching(elvis);
     }
 
     @Test
@@ -96,6 +99,7 @@ class EELExpressionAnalyzerElvisExpressionTest {
                         Map.of("var1", "my value"),
                         Map.of("var1", "", "var2", "my value"),
                         Map.of("var1", "", "var2", "", "var3", "my value")
-                );
+                )
+                .hasOnlyBindingsMatching(elvis);
     }
 }
