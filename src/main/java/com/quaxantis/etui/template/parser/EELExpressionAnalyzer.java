@@ -14,7 +14,7 @@ import static com.quaxantis.etui.template.parser.Constraint.*;
 
 public class EELExpressionAnalyzer {
 
-    private static Logger log = LoggerFactory.getLogger(EELExpressionAnalyzer.class);
+    private static final Logger log = LoggerFactory.getLogger(EELExpressionAnalyzer.class);
 
     public Bindings detectBindings(Expression expression, String resolvedExpression) {
         return switch (expression) {
@@ -54,7 +54,7 @@ public class EELExpressionAnalyzer {
             case Expression.Identifier identifier -> matchIdentifier(identifier, string);
             case Expression.Elvis elvis -> matchElvis(elvis, string);
             case Expression.OptPrefix optPrefix -> matchOptPrefix(optPrefix, string);
-            case Expression.OptSuffix optSuffix -> matchOptSuffixAlternative(optSuffix, string);
+            case Expression.OptSuffix optSuffix -> matchOptSuffix(optSuffix, string);
             case Expression.Concat concat -> matchConcat(concat, string);
         };
     }
@@ -107,11 +107,10 @@ public class EELExpressionAnalyzer {
         } else {
             Match fallbackMatch = match(elvis.orElse(), string);
 
-            RangeFlex.Concat concatRange = RangeFlex.concat(emptyMainMatch.matchRange(), fallbackMatch.matchRange());
+            RangeFlex.ConcatResult concatRange = RangeFlex.concat(emptyMainMatch.matchRange(), fallbackMatch.matchRange());
             Match constrainedEmptyMatch = emptyMainMatch.constrain(toRange(concatRange.left()));
             Match constrainedFallbackMatch = fallbackMatch.constrain(toRange(concatRange.right()));
-            Match combined = constrainedFallbackMatch.andThen(fallback -> new Match.ConcatMatch(constrainedEmptyMatch, fallback, concatRange));
-//            Match combined = fallbackMatch.andThen(fallback ->  new Match.CombinedMatch(string, emptyMainMatch, fallback, RangeFlex.concat(emptyMainMatch.matchRange(), fallback.matchRange())));
+            Match combined = constrainedFallbackMatch.andThen(fallback -> new Match.CombinedMatch(string, constrainedEmptyMatch, fallback, concatRange.combined()));
 
             return Match.ChoiceMatch.ofPossibleMatches(mainMatch, combined)
                     .orElseGet(() -> new NoMatch(string, null, mainMatch, fallbackMatch));
@@ -137,16 +136,14 @@ public class EELExpressionAnalyzer {
             var leftFlex = leftMatch.matchRange();
             var rightFlex = mainMatch.matchRange();
 
-            var concatResult = Result.ofTry(() -> RangeFlex.concatAlternative(leftFlex, rightFlex));
-            concatMatch = switch (concatResult) {
-                case Result.Success(var concat) -> new Match.CombinedMatch(string,
-                                                                           leftMatch.constrain(toRange(concat.left())),
-                                                                           mainMatch.constrain(toRange(concat.right())),
-                                                                           concat.combined());
-                case Result.Failure(var exc) -> new NoMatch(string,
-                                                            exc + " at " + exc.getStackTrace()[0],
-                                                            leftMatch,
-                                                            rightMatch);
+            concatMatch = switch (RangeFlex.tryConcat(leftFlex, rightFlex)) {
+                case Result.Success(RangeFlex.ConcatResult(var left, var right, var combined)) ->
+                        new Match.CombinedMatch(string,
+                                                leftMatch.constrain(toRange(left)),
+                                                mainMatch.constrain(toRange(right)),
+                                                combined);
+                case Result.Failure(var exc) ->
+                        new NoMatch(string, exc + " at " + exc.getStackTrace()[0], leftMatch, rightMatch);
             };
         }
 
@@ -154,7 +151,7 @@ public class EELExpressionAnalyzer {
                 .orElseGet(() -> new NoMatch(string, null, leftMatch, mainMatch));
     }
 
-    private Match matchOptSuffixAlternative(Expression.OptSuffix optSuffix, String string) {
+    private Match matchOptSuffix(Expression.OptSuffix optSuffix, String string) {
         Match leftMatch = doMatch(optSuffix.expression(), string);
         Match rightMatch = doMatch(optSuffix.suffix(), string);
 
@@ -173,60 +170,19 @@ public class EELExpressionAnalyzer {
             var leftFlex = leftMatch.matchRange().constrain(toMinLength(1));
             var rightFlex = rightMatch.matchRange();
 
-            var concatResult = Result.ofTry(() -> RangeFlex.concatAlternative(leftFlex, rightFlex));
-            concatMatch = switch (concatResult) {
-                case Result.Success(var concat) -> new Match.CombinedMatch(string,
-                                                                           leftMatch.constrain(toRange(concat.left())),
-                                                                           rightMatch.constrain(toRange(concat.right())),
-                                                                           concat.combined());
-                case Result.Failure(var exc) -> new NoMatch(string,
-                                                            exc + " at " + exc.getStackTrace()[0],
-                                                            leftMatch,
-                                                            rightMatch);
+            concatMatch = switch (RangeFlex.tryConcat(leftFlex, rightFlex)) {
+                case Result.Success(RangeFlex.ConcatResult(var left, var right, var combined)) ->
+                        new Match.CombinedMatch(string,
+                                                leftMatch.constrain(toRange(left)),
+                                                rightMatch.constrain(toRange(right)),
+                                                combined);
+                case Result.Failure(var exc) ->
+                        new NoMatch(string, exc + " at " + exc.getStackTrace()[0], leftMatch, rightMatch);
             };
         }
 
         return Match.ChoiceMatch.ofPossibleMatches(concatMatch, emptymainMatch)
                 .orElseGet(() -> new NoMatch(string, null, mainMatch, rightMatch));
-    }
-    private Match matchOptSuffix(Expression.OptSuffix optSuffix, String string) {
-        Match leftMatch = doMatch(optSuffix.expression(), string);
-        Match rightMatch = doMatch(optSuffix.suffix(), string);
-
-        if (!(leftMatch instanceof NoMatch || rightMatch instanceof NoMatch)) {
-            var leftFlex = leftMatch.matchRange().constrain(toMinLength(1));
-            var rightFlex = rightMatch.matchRange();
-
-            var concatResult = RangeFlex.tryConcat(leftFlex, rightFlex);
-            if (concatResult instanceof Result.Success(RangeFlex.Concat concatRangeFlex)) {
-                Match constrainedLeftMatch = leftMatch.constrain(toRange(concatRangeFlex.left()));
-                Match constrainedRightMatch = rightMatch.constrain(toRange(concatRangeFlex.right()));
-                var concatMatch = new Match.ConcatMatch(constrainedLeftMatch, constrainedRightMatch, concatRangeFlex);
-                log.trace("""
-                          Matching {}
-                          with left ={}
-                          with right={}
-                          with match={}
-                          """, optSuffix, constrainedLeftMatch, constrainedRightMatch, concatMatch);
-                return concatMatch;
-            } else if (concatResult instanceof Result.Failure(RuntimeException exception)) {
-                log.trace("""
-                          Matching {}
-                          with left ={}
-                          with right={}
-                          with no match because {}
-                          """, this, leftMatch, rightMatch, exception.toString() + " at " + exception.getStackTrace()[0]);
-                return new NoMatch(string, exception + " at " + exception.getStackTrace()[0], leftMatch, rightMatch);
-            }
-//        }
-        }
-        log.trace("""
-                  Matching {}
-                  with left ={}
-                  with right={}
-                  with no match
-                  """, this, leftMatch, rightMatch);
-        return new NoMatch(string, null, leftMatch, rightMatch);
     }
 
     private Match matchConcat(Expression.Concat concat, String string) {
@@ -242,16 +198,14 @@ public class EELExpressionAnalyzer {
             Match nextMatch = match(iter.next(), string);
             var leftFlex = result.matchRange();
             var rightFlex = nextMatch.matchRange();
-            var concatResult = Result.ofTry(() -> RangeFlex.concatAlternative(leftFlex, rightFlex));
-            result = switch (concatResult) {
-                case Result.Success(var concatRange) -> new Match.CombinedMatch(string,
-                                                                                result.constrain(toRange(concatRange.left())),
-                                                                                nextMatch.constrain(toRange(concatRange.right())),
-                                                                                concatRange.combined());
-                case Result.Failure(var exc) -> new NoMatch(string,
-                                                            exc + " at " + exc.getStackTrace()[0],
-                                                            result,
-                                                            nextMatch);
+            result = switch (RangeFlex.tryConcat(leftFlex, rightFlex)) {
+                case Result.Success(RangeFlex.ConcatResult(var left, var right, var combined)) ->
+                        new Match.CombinedMatch(string,
+                                                result.constrain(toRange(left)),
+                                                nextMatch.constrain(toRange(right)),
+                                                combined);
+                case Result.Failure(var exc) ->
+                        new NoMatch(string, exc + " at " + exc.getStackTrace()[0], result, nextMatch);
             };
         }
 

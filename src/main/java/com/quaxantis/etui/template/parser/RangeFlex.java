@@ -79,42 +79,13 @@ sealed interface RangeFlex {
         return RangeFlex.of(prefix, suffix);
     }
 
-    static boolean canConcat(RangeFlex left, RangeFlex right) {
-        return tryConcat(left, right).isSuccess();
+    record ConcatResult(RangeFlex left, RangeFlex right, RangeFlex combined) {}
+
+    static Result<ConcatResult, RuntimeException> tryConcat(RangeFlex left, RangeFlex right) {
+        return Result.ofTry(() -> concat(left, right));
     }
 
-    static RangeFlex.Concat concat(RangeFlex left, RangeFlex right) {
-        return tryConcat(left, right).orElseThrow();
-    }
-
-    static Result<RangeFlex.Concat, RuntimeException> tryConcat(RangeFlex left, RangeFlex right) {
-        int leftMaxEnd = left.end().to();
-        int rightMinStart = right.start().from();
-        if (leftMaxEnd < rightMinStart - 1) {
-            // the right flex must start at the very latest just after the left flex ends
-            // or: if the highest rightmost value of the left flex is smaller than the smallest leftmost value of the right flex (by at least 1), then there is a gap
-            return Result.ofFailure(new IllegalArgumentException("Cannot concatenate flexes %s and %s: gap at [%s - %s]".formatted(left, right, leftMaxEnd + 1, rightMinStart - 1)));
-        }
-        int rightMaxStart = right.start().to();
-        int leftMinEnd = left.end().from();
-        if (rightMaxStart < leftMinEnd - 1) {
-            // the right flex cannot start before the left flex ends
-            // or: if the highest leftmost value of the right flex is smaller than the smallest rightmost value of the left flex, then there is an incompatible overlap
-            return Result.ofFailure(new IllegalArgumentException("Cannot concatenate flexes %s and %s: incompatible overlap at [%s - %s]".formatted(left, right, rightMaxStart + 1, leftMinEnd - 1)));
-        }
-
-        return Result.ofTry(() -> {
-            RangeFlex limitLeft = left.constrain(Constraint.limitRight(right.start().to()));
-            RangeFlex limitRight = right.constrain(Constraint.limitLeft(left.end().from()));
-            return new Concat(limitLeft, limitRight);
-        });
-    }
-
-    record ConcatResult(RangeFlex left, RangeFlex right, RangeFlex combined) {
-
-    }
-
-    static ConcatResult concatAlternative(RangeFlex left, RangeFlex right) {
+    static ConcatResult concat(RangeFlex left, RangeFlex right) {
         var leftConstrained = left.tryConstrain(Constraint.succeedBy(right))
                 .orElseThrow(exc -> new IllegalArgumentException("Cannot concatenate flexes %s and %s: %s".formatted(left, right, exc.getMessage()), exc));
         var rightConstrained = right.constrain(Constraint.precedeBy(left));
@@ -341,134 +312,4 @@ sealed interface RangeFlex {
         }
     }
 
-    record Concat(RangeFlex left, RangeFlex right, Integer minLengthValue,
-                  Integer maxLengthValue) implements RangeFlex {
-
-
-        public Concat {
-            Objects.requireNonNull(left, "start");
-            Objects.requireNonNull(right, "end");
-            verifyLengthConstraints(left.start(), right.end(), minLengthValue, maxLengthValue).orElseThrow();
-        }
-
-        public Concat(RangeFlex left, RangeFlex right) {
-            this(left, right, optSum(left.minLength().orElse(null), right.minLength().orElse(null)), optSumOrNull(left.maxLength().orElse(null), right.maxLength().orElse(null)));
-        }
-
-        @Override
-        public IntRange start() {
-            return left.start();
-        }
-
-        @Override
-        public IntRange end() {
-            return right.end();
-        }
-
-        @Override
-        public Optional<Integer> minLength() {
-            return Optional.ofNullable(minLengthValue);
-        }
-
-        @Override
-        public Optional<Integer> maxLength() {
-            return Optional.ofNullable(maxLengthValue);
-        }
-
-        @Override
-        public Result<Concat, RuntimeException> tryConstrain(Constraint constraint) {
-            return Result.ofTry(() -> constrain(constraint));
-        }
-
-        public Concat constrain(Constraint constraint) {
-            return switch (constraint) {
-                case Constraint.MinLength(int min) -> constrainMinLength(min);
-                case Constraint.MaxLength(int max) -> constrainMaxLength(max);
-                case Constraint.LimitLeft limitLeft -> limitLeft(limitLeft);
-                case Constraint.LimitRight limitRight -> limitRight(limitRight);
-                case Constraint.RangeLimit(RangeFlex range) -> constrainToRange(range);
-                case Constraint.FixedRange _ -> toFixedRange();
-                case Constraint.FixPrefix _ -> fixPrefix();
-                case Constraint.FixSuffix _ -> fixSuffix();
-                case Constraint.PrecedeBy(var predecessor) -> constrainWithPredecessor(predecessor);
-                case Constraint.SucceedBy(var successor) -> constrainWithSuccessor(successor);
-                case Constraint.Satisfying(var verification) -> verify(this, verification);
-                case Constraint.And(var one, var two) -> constrain(one).constrain(two);
-            };
-        }
-
-        private Concat toFixedRange() {
-            return new Concat(left.constrain(Constraint.fixPrefix()), right.constrain(Constraint.fixSuffix()), minLengthValue, maxLengthValue);
-        }
-
-        private Concat fixPrefix() {
-            return new Concat(left.constrain(Constraint.fixPrefix()), right, minLengthValue, maxLengthValue);
-        }
-
-        private Concat fixSuffix() {
-            return new Concat(left, right.constrain(Constraint.fixSuffix()), minLengthValue, maxLengthValue);
-        }
-
-        private Concat constrainMinLength(int minLength) {
-            return new Concat(left, right, (this.minLengthValue == null) ? minLength : Math.max(this.minLengthValue, minLength), this.maxLengthValue);
-        }
-
-        private Concat constrainMaxLength(Integer maxLength) {
-            return new Concat(left, right, this.minLengthValue, (this.maxLengthValue == null) ? maxLength : Math.min(this.maxLengthValue, maxLength));
-        }
-
-        private Concat limitLeft(Constraint.LimitLeft limitLeft) {
-            return new Concat(left.constrain(limitLeft), right.constrain(limitLeft), this.minLengthValue, this.maxLengthValue);
-        }
-
-        private Concat limitRight(Constraint.LimitRight limitRight) {
-            return new Concat(left.constrain(limitRight), right.constrain(limitRight), this.minLengthValue, this.maxLengthValue);
-        }
-
-        private Concat constrainToRange(RangeFlex constraint) {
-            return new RangeFlex.Concat(left.constrain(Constraint.toRange(constraint)), right.constrain(Constraint.toRange(constraint)), minLengthValue(), maxLengthValue())/*.withMinLength(constraint.minLength()).withMaxLength(constraint.maxLength()) */;
-        }
-
-        private Concat constrainWithSuccessor(RangeFlex successor) {
-            return tryConstrain(Constraint.limitRight(successor.start().to()))
-                    .orElseThrow(cause -> new IllegalArgumentException("incompatible overlap at [%s - %s]".formatted(successor.start().to() + 1, this.end().from() - 1), cause))
-                    .tryConstrain(Constraint.satisfying(range -> {
-                        if (range.end().exclusiveTo() < successor.start().from()) {
-                            throw new IllegalArgumentException("gap at [%s - %s]".formatted(range.end().to() + 1, successor.start().from() - 1));
-                        }
-                    }))
-                    .orElseThrow();
-        }
-
-        private Concat constrainWithPredecessor(RangeFlex predecessor) {
-            return constrain(Constraint.limitLeft(predecessor.end().from()));
-        }
-
-        @Override
-        public String toString() {
-            return RangeFlex.toString(start(), end(), minLengthValue, maxLengthValue) + " = " + left + " + " + right;
-        }
-
-        private static Integer optSum(Integer left, Integer right) {
-            if (left != null) {
-                if (right != null) {
-                    return left + right;
-                } else {
-                    return left;
-                }
-            } else {
-                return right;
-            }
-        }
-
-        private static Integer optSumOrNull(Integer left, Integer right) {
-            if (left != null) {
-                if (right != null) {
-                    return left + right;
-                }
-            }
-            return null;
-        }
-
-    }
 }

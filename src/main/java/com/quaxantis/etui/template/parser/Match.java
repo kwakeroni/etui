@@ -251,63 +251,6 @@ public sealed interface Match {
         }
     }
 
-    record ConcatMatch(@Nonnull Match left, @Nonnull Match right,
-                       @Nonnull RangeFlex.Concat matchRange) implements Match {
-        @SuppressWarnings("StringEquality") // Identity match on purpose
-        public ConcatMatch {
-            Objects.requireNonNull(left, "left");
-            Objects.requireNonNull(right, "right");
-            Objects.requireNonNull(matchRange, "range");
-            if (left instanceof NoMatch || right instanceof NoMatch) {
-                throw new IllegalArgumentException("Cannot concat matches:%n%s%n%s%n".formatted(left, right));
-            }
-            if (left.fullString() != right.fullString()) {
-                throw new IllegalArgumentException("Cannot concat matches from different sources :%n%s%n%s%n".formatted(left, right));
-            }
-        }
-
-        @Override
-        public String fullString() {
-            return left.fullString();
-        }
-
-        @Override
-        public Match constrain(Constraint constraint) {
-            return Match.tryConstrain(this, () -> switch (constraint) {
-                // minimum length does not apply to each side individually
-                case Constraint.MinLength minLength -> new ConcatMatch(left, right, matchRange.constrain(minLength));
-                // other constraints can be applied to each side individually
-                default ->
-                        new ConcatMatch(left.constrain(constraint), right.constrain(constraint), matchRange.constrain(constraint));
-            });
-        }
-
-        @Override
-        public boolean hasBoundVariables() {
-            return left.hasBoundVariables() || right.hasBoundVariables();
-        }
-
-        @Override
-        public Stream<Binding> bindings() {
-            return left.bindings()
-                    .flatMap(leftBinding -> right.bindings().map(rightBinding -> Binding.combine(leftBinding, rightBinding)));
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[" + simpleFormat() + " = " + left + " + " + right + "]";
-        }
-
-        @Override
-        public String multilineFormat(String indent) {
-            String localContext = getClass().getSimpleName() + "(" + Integer.toHexString(System.identityHashCode(this)) + ")";
-            String subIndent = spaced(indent) + " |-- AND ";
-            return simpleFormat() + indent + localContext + System.lineSeparator() +
-                   left.multilineFormat(subIndent) + System.lineSeparator()
-                   + right.multilineFormat(subIndent);
-        }
-    }
-
     record CombinedMatch(@Nonnull String fullString, @Nonnull Match left, @Nonnull Match right,
                          @Nonnull RangeFlex matchRange) implements Match {
         @SuppressWarnings("StringEquality") // Identity match on purpose
