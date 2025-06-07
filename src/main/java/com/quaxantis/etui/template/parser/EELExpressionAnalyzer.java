@@ -55,6 +55,7 @@ public class EELExpressionAnalyzer {
             case Expression.Elvis elvis -> matchElvis(elvis, string);
             case Expression.OptPrefix optPrefix -> matchOptPrefix(optPrefix, string);
             case Expression.OptSuffix optSuffix -> matchOptSuffixAlternative(optSuffix, string);
+            case Expression.Concat concat -> matchConcat(concat, string);
             default -> new NoMatch(string, "unknown expression: " + expression);
         };
     }
@@ -105,11 +106,7 @@ public class EELExpressionAnalyzer {
         if (emptyMainMatch instanceof NoMatch) {
             return mainMatch;
         } else {
-            Match fallbackMatch = match(elvis.orElse(), string); // TODO copy bindings
-//            emptyMainMatch.bindings().map(binding -> {
-//                Match boundMatch = fallbackMatch;
-//                binding.boundVariables().reduce(fallbackMatch, m -> new Match.BindingMatch(m, ))
-//            })
+            Match fallbackMatch = match(elvis.orElse(), string);
 
             RangeFlex.Concat concatRange = RangeFlex.concat(emptyMainMatch.matchRange(), fallbackMatch.matchRange());
             Match constrainedEmptyMatch = emptyMainMatch.constrain(toRange(concatRange.left()));
@@ -219,6 +216,35 @@ public class EELExpressionAnalyzer {
                   with no match
                   """, this, leftMatch, rightMatch);
         return new NoMatch(string, null, leftMatch, rightMatch);
+    }
+
+    private Match matchConcat(Expression.Concat concat, String string) {
+        Iterator<Expression> iter = concat.parts().iterator();
+
+        if (!iter.hasNext()) {
+            return Match.of(string).constrain(toRange(RangeFlex.empty()).and(toMaxLength(0)));
+        }
+
+        Match result = match(iter.next(), string);
+
+        while (iter.hasNext()) {
+            Match nextMatch = match(iter.next(), string);
+            var leftFlex = result.matchRange();
+            var rightFlex = nextMatch.matchRange();
+            var concatResult = Result.ofTry(() -> RangeFlex.concatAlternative(leftFlex, rightFlex));
+            result = switch (concatResult) {
+                case Result.Success(var concatRange) -> new Match.CombinedMatch(string,
+                                                                                result.constrain(toRange(concatRange.left())),
+                                                                                nextMatch.constrain(toRange(concatRange.right())),
+                                                                                concatRange.combined());
+                case Result.Failure(var exc) -> new NoMatch(string,
+                                                            exc + " at " + exc.getStackTrace()[0],
+                                                            result,
+                                                            nextMatch);
+            };
+        }
+
+        return result;
     }
 
     public record Binding(
