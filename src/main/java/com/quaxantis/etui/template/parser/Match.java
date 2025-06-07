@@ -21,7 +21,11 @@ public sealed interface Match {
 
     String fullString();
 
-    String multilineFormat(String context);
+    default String multilineFormat() {
+        return multilineFormat("  ");
+    }
+
+    String multilineFormat(String indent);
 
     RangeFlex matchRange();
 
@@ -37,15 +41,13 @@ public sealed interface Match {
 
     boolean hasBoundVariables();
 
-    boolean hasBindings();
-
     Stream<Binding> bindings();
 
-    Optional<String> valueOf(String variable);
-
     default boolean isFullMatch() {
+        int length = fullString().length();
         RangeFlex range = matchRange();
-        return range.contains(0) && range.contains(fullString().length() - 1);
+        return range.contains(0) && range.contains(length - 1)
+               && range.maxLength().map(max -> max >= length).orElse(true);
     }
 
     default String matchedString() {
@@ -77,7 +79,6 @@ public sealed interface Match {
         @Override
         public RangeFlex matchRange() {
             return RangeFlex.empty();
-//            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -96,31 +97,23 @@ public sealed interface Match {
         }
 
         @Override
-        public boolean hasBindings() {
-            return false;
-        }
-
-        @Override
         public Stream<Binding> bindings() {
             return Stream.of(Binding.empty());
         }
 
         @Override
-        public Optional<String> valueOf(String variable) {
-            return Optional.empty();
-        }
-
-        @Override
-        public String multilineFormat(String context) {
+        public String multilineFormat(String indent) {
             StringBuilder builder = new StringBuilder()
                     .append(simpleFormat())
-                    .append(" < no match < ")
-                    .append(context);
+                    .append(indent)
+                    .append("no match");
             if (reason != null) {
                 builder.append(" : because ").append(reason);
             }
+            String subIndent = spaced(indent) + " |-- NOT ";
+            ;
             for (Match mismatch : mismatches) {
-                builder.append(System.lineSeparator()).append(mismatch.multilineFormat(context));
+                builder.append(System.lineSeparator()).append(mismatch.multilineFormat(subIndent));
             }
             return builder.toString();
         }
@@ -149,23 +142,13 @@ public sealed interface Match {
         }
 
         @Override
-        public boolean hasBindings() {
-            return false;
-        }
-
-        @Override
         public Stream<Binding> bindings() {
             return Stream.of(Binding.empty());
         }
 
         @Override
-        public Optional<String> valueOf(String variable) {
-            return Optional.empty();
-        }
-
-        @Override
-        public String multilineFormat(String context) {
-            return fullString + " < " + context;
+        public String multilineFormat(String indent) {
+            return fullString;
         }
     }
 
@@ -205,22 +188,8 @@ public sealed interface Match {
         }
 
         @Override
-        public boolean hasBindings() {
-            return true;
-        }
-
-        @Override
         public Stream<Binding> bindings() {
             return parent.bindings().map(binding -> binding.with(boundVariable, matchedString()));
-        }
-
-        @Override
-        public Optional<String> valueOf(String variable) {
-            if (boundVariable.equals(variable)) {
-                return Optional.of(matchedString());
-            } else {
-                return parent.valueOf(variable);
-            }
         }
 
         @Override
@@ -234,8 +203,8 @@ public sealed interface Match {
         }
 
         @Override
-        public String multilineFormat(String context) {
-            return simpleFormat() + " < " + getClass().getSimpleName() + "[" + boundVariable + "]" + " < " + context;
+        public String multilineFormat(String indent) {
+            return simpleFormat() + indent + getClass().getSimpleName() + "[" + boundVariable + "] " + matchRange().lengthRange();
         }
     }
 
@@ -267,18 +236,8 @@ public sealed interface Match {
         }
 
         @Override
-        public boolean hasBindings() {
-            return parent.hasBindings();
-        }
-
-        @Override
         public Stream<Binding> bindings() {
             return parent.bindings();
-        }
-
-        @Override
-        public Optional<String> valueOf(String variable) {
-            return parent.valueOf(variable);
         }
 
         @Override
@@ -287,8 +246,8 @@ public sealed interface Match {
         }
 
         @Override
-        public String multilineFormat(String context) {
-            return simpleFormat() + " < " + getClass().getSimpleName() + " < " + context;
+        public String multilineFormat(String indent) {
+            return simpleFormat() + indent + getClass().getSimpleName();
         }
     }
 
@@ -329,30 +288,9 @@ public sealed interface Match {
         }
 
         @Override
-        public boolean hasBindings() {
-            return left.hasBindings() || right.hasBindings();
-        }
-
-        @Override
         public Stream<Binding> bindings() {
             return left.bindings()
                     .flatMap(leftBinding -> right.bindings().map(rightBinding -> Binding.combine(leftBinding, rightBinding)));
-        }
-
-        @Override
-        public Optional<String> valueOf(String variable) {
-            var leftOpt = left.valueOf(variable);
-            var rightOpt = right.valueOf(variable);
-            if (leftOpt.isPresent()) {
-                if (rightOpt.isPresent()) {
-                    // TODO: merge left and right
-                    return Optional.empty();
-                } else {
-                    return leftOpt;
-                }
-            } else {
-                return rightOpt;
-            }
         }
 
         @Override
@@ -361,11 +299,12 @@ public sealed interface Match {
         }
 
         @Override
-        public String multilineFormat(String context) {
+        public String multilineFormat(String indent) {
             String localContext = getClass().getSimpleName() + "(" + Integer.toHexString(System.identityHashCode(this)) + ")";
-            return simpleFormat() + " < " + localContext + " < " + context + System.lineSeparator() +
-                   left.multilineFormat(localContext) + System.lineSeparator()
-                   + right.multilineFormat(localContext);
+            String subIndent = spaced(indent) + " |-- AND ";
+            return simpleFormat() + indent + localContext + System.lineSeparator() +
+                   left.multilineFormat(subIndent) + System.lineSeparator()
+                   + right.multilineFormat(subIndent);
         }
     }
 
@@ -400,30 +339,9 @@ public sealed interface Match {
         }
 
         @Override
-        public boolean hasBindings() {
-            return left.hasBindings() || right.hasBindings();
-        }
-
-        @Override
         public Stream<Binding> bindings() {
             return left.bindings()
                     .flatMap(leftBinding -> right.bindings().map(rightBinding -> Binding.combine(leftBinding, rightBinding)));
-        }
-
-        @Override
-        public Optional<String> valueOf(String variable) {
-            var leftOpt = left.valueOf(variable);
-            var rightOpt = right.valueOf(variable);
-            if (leftOpt.isPresent()) {
-                if (rightOpt.isPresent()) {
-                    // TODO: merge left and right
-                    return Optional.empty();
-                } else {
-                    return leftOpt;
-                }
-            } else {
-                return rightOpt;
-            }
         }
 
         @Override
@@ -432,11 +350,12 @@ public sealed interface Match {
         }
 
         @Override
-        public String multilineFormat(String context) {
+        public String multilineFormat(String indent) {
             String localContext = getClass().getSimpleName() + "(" + Integer.toHexString(System.identityHashCode(this)) + ")";
-            return simpleFormat() + " < " + localContext + " < " + context + System.lineSeparator() +
-                   left.multilineFormat(localContext) + System.lineSeparator()
-                   + right.multilineFormat(localContext);
+            String subIndent = spaced(indent) + " |-- AND ";
+            return simpleFormat() + indent + localContext + System.lineSeparator() +
+                   left.multilineFormat(subIndent) + System.lineSeparator()
+                   + right.multilineFormat(subIndent);
         }
     }
 
@@ -521,36 +440,29 @@ public sealed interface Match {
         }
 
         @Override
-        public boolean hasBindings() {
-            return matches.stream().anyMatch(Match::hasBindings);
-        }
-
-        @Override
         public Stream<Binding> bindings() {
             return matches.stream().flatMap(Match::bindings);
         }
 
         @Override
-        public Optional<String> valueOf(String variable) {
-            List<Binding> bindings = bindings().toList();
-            if (bindings.size() == 1) {
-                return bindings.getFirst().valueOf(variable);
-            } else if (bindings.isEmpty()) {
-                return Optional.empty();
-            } else {
-                throw new IllegalStateException("Multiple bindings");
-            }
-        }
-
-        @Override
-        public String multilineFormat(String context) {
+        public String multilineFormat(String indent) {
             String localContext = getClass().getSimpleName() + "(" + Integer.toHexString(System.identityHashCode(this)) + ")";
+            String subIndent = spaced(indent) + " |-- OR ";
             return matches.stream()
-                    .map(match -> match.multilineFormat(localContext))
+                    .map(match -> match.multilineFormat(subIndent))
                     .collect(Collectors.joining(System.lineSeparator(),
-                                                simpleFormat() + " < " + localContext + " < " + context + System.lineSeparator(),
+                                                simpleFormat() + indent + localContext + System.lineSeparator(),
                                                 ""));
         }
 
+    }
+
+    private static String spaced(String indent) {
+        int lastPipe = indent.lastIndexOf('|');
+        if (lastPipe < 0) {
+            return indent;
+        } else {
+            return indent.substring(0, lastPipe + 1) + " ".repeat(indent.length() - lastPipe - 1);
+        }
     }
 }
