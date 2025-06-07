@@ -6,37 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import static com.quaxantis.etui.template.parser.Constraint.*;
 
 public class EELExpressionAnalyzer {
 
     private static final Logger log = LoggerFactory.getLogger(EELExpressionAnalyzer.class);
-
-    public Bindings detectBindings(Expression expression, String resolvedExpression) {
-        return switch (expression) {
-            case Expression.Identifier identifier -> bindIdentifier(identifier, resolvedExpression);
-            case Expression.Elvis elvis -> bindElvis(elvis, resolvedExpression);
-            default -> Bindings.of();
-        };
-    }
-
-    private Bindings bindIdentifier(Expression.Identifier identifier, String resolvedExpression) {
-        return Bindings.of(new Binding(identifier.name(), resolvedExpression));
-    }
-
-    private Bindings bindElvis(Expression.Elvis elvis, String resolvedExpression) {
-        Bindings bindLeft = detectBindings(elvis.expression(), resolvedExpression);
-        Bindings bindEmptyLeft = detectBindings(elvis.expression(), "");
-        Bindings bindOrElse = detectBindings(elvis.orElse(), resolvedExpression);
-        Bindings bindRight = bindEmptyLeft.addSubBindings(bindOrElse);
-
-
-        return bindLeft.concat(bindRight);
-    }
 
     public Match match(Expression expression, String string) {
         Match match = doMatch(expression, string);
@@ -211,86 +187,4 @@ public class EELExpressionAnalyzer {
 
         return result;
     }
-
-    public record Binding(
-            String variable,
-            String value,
-            Bindings subBindings
-    ) {
-
-        public Binding {
-            Objects.requireNonNull(variable, "variable");
-            Objects.requireNonNull(value, "value");
-            Objects.requireNonNull(subBindings, "subBindings");
-        }
-
-        public Binding(String variable, String value) {
-            this(variable, value, Bindings.of());
-        }
-
-        public Binding addSubBindings(Bindings bindings) {
-            return new Binding(variable, value, subBindings.concat(bindings));
-        }
-    }
-
-    public static class Bindings implements Iterable<Binding> {
-        private static final Bindings EMPTY = new Bindings(List.of());
-        private final List<Binding> bindings;
-
-        public static Bindings of() {
-            return EMPTY;
-        }
-
-        public static Bindings of(Binding binding) {
-            Objects.requireNonNull(binding, "binding");
-            return new Bindings(List.of(binding));
-        }
-
-        private Bindings(List<Binding> bindings) {
-            this.bindings = bindings;
-        }
-
-        public boolean isEmpty() {
-            return this.bindings.isEmpty();
-        }
-
-        @Override
-        public Iterator<Binding> iterator() {
-            return this.bindings.iterator();
-        }
-
-        public Stream<Binding> stream() {
-            return this.bindings.stream();
-        }
-
-        public Bindings addSubBindings(Bindings subBindings) {
-            return new Bindings(
-                    this.bindings.stream()
-                            .map(binding -> binding.addSubBindings(subBindings))
-                            .toList());
-        }
-
-        public Bindings concat(Bindings addedBindings) {
-            return new Bindings(Stream.concat(this.stream(), addedBindings.stream()).toList());
-        }
-
-        @Override
-        public String toString() {
-            return "Bindings" + bindings.toString();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Bindings bindings1 = (Bindings) o;
-            return Objects.equals(bindings, bindings1.bindings);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(bindings);
-        }
-    }
-
 }
