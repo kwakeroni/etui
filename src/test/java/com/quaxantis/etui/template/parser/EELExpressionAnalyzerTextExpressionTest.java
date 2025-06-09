@@ -4,9 +4,21 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
+import static com.quaxantis.etui.template.parser.MatchAssert.assertThat;
 
 @DisplayName("EELExpressionAnalyzer analyzes a text expression")
 class EELExpressionAnalyzerTextExpressionTest {
+
+    @Test
+    @DisplayName("providing a match of an empty literal")
+    void emptyLiteralMatch() {
+        var text = new Expression.Text("");
+        assertThat(text).matching("my literal value")
+                .isNotFullMatch()
+                .hasNoBoundVariables()
+                .hasMatchRepresentation("{[][]}my literal value")
+                .hasOnlyBindingsMatchingExpressionOrEmpty();
+    }
 
     @Test
     @DisplayName("providing a full match")
@@ -63,5 +75,30 @@ class EELExpressionAnalyzerTextExpressionTest {
                 .hasOnlyBindingsPartiallyMatching(text);
     }
 
-    // TODO: multiple partial matches
+    @Test
+    @DisplayName("providing a choice if multiple matches")
+    void multipleMatches() {
+        var text = new Expression.Text("my");
+        assertThat(text).matching("my match my match")
+                .isNotFullMatch()
+                .hasNoBoundVariables()
+                .hasMatchRepresentation("{[[my match my]]} match")
+                .hasChoicesSatisfying(first -> assertThat(first).hasMatchRepresentation("{[]my[]} match my match"),
+                                      second -> assertThat(second).hasMatchRepresentation("my match {[]my[]} match")
+                ).hasOnlyBindingsPartiallyMatching(text);
+    }
+
+    @Test
+    @DisplayName("providing a choice if multiple matches with repeated pattern")
+    void multipleMatchesWithRepeatedPattern() {
+        var text = new Expression.Text("mymy");
+        assertThat(text).matching("mymymymy")
+                .isNotFullMatch()
+                .hasNoBoundVariables()
+                .hasMatchRepresentation("{[[mymymymy]]}")
+                .hasChoicesSatisfying(first -> assertThat(first).hasMatchRepresentation("{[]mymy[]}mymy"),
+                                      second -> assertThat(second).hasMatchRepresentation("my{[]mymy[]}my"),
+                                      third -> assertThat(third).hasMatchRepresentation("mymy{[]mymy[]}")
+                ).hasOnlyBindingsPartiallyMatching(text);
+    }
 }

@@ -1,5 +1,6 @@
 package com.quaxantis.etui.template.parser;
 
+import com.quaxantis.etui.template.parser.MatchAssert.MatchWithExpressionAssert;
 import com.quaxantis.support.ide.API;
 import org.assertj.core.api.AbstractObjectAssert;
 
@@ -29,7 +30,7 @@ public class ExpressionAssert extends AbstractObjectAssert<ExpressionAssert, Exp
     }
 
     @API
-    public MatchAssert matching(String string) {
-        return new MatchAssert(analyzer.match(actual, string));
+    public MatchWithExpressionAssert matching(String string) {
+        return new MatchWithExpressionAssert(analyzer.match(actual, string), actual);
     }
 }

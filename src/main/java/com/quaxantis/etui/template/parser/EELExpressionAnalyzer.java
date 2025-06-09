@@ -5,7 +5,9 @@ import com.quaxantis.support.util.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 
 import static com.quaxantis.etui.template.parser.Constraint.*;
@@ -47,25 +49,32 @@ public class EELExpressionAnalyzer {
         Objects.requireNonNull(textExpr);
         Objects.requireNonNull(string);
         String text = textExpr.literal();
-        RangeFlex matchRange;
-        int matchLength;
 
         if (string.equals(text)) {
             int end = string.length() - 1;
-            matchRange = RangeFlex.ofFixed(0, end);
-            matchLength = end + 1;
+            RangeFlex matchRange = RangeFlex.ofFixed(0, end);
+            int matchLength = end + 1;
+            return literalMatch(string, matchRange, matchLength);
+        } else if (text.isEmpty()) {
+            // Special case match empty literal only at the start
+            return literalMatch(string, RangeFlex.empty(), 0);
         } else {
-            int index = string.indexOf(text);
-            if (index < 0) {
-                return new NoMatch(string, "literal expression not found: " + text);
-            } else {
+            List<Match> matches = new ArrayList<>();
+            int index = -1;
+            while (index < string.length() && (index = string.indexOf(text, ++index)) >= 0) {
                 int end = index + text.length() - 1;
-                matchRange = RangeFlex.ofFixed(index, end);
-                matchLength = end - index + 1;
+                RangeFlex matchRange = RangeFlex.ofFixed(index, end);
+                int matchLength = end - index + 1;
+                matches.add(literalMatch(string, matchRange, matchLength));
+                System.out.println(index);
             }
+
+            return Match.ChoiceMatch.ofPossibleMatches(matches.stream())
+                    .orElseGet(() -> new NoMatch(string, "literal expression not found: " + text));
         }
-        System.out.println(Match.of(string).constrain(toRange(matchRange).and(toFixedRange())));
-        System.out.println(new Match.PartialMatch(new Match.RootMatch(string), matchRange));
+    }
+
+    private static Match literalMatch(String string, RangeFlex matchRange, int matchLength) {
         return Match.of(string).constrain(
                 toRange(matchRange)
                         .and(toFixedRange())
@@ -86,7 +95,7 @@ public class EELExpressionAnalyzer {
             RangeFlex.ConcatResult concatRange = RangeFlex.concat(emptyMainMatch.matchRange(), fallbackMatch.matchRange());
             Match constrainedEmptyMatch = emptyMainMatch.constrain(toRange(concatRange.left()));
             Match constrainedFallbackMatch = fallbackMatch.constrain(toRange(concatRange.right()));
-            Match combined = constrainedFallbackMatch.andThen(fallback -> new Match.CombinedMatch(string, constrainedEmptyMatch, fallback, concatRange.combined()));
+            Match combined = constrainedFallbackMatch.andThen(fallback -> new Match.ConcatMatch(string, constrainedEmptyMatch, fallback, concatRange.combined()));
 
             return Match.ChoiceMatch.ofPossibleMatches(mainMatch, combined)
                     .orElseGet(() -> new NoMatch(string, null, mainMatch, fallbackMatch));
@@ -114,10 +123,10 @@ public class EELExpressionAnalyzer {
 
             concatMatch = switch (RangeFlex.tryConcat(leftFlex, rightFlex)) {
                 case Result.Success(RangeFlex.ConcatResult(var left, var right, var combined)) ->
-                        new Match.CombinedMatch(string,
-                                                leftMatch.constrain(toRange(left)),
-                                                mainMatch.constrain(toRange(right)),
-                                                combined);
+                        new Match.ConcatMatch(string,
+                                              leftMatch.constrain(toRange(left)),
+                                              mainMatch.constrain(toRange(right)),
+                                              combined);
                 case Result.Failure(var exc) ->
                         new NoMatch(string, exc + " at " + exc.getStackTrace()[0], leftMatch, rightMatch);
             };
@@ -148,10 +157,10 @@ public class EELExpressionAnalyzer {
 
             concatMatch = switch (RangeFlex.tryConcat(leftFlex, rightFlex)) {
                 case Result.Success(RangeFlex.ConcatResult(var left, var right, var combined)) ->
-                        new Match.CombinedMatch(string,
-                                                leftMatch.constrain(toRange(left)),
-                                                rightMatch.constrain(toRange(right)),
-                                                combined);
+                        new Match.ConcatMatch(string,
+                                              leftMatch.constrain(toRange(left)),
+                                              rightMatch.constrain(toRange(right)),
+                                              combined);
                 case Result.Failure(var exc) ->
                         new NoMatch(string, exc + " at " + exc.getStackTrace()[0], leftMatch, rightMatch);
             };
@@ -172,14 +181,20 @@ public class EELExpressionAnalyzer {
 
         while (iter.hasNext()) {
             Match nextMatch = match(iter.next(), string);
+            if (nextMatch instanceof NoMatch) {
+                return new NoMatch(string, null, result, nextMatch);
+            }
             var leftFlex = result.matchRange();
             var rightFlex = nextMatch.matchRange();
             result = switch (RangeFlex.tryConcat(leftFlex, rightFlex)) {
-                case Result.Success(RangeFlex.ConcatResult(var left, var right, var combined)) ->
-                        new Match.CombinedMatch(string,
-                                                result.constrain(toRange(left)),
-                                                nextMatch.constrain(toRange(right)),
-                                                combined);
+                case Result.Success(RangeFlex.ConcatResult(var left, var right, var combined)) -> {
+                    var constrainedLeftMatch = result.constrain(toRange(left));
+                    var constrainedRightMatch = nextMatch.constrain(toRange(right));
+                    if (constrainedLeftMatch instanceof NoMatch || constrainedRightMatch instanceof NoMatch) {
+                        yield new NoMatch(string, null, constrainedLeftMatch, constrainedRightMatch);
+                    }
+                    yield new Match.ConcatMatch(string, constrainedLeftMatch, constrainedRightMatch, combined);
+                }
                 case Result.Failure(var exc) ->
                         new NoMatch(string, exc + " at " + exc.getStackTrace()[0], result, nextMatch);
             };

@@ -1,5 +1,7 @@
 package com.quaxantis.etui.template.parser;
 
+import com.quaxantis.support.util.Result;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -98,7 +100,7 @@ public sealed interface Match {
 
         @Override
         public Stream<Binding> bindings() {
-            return Stream.of(Binding.empty());
+            return Stream.of(Binding.empty(this, this.matchRange()));
         }
 
         @Override
@@ -110,7 +112,7 @@ public sealed interface Match {
             if (reason != null) {
                 builder.append(" : because ").append(reason);
             }
-            String subIndent = spaced(indent) + " |-- NOT ";
+            String subIndent = spaced(indent) + " |-- ";
             ;
             for (Match mismatch : mismatches) {
                 builder.append(System.lineSeparator()).append(mismatch.multilineFormat(subIndent));
@@ -143,7 +145,7 @@ public sealed interface Match {
 
         @Override
         public Stream<Binding> bindings() {
-            return Stream.of(Binding.empty());
+            return Stream.of(Binding.empty(this, this.matchRange()));
         }
 
         @Override
@@ -189,7 +191,8 @@ public sealed interface Match {
 
         @Override
         public Stream<Binding> bindings() {
-            return parent.bindings().map(binding -> binding.with(boundVariable, matchedString()));
+            String format = simpleFormat();
+            return parent.bindings().map(binding -> binding.with(this, this.matchRange(), boundVariable, matchedString(), format));
         }
 
         @Override
@@ -251,10 +254,10 @@ public sealed interface Match {
         }
     }
 
-    record CombinedMatch(@Nonnull String fullString, @Nonnull Match left, @Nonnull Match right,
-                         @Nonnull RangeFlex matchRange) implements Match {
+    record ConcatMatch(@Nonnull String fullString, @Nonnull Match left, @Nonnull Match right,
+                       @Nonnull RangeFlex matchRange) implements Match {
         @SuppressWarnings("StringEquality") // Identity match on purpose
-        public CombinedMatch {
+        public ConcatMatch {
             Objects.requireNonNull(fullString, "fullString");
             Objects.requireNonNull(left, "left");
             Objects.requireNonNull(right, "right");
@@ -269,10 +272,10 @@ public sealed interface Match {
             return Match.tryConstrain(this, () -> switch (constraint) {
                 // minimum length does not apply to each side individually
                 case Constraint.MinLength minLength ->
-                        new CombinedMatch(fullString, left, right, matchRange.constrain(minLength));
+                        new ConcatMatch(fullString, left, right, matchRange.constrain(minLength));
                 // other constraints can be applied to each side individually
                 default ->
-                        new CombinedMatch(fullString, left.constrain(constraint), right.constrain(constraint), matchRange.constrain(constraint));
+                        new ConcatMatch(fullString, left.constrain(constraint), right.constrain(constraint), matchRange.constrain(constraint));
             });
         }
 
@@ -284,7 +287,15 @@ public sealed interface Match {
         @Override
         public Stream<Binding> bindings() {
             return left.bindings()
-                    .flatMap(leftBinding -> right.bindings().map(rightBinding -> Binding.combine(leftBinding, rightBinding)));
+                    .flatMap(leftBinding -> right.bindings()
+                            .map(rightBinding -> concat(leftBinding, rightBinding))
+                            .flatMap(Optional::stream));
+        }
+
+        private Optional<Binding> concat(Binding leftBinding, Binding rightBinding) {
+            return Result.ofTry(() -> RangeFlex.concat((leftBinding.match().matchRange()), rightBinding.match().matchRange()))
+                    .ifSuccess()
+                    .map(concatRange -> Binding.combine(this, concatRange.combined(), leftBinding, rightBinding));
         }
 
         @Override

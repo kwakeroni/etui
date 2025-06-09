@@ -135,6 +135,11 @@ sealed interface RangeFlex {
         return IntRange.ofClosed(minimum, maximum);
     }
 
+    default boolean isEmpty() {
+        IntRange lengthRange = lengthRange();
+        return lengthRange.from() == lengthRange.to();
+    }
+
 
     default String extractFrom(String string) {
         // TODO what about fuzzy strings and other length constraints ?

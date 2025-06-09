@@ -96,4 +96,17 @@ public class EELExpressionAnalyzerConcatExpressionTest {
                 .hasOnlyBindingsMatching(concat);
     }
 
+    @Test
+    @DisplayName("providing no match")
+    void noMatch() {
+        var concat = new Expression.Concat(new Expression.Text("one "),
+                                           new Expression.Text("two "),
+                                           new Expression.Text("three "),
+                                           new Expression.Text("expressions"));
+        assertThat(concat).matching("one deux three expressions")
+                .isInstanceOf(Match.NoMatch.class)
+                .hasNoBoundVariables()
+                .hasMatchRepresentation("{[][]}one deux three expressions");
+    }
+
 }

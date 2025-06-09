@@ -4,6 +4,7 @@ import com.quaxantis.support.ide.API;
 import com.quaxantis.support.util.ANSI;
 import org.assertj.core.api.AbstractObjectAssert;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.ThrowingConsumer;
 import org.assertj.core.presentation.StandardRepresentation;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings("UnusedReturnValue")
-public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
+public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectAssert<SELF, Match> {
 
     @API
     public static MatchAssert assertThat(Match match) {
@@ -20,18 +21,22 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
     }
 
     public MatchAssert(Match match) {
-        super(match, MatchAssert.class);
+        this(match, MatchAssert.class);
+    }
+
+    protected MatchAssert(Match match, Class<?> selfType) {
+        super(match, selfType);
         StandardRepresentation.registerFormatterForType(FormattedMatch.class, FormattedMatch::formatted);
     }
 
     @API
-    public MatchAssert isNoMatch() {
+    public SELF isNoMatch() {
         return isNoMatchSatisfying(_ -> {
         });
     }
 
     @API
-    public MatchAssert isNoMatchSatisfying(Consumer<Match.NoMatch> consumer) {
+    public SELF isNoMatchSatisfying(Consumer<Match.NoMatch> consumer) {
         if (actual instanceof Match.NoMatch noMatch) {
             consumer.accept(noMatch);
         } else {
@@ -42,7 +47,7 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
     }
 
     @API
-    public MatchAssert isNotFullMatch() {
+    public SELF isNotFullMatch() {
         if (actual.isFullMatch()) {
             failWithActualAndMessage("Expected actual not to be a full match, but it was");
         }
@@ -50,7 +55,7 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
     }
 
     @API
-    public MatchAssert isFullMatch() {
+    public SELF isFullMatch() {
         if (!actual.isFullMatch()) {
             failWithActualExpectedAndMessage(actual, new Match.RootMatch(actual.fullString()), "Expected actual to be a full match");
         }
@@ -58,7 +63,7 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
     }
 
     @API
-    public MatchAssert hasBoundVariables() {
+    public SELF hasBoundVariables() {
         if (!actual.hasBoundVariables()) {
             failWithActualAndMessage("Expected actual to have bound variables, but it has not");
         }
@@ -66,7 +71,7 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
     }
 
     @API
-    public MatchAssert hasNoBoundVariables() {
+    public SELF hasNoBoundVariables() {
         if (actual.hasBoundVariables()) {
             failWithActualAndMessage("Expected actual not to have bound variables, but it has");
         }
@@ -74,7 +79,7 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
     }
 
     @API
-    public MatchAssert hasMatchRepresentation(String expected) {
+    public SELF hasMatchRepresentation(String expected) {
         String fullRepresentation = actual.matchRepresentation().replaceFirst("!\\d*<\\d*$", "");
         if (!expected.equals(fullRepresentation)) {
             failWithDerivedActualAndMessage(_ -> fullRepresentation, actual, expected, "Expected actual representation to be equal to");
@@ -83,7 +88,7 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
     }
 
     @API
-    public MatchAssert hasMatchRepresentation(String expected, String expectedLength) {
+    public SELF hasMatchRepresentation(String expected, String expectedLength) {
         String fullRepresentation = actual.matchRepresentation();
         String expectedRepresentationWithLength = expected + "!" + expectedLength;
         if (!expectedRepresentationWithLength.equals(fullRepresentation)) {
@@ -92,25 +97,28 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
         return myself;
     }
 
+    @API
     @SafeVarargs
-    public final MatchAssert hasBindings(Map<String, String>... bindings) {
+    public final SELF hasBindings(Map<String, String>... bindings) {
         Assertions.assertThat(actual.bindings())
                 .extracting(Binding::asMap)
                 .containsExactlyInAnyOrder(bindings);
         return myself;
     }
 
-    public final MatchAssert hasOnlyBindingsMatching(Expression expression) {
+    @API
+    public SELF hasOnlyBindingsMatching(Expression expression) {
         Assertions.assertThat(
                         actual.bindings()
                                 .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
                                 .map(resolver -> resolver.resolve(expression))
                                 .distinct())
-                .containsExactly(actual.fullString());
+                .containsExactlyInAnyOrder(actual.fullString());
         return myself;
     }
 
-    public final MatchAssert hasOnlyBindingsMatchingOrEmpty(Expression expression) {
+    @API
+    public SELF hasOnlyBindingsMatchingOrEmpty(Expression expression) {
         Assertions.assertThat(
                         actual.bindings()
                                 .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
@@ -120,7 +128,8 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
         return myself;
     }
 
-    public final MatchAssert hasOnlyBindingsPartiallyMatching(Expression expression) {
+    @API
+    public SELF hasOnlyBindingsPartiallyMatching(Expression expression) {
         Assertions.assertThat(
                         actual.bindings()
                                 .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
@@ -130,9 +139,25 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
         return myself;
     }
 
+    public SELF debugBindings(Expression expression) {
+        System.out.println("-- Bindings");
+        actual.bindings().forEach(binding -> {
 
+            System.out.println("---- " + binding);
+            System.out.printf("------ (%s) -> [%s] : %s, %s << %s%n",
+                              binding.matchRange().format(binding.match().fullString()),
+                              new ExpressionResolver(var -> binding.valueOf(var).orElse("")).resolve(expression),
+                              binding.matchRange().isEmpty() ? "empty" : "not empty",
+                              binding.match().isFullMatch() ? "full match" : "partial match",
+                              binding.match()
+            );
+        });
+        System.out.println();
+        return myself;
+    }
 
-    public MatchAssert isChoiceOfSatisfying(Consumer<List<Match>> consumer) {
+    @API
+    public SELF isChoiceOfSatisfying(Consumer<List<Match>> consumer) {
         if (!(actual instanceof Match.ChoiceMatch(var choices))) {
             failWithActualAndMessage("Expected to be an instance of Match.ChoiceMatch, but was not");
         } else {
@@ -141,6 +166,11 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
         return myself;
     }
 
+    @API
+    @SafeVarargs
+    public final SELF hasChoicesSatisfying(ThrowingConsumer<? super Match>... requirements) {
+        return isChoiceOfSatisfying(list -> Assertions.assertThat(list).satisfiesExactlyInAnyOrder(requirements));
+    }
 
     protected void failWithActualAndMessage(String errorMessageFormat, Object... arguments) {
         failWithMessage(appendActualMatch(errorMessageFormat, actual), arguments);
@@ -193,5 +223,31 @@ public class MatchAssert extends AbstractObjectAssert<MatchAssert, Match> {
         private static String formatted(Match match) {
             return "{" + match.simpleFormat() + "} " + match;
         }
+    }
+
+    public static class MatchWithExpressionAssert extends MatchAssert<MatchWithExpressionAssert> {
+        private final Expression expression;
+
+        public MatchWithExpressionAssert(Match match, Expression expression) {
+            super(match);
+            this.expression = expression;
+        }
+
+        public MatchWithExpressionAssert hasOnlyBindingsMatchingExpression() {
+            return hasOnlyBindingsMatching(expression);
+        }
+
+        public MatchWithExpressionAssert hasOnlyBindingsMatchingExpressionOrEmpty() {
+            return hasOnlyBindingsMatchingOrEmpty(expression);
+        }
+
+        public MatchWithExpressionAssert hasOnlyBindingsPartiallyMatchingExpression() {
+            return hasOnlyBindingsPartiallyMatching(expression);
+        }
+
+        public MatchWithExpressionAssert debugBindings() {
+            return debugBindings(expression);
+        }
+
     }
 }
