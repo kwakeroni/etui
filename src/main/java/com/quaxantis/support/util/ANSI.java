@@ -99,6 +99,7 @@ public class ANSI {
     public static final String FAINT = "\033[2m";
     public static final String ITALIC = "\033[3m";
     public static final String UNDERLINED = "\033[4m";
+    public static final String DOUBLE_UNDERLINED = "\033[21m";
     public static final String NOT_BOLD = "\033[22m";
     public static final String NOT_ITALIC = "\033[23m";
     public static final String NOT_UNDERLINED = "\033[24m";
