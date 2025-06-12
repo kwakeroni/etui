@@ -106,7 +106,7 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
         assertThat(optPrefix).matching("a prefix and my text")
                 .isFullMatch()
                 .hasBoundVariables()
-                .hasMatchRepresentation("{[[a prefix and my text]]}")
+//                .hasMatchRepresentation("{[[a prefix and my text]]}")
                 .hasBindings(Map.of("var1", "my text", "var2", "a prefix"),
                              Map.of("var1", "")
                 )

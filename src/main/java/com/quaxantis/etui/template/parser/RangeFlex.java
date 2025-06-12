@@ -95,6 +95,7 @@ sealed interface RangeFlex {
         var maxLength = leftConstrained.maxLength().flatMap(maxLeft -> rightConstrained.maxLength().map(maxRight -> maxLeft + maxRight))
                 .orElse(null);
 
+
         RangeFlex combined = new RangeFlex.Simple(leftConstrained.start(), rightConstrained.end(), minLength, maxLength);
         return new ConcatResult(leftConstrained, rightConstrained, combined);
     }
@@ -224,6 +225,7 @@ sealed interface RangeFlex {
                 case Constraint.FixSuffix _ -> fixSuffix();
                 case Constraint.PrecedeBy(var predecessor) -> constrainWithPredecessor(predecessor);
                 case Constraint.SucceedBy(var successor) -> constrainWithSuccessor(successor);
+                case Constraint.Mapping(var operator) -> operator.apply(this);
                 case Constraint.Satisfying(var verification) -> verify(this, verification);
                 case Constraint.And(var one, var two) -> constrain(one).constrain(two);
             };
@@ -288,12 +290,23 @@ sealed interface RangeFlex {
                             throw new IllegalArgumentException("gap at [%s - %s]".formatted(range.end().to() + 1, successor.start().from() - 1));
                         }
                     }))
+                    .orElseThrow()
+                    .tryConstrain(Constraint.mapping(range -> range.maxLength()
+                            .map(maxLength -> range.constrain(Constraint.limitLeft(successor.start().from() - maxLength)))
+                            .orElse(range)))
                     .orElseThrow();
         }
 
         private RangeFlex constrainWithPredecessor(RangeFlex predecessor) {
             // TODO Compared with constrainWithSuccessor it feels like some tests are missing here
-            return constrain(Constraint.limitLeft(predecessor.end().from()));
+
+
+            return constrain(
+                    Constraint.limitLeft(predecessor.end().from()).and(
+                            Constraint.mapping(range -> range.maxLength()
+                                    .map(maxLength -> range.constrain(Constraint.limitRight(predecessor.end().exclusiveTo() + maxLength - 1)))
+                                    .orElse(range)
+                            )));
         }
 
         @Override

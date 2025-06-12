@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("UnusedReturnValue")
 public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectAssert<SELF, Match> {
@@ -40,7 +41,7 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
         if (actual instanceof Match.NoMatch noMatch) {
             consumer.accept(noMatch);
         } else {
-            failWithActualExpectedAndMessage(actual, new Match.NoMatch(actual.fullString(), null), "Expected actual not to be a match, but it was");
+            failWithActualExpectedAndMessage(actual, new Match.NoMatch(actual.expression(), actual.fullString(), null), "Expected actual not to be a match, but it was");
         }
         return myself;
 
@@ -57,7 +58,7 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
     @API
     public SELF isFullMatch() {
         if (!actual.isFullMatch()) {
-            failWithActualExpectedAndMessage(actual, new Match.RootMatch(actual.fullString()), "Expected actual to be a full match");
+            failWithActualExpectedAndMessage(actual, new Match.RootMatch(actual.expression(), actual.fullString()), "Expected actual to be a full match");
         }
         return myself;
     }
@@ -143,6 +144,7 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
         System.out.println("-- Bindings");
         actual.bindings().forEach(binding -> {
 
+            System.out.println("---- " + binding.boundVariables().map(v -> v + "=" + binding.valueOf(v).orElse(null)).collect(Collectors.joining(", ", "{", "}")));
             System.out.println("---- " + binding);
             System.out.printf("------ (%s) -> [%s] : %s, %s << %s%n",
                               binding.matchRange().format(binding.match().fullString()),
@@ -151,6 +153,7 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
                               binding.match().isFullMatch() ? "full match" : "partial match",
                               binding.match()
             );
+            System.out.println();
         });
         System.out.println();
         return myself;
@@ -158,7 +161,7 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
 
     @API
     public SELF isChoiceOfSatisfying(Consumer<List<Match>> consumer) {
-        if (!(actual instanceof Match.ChoiceMatch(var choices))) {
+        if (!(actual instanceof Match.ChoiceMatch(var expression, var choices))) {
             failWithActualAndMessage("Expected to be an instance of Match.ChoiceMatch, but was not");
         } else {
             consumer.accept(choices);

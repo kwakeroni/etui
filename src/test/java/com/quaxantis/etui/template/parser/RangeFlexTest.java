@@ -736,6 +736,39 @@ class RangeFlexTest {
                     .hasMessageContaining("shorter than the minimum length of 7");
         }
 
+        @Test
+        @DisplayName("when right part has a max length")
+        void concatWithRightMaxLength() {
+            var flex1 = RangeFlex.of(4, 6, 10, 12);
+            var flex2 = RangeFlex.of(11, 13, 11, 13).constrain(Constraint.toMaxLength(0));
+            var result = RangeFlex.concat(flex1, flex2);
+
+            System.out.println(flex1.format("0123456789012345"));
+            System.out.println(flex2.format("0123456789012345"));
+            System.out.println(result.left().format("0123456789012345"));
+            System.out.println(result.right().format("0123456789012345"));
+            System.out.println(result.combined().format("0123456789012345"));
+
+            assertThat(result.combined()).hasStartBetween(4, 6).hasEndBetween(11, 12);
+        }
+
+        @Test
+        @DisplayName("when left part has a max length")
+        void concatWithLeftMaxLength() {
+            var flex1 = RangeFlex.of(4, 12, 10, 12).constrain(Constraint.toMaxLength(0));
+            var flex2 = RangeFlex.of(11, 13, 11, 13);
+            var result = RangeFlex.concat(flex1, flex2);
+
+            System.out.println(flex1.format("0123456789012345"));
+            System.out.println(flex2.format("0123456789012345"));
+            System.out.println(result.left().format("0123456789012345"));
+            System.out.println(result.right().format("0123456789012345"));
+            System.out.println(result.combined().format("0123456789012345"));
+
+            assertThat(result.combined()).hasStartBetween(11, 12).hasEndBetween(11, 13);
+        }
+
+
         static RangeFlex concat(RangeFlex left, RangeFlex right) {
             return calculate((l, r) -> RangeFlex.concat(l, r).combined(), left, right);
         }

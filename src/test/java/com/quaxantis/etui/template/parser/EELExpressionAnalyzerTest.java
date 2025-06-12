@@ -1,6 +1,5 @@
 package com.quaxantis.etui.template.parser;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -69,28 +68,21 @@ class EELExpressionAnalyzerTest {
     }
 
     @Test
-    @Disabled
-    @DisplayName("providing bindings for dot concat")
-    void matchWithDotConcat() {
-        var concat = new Expression.Concat(new Expression.Identifier("title"), new Expression.Text(". "), new Expression.Identifier("author"), new Expression.Text(". "), new Expression.Identifier("publisher"), new Expression.Text("."));
-
-        assertThat(concat).matching("A Title. An Author. Publisher's.")
-                .isFullMatch()
-                .hasBindings(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"))
-                .hasOnlyBindingsMatchingExpression();
-
-    }
-
-    @Test
-    @Disabled
     @DisplayName("providing bindings for dot concat with optional element")
     void matchWithDotConcatWithOptionalElement() {
-        var concat = new Expression.Concat(new Expression.Identifier("title"), new Expression.Text("."), new Expression.Identifier("author"), new Expression.Text("."), new Expression.Identifier("publisher"), new Expression.Text("."));
+        var concat = new Expression.Concat(new Expression.Identifier("title"), new Expression.Text("."),
+                                           new Expression.OptSuffix(new Expression.OptPrefix(new Expression.Text(" "), new Expression.Identifier("author")), new Expression.Text(".")),
+                                           new Expression.Text(" "), new Expression.Identifier("publisher"), new Expression.Text("."));
 
         assertThat(concat).matching("A Title. An Author. Publisher's.")
                 .isFullMatch()
-                .hasBindings(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"))
-                .hasOnlyBindingsMatchingExpression();
+                .debugBindings()
+                .hasBindings(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"),
+                             Map.of("title", "A Title. An Author", "publisher", "Publisher's", "author", ""),
+                             Map.of("title", "A Title", "publisher", "An Author. Publisher's", "author", ""),
+                             Map.of("title", "A Title", "publisher", "An Author", "author", "") // partial match
+                )
+                .hasOnlyBindingsPartiallyMatchingExpression();
 
     }
 

@@ -1,6 +1,7 @@
 package com.quaxantis.etui.template.parser;
 
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 sealed interface Constraint {
 
@@ -48,6 +49,10 @@ sealed interface Constraint {
         return new Satisfying(verification);
     }
 
+    static Mapping mapping(UnaryOperator<RangeFlex> operator) {
+        return new Mapping(operator);
+    }
+
     default Constraint and(Constraint constraint) {
         return new And(this, constraint);
     }
@@ -74,7 +79,7 @@ sealed interface Constraint {
 
     record Satisfying(Consumer<RangeFlex> verification) implements Constraint {}
 
-    ;
+    record Mapping(UnaryOperator<RangeFlex> operator) implements Constraint {}
 
     record And(Constraint one, Constraint two) implements Constraint {}
 }

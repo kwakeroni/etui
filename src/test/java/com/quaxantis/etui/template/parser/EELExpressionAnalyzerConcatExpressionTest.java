@@ -109,4 +109,17 @@ public class EELExpressionAnalyzerConcatExpressionTest {
                 .hasMatchRepresentation("{[][]}one deux three expressions");
     }
 
+
+    @Test
+    @DisplayName("providing a match with multiple matching literals")
+    void matchWithDotConcat() {
+        var concat = new Expression.Concat(new Expression.Identifier("title"), new Expression.Text(". "), new Expression.Identifier("author"), new Expression.Text(". "), new Expression.Identifier("publisher"), new Expression.Text("."));
+
+        assertThat(concat).matching("A Title. An Author. Publisher's.")
+                .isFullMatch()
+                .hasBindings(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"))
+                .hasOnlyBindingsMatchingExpression();
+
+    }
+
 }

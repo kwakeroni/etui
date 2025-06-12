@@ -135,4 +135,27 @@ class EELExpressionAnalyzerOptSuffixExpressionTest {
                 .hasOnlyBindingsMatchingOrEmpty(optSuffix)
                 .hasMatchRepresentation("{[[my test value with suffix another value]]}");
     }
+
+    @Test
+    @DisplayName("providing a match if the main expression and the suffix are variables separated by a text")
+    void matchMainVariableAndPrefixVariable() {
+        var optSuffix = new Expression.OptSuffix(new Expression.OptSuffix(new Expression.Identifier("var1"), new Expression.Text(" and ")), new Expression.Identifier("var2"));
+        assertThat(optSuffix).matching("my text and a suffix")
+                .isFullMatch()
+                .hasBoundVariables()
+                .hasBindings(Map.of("var1", "my text", "var2", "a suffix"),
+                             Map.of("var1", "")
+                )
+                .hasOnlyBindingsMatchingOrEmpty(optSuffix)
+                .isChoiceOfSatisfying(choices -> assertThat(choices)
+                        .satisfiesExactlyInAnyOrder(
+                                matchWithVar -> assertThat(matchWithVar)
+                                        .hasMatchRepresentation("{[my text] and [a suffix]}")
+                                        .hasBindings(Map.of("var1", "my text", "var2", "a suffix")),
+                                emptyMatch -> assertThat(emptyMatch)
+                                        .hasMatchRepresentation("{[[my text and a suffix]]}", "0<0")
+                                        .hasBindings(Map.of("var1", ""))
+                        )
+                );
+    }
 }

@@ -102,4 +102,19 @@ class EELExpressionAnalyzerElvisExpressionTest {
                 )
                 .hasOnlyBindingsMatching(elvis);
     }
+
+    @Test
+    @DisplayName("providing a match with nested choices")
+    void matchWithNestedChoices() {
+        var elvis = new Expression.Elvis(new Expression.Identifier("var1"), new Expression.Elvis(new Expression.Identifier("var2"), new Expression.Text("my")));
+        assertThat(elvis).matching("my value my")
+                .isFullMatch()
+                .debugBindings()
+                .hasBindings(Map.of("var1", "my value my"),
+                             Map.of("var1", "", "var2", "my value my"),
+                             Map.of("var1", "", "var2", ""),
+                             Map.of("var1", "", "var2", "") // duplicate binding in case of partial match
+                )
+        ;
+    }
 }

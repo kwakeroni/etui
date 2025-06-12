@@ -4,10 +4,7 @@ import com.quaxantis.support.util.Result;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -17,10 +14,11 @@ import static java.util.function.Predicate.not;
 
 public sealed interface Match {
 
-    static Match of(String fullString) {
-        return new RootMatch(fullString);
+    static Match of(@Nonnull Expression expression, @Nonnull String fullString) {
+        return new RootMatch(expression, fullString);
     }
 
+    Expression expression();
     String fullString();
 
     default String multilineFormat() {
@@ -37,7 +35,7 @@ public sealed interface Match {
         try {
             return supplier.get();
         } catch (Exception exc) {
-            return new NoMatch(self.fullString(), exc.toString(), self);
+            return new NoMatch(self.expression(), self.fullString(), exc.toString(), self);
         }
     }
 
@@ -64,18 +62,19 @@ public sealed interface Match {
         return matchRange().format(fullString());
     }
 
-    default Match binding(String boundVariable) {
-        return new BindingMatch(this, boundVariable);
+    default Match binding(@Nonnull Expression expression, String boundVariable) {
+        return new BindingMatch(expression, this, boundVariable);
     }
 
     default Match andThen(UnaryOperator<Match> mapper) {
         return mapper.apply(this);
     }
 
-    record NoMatch(@Nonnull String fullString, @Nullable String reason, List<Match> mismatches) implements Match {
+    record NoMatch(@Nonnull Expression expression, @Nonnull String fullString, @Nullable String reason,
+                   Collection<Match> mismatches) implements Match {
 
-        public NoMatch(@Nonnull String fullString, @Nullable String reason, Match... mismatches) {
-            this(fullString, reason, List.of(mismatches));
+        public NoMatch(@Nonnull Expression expression, @Nonnull String fullString, @Nullable String reason, Match... mismatches) {
+            this(expression, fullString, reason, List.of(mismatches));
         }
 
         @Override
@@ -121,7 +120,7 @@ public sealed interface Match {
         }
     }
 
-    record RootMatch(@Nonnull String fullString) implements Match {
+    record RootMatch(@Nonnull Expression expression, @Nonnull String fullString) implements Match {
 
         @Override
         public RangeFlex matchRange() {
@@ -135,7 +134,7 @@ public sealed interface Match {
 
         @Override
         public Match constrain(Constraint constraint) {
-            return tryConstrain(this, () -> new PartialMatch(this, matchRange().constrain(constraint)));
+            return tryConstrain(this, () -> new PartialMatch(expression, this, matchRange().constrain(constraint)));
         }
 
         @Override
@@ -154,7 +153,8 @@ public sealed interface Match {
         }
     }
 
-    record BindingMatch(@Nonnull Match parent, @Nonnull String boundVariable) implements Match {
+    record BindingMatch(@Nonnull Expression expression, @Nonnull Match parent,
+                        @Nonnull String boundVariable) implements Match {
         @Override
         public String fullString() {
             return parent.fullString();
@@ -176,7 +176,7 @@ public sealed interface Match {
 
         @Override
         public Match constrain(Constraint constraint) {
-            return parent.constrain(constraint).andThen(parent -> new BindingMatch(parent, boundVariable));
+            return parent.constrain(constraint).andThen(parent -> new BindingMatch(expression, parent, boundVariable));
         }
 
         @Override
@@ -207,11 +207,12 @@ public sealed interface Match {
 
         @Override
         public String multilineFormat(String indent) {
-            return simpleFormat() + indent + getClass().getSimpleName() + "[" + boundVariable + "] " + matchRange().lengthRange();
+            return simpleFormat() + indent + getClass().getSimpleName() + "[" + boundVariable + "] " + matchRange().lengthRange() + " << " + expression().representationString();
         }
     }
 
-    record PartialMatch(@Nonnull Match parent, @Nonnull RangeFlex range) implements Match {
+    record PartialMatch(@Nonnull Expression expression, @Nonnull Match parent,
+                        @Nonnull RangeFlex range) implements Match {
 
         public PartialMatch {
             Objects.requireNonNull(parent, "parent");
@@ -230,7 +231,7 @@ public sealed interface Match {
 
         @Override
         public Match constrain(Constraint constraint) {
-            return Match.tryConstrain(this, () -> new PartialMatch(parent, range.constrain(constraint)));
+            return Match.tryConstrain(this, () -> new PartialMatch(expression, parent, range.constrain(constraint)));
         }
 
         @Override
@@ -250,11 +251,12 @@ public sealed interface Match {
 
         @Override
         public String multilineFormat(String indent) {
-            return simpleFormat() + indent + getClass().getSimpleName();
+            return simpleFormat() + indent + getClass().getSimpleName() + " << " + expression().representationString();
         }
     }
 
-    record ConcatMatch(@Nonnull String fullString, @Nonnull Match left, @Nonnull Match right,
+    record ConcatMatch(@Nonnull Expression expression, @Nonnull String fullString,
+                       @Nonnull Match left, @Nonnull Match right,
                        @Nonnull RangeFlex matchRange) implements Match {
         @SuppressWarnings("StringEquality") // Identity match on purpose
         public ConcatMatch {
@@ -272,10 +274,10 @@ public sealed interface Match {
             return Match.tryConstrain(this, () -> switch (constraint) {
                 // minimum length does not apply to each side individually
                 case Constraint.MinLength minLength ->
-                        new ConcatMatch(fullString, left, right, matchRange.constrain(minLength));
+                        new ConcatMatch(expression, fullString, left, right, matchRange.constrain(minLength));
                 // other constraints can be applied to each side individually
                 default ->
-                        new ConcatMatch(fullString, left.constrain(constraint), right.constrain(constraint), matchRange.constrain(constraint));
+                        new ConcatMatch(expression, fullString, left.constrain(constraint), right.constrain(constraint), matchRange.constrain(constraint));
             });
         }
 
@@ -305,7 +307,7 @@ public sealed interface Match {
 
         @Override
         public String multilineFormat(String indent) {
-            String localContext = getClass().getSimpleName() + "(" + Integer.toHexString(System.identityHashCode(this)) + ")";
+            String localContext = getClass().getSimpleName() + " << " + expression().representationString();
             String subIndent = spaced(indent) + " |-- AND ";
             return simpleFormat() + indent + localContext + System.lineSeparator() +
                    left.multilineFormat(subIndent) + System.lineSeparator()
@@ -314,24 +316,24 @@ public sealed interface Match {
     }
 
 
-    record ChoiceMatch(List<Match> matches) implements Match {
-        public static Optional<Match> ofPossibleMatches(Match... matches) {
-            return ofPossibleMatches(Arrays.stream(matches));
+    record ChoiceMatch(@Nonnull Expression expression, List<Match> matches) implements Match {
+        public static Optional<Match> ofPossibleMatches(@Nonnull Expression expression, Match... matches) {
+            return ofPossibleMatches(expression, Arrays.stream(matches));
         }
 
-        public static Optional<Match> ofPossibleMatches(Stream<Match> matches) {
+        public static Optional<Match> ofPossibleMatches(@Nonnull Expression expression, Stream<Match> matches) {
             List<Match> matchList = matches
                     .filter(not(NoMatch.class::isInstance))
                     .toList();
             return switch (matchList.size()) {
                 case 0 -> Optional.empty();
                 case 1 -> Optional.of(matchList.getFirst());
-                default -> Optional.of(new ChoiceMatch(matchList));
+                default -> Optional.of(new ChoiceMatch(expression, matchList));
             };
         }
 
-        public ChoiceMatch(Match... matches) {
-            this(List.of(matches));
+        public ChoiceMatch(@Nonnull Expression expression, Match... matches) {
+            this(expression, List.of(matches));
         }
 
         @SuppressWarnings("StringEquality") // Identity match on purpose
@@ -384,8 +386,8 @@ public sealed interface Match {
 
         @Override
         public Match constrain(Constraint constraint) {
-            return Match.tryConstrain(this, () -> ChoiceMatch.ofPossibleMatches(matches().stream().map(m -> m.constrain(constraint)))
-                    .orElse(new NoMatch(fullString(), "No choices left when applying constraint " + constraint, matches().stream().map(m -> m.constrain(constraint)).toList())));
+            return Match.tryConstrain(this, () -> ChoiceMatch.ofPossibleMatches(expression(), matches().stream().map(m -> m.constrain(constraint)))
+                    .orElse(new NoMatch(expression(), fullString(), "No choices left when applying constraint " + constraint, matches().stream().map(m -> m.constrain(constraint)).toList())));
         }
 
         @Override
@@ -400,7 +402,7 @@ public sealed interface Match {
 
         @Override
         public String multilineFormat(String indent) {
-            String localContext = getClass().getSimpleName() + "(" + Integer.toHexString(System.identityHashCode(this)) + ")";
+            String localContext = getClass().getSimpleName() + " << " + expression().representationString();
             String subIndent = spaced(indent) + " |-- OR ";
             return matches.stream()
                     .map(match -> match.multilineFormat(subIndent))
