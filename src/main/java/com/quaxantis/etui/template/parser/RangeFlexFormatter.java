@@ -28,6 +28,10 @@ public interface RangeFlexFormatter {
         return Default.VALUE.updateAndGet(formatter);
     }
 
+    default String format(RangeFlex.Applied appliedRangeFlex) {
+        return format(appliedRangeFlex.range(), appliedRangeFlex.string());
+    }
+
     String format(RangeFlex rangeFlex, String string);
 
 
@@ -35,6 +39,21 @@ public interface RangeFlexFormatter {
     RangeFlexFormatter SEPARATORS_COLORS = new WithAffixes("SEPARATORS_COLORS", ANSI.WHITE, ANSI.DEFAULT_COLOR + ANSI.DEFAULT_BACKGROUND + "{", ANSI.DEFAULT_COLOR + ANSI.DEFAULT_BACKGROUND + "{", ANSI.UNDERLINED, "[" + ANSI.WHITE_BRIGHT + ANSI.GREEN_BACKGROUND, ANSI.DEFAULT_COLOR + ANSI.DEFAULT_BACKGROUND + "]" + ANSI.WHITE, ANSI.WHITE_BRIGHT + ANSI.BOLD + ANSI.DOUBLE_UNDERLINED, ANSI.DEFAULT_COLOR + ANSI.NOT_BOLD + ANSI.UNDERLINED, ANSI.DEFAULT_COLOR + ANSI.DEFAULT_BACKGROUND + "[" + ANSI.WHITE_BRIGHT + ANSI.BLUE_BACKGROUND, ANSI.DEFAULT_COLOR + ANSI.DEFAULT_BACKGROUND + "]", ANSI.NOT_UNDERLINED, "}" + ANSI.WHITE, ANSI.RESET, ANSI.CYAN_BACKGROUND, ANSI.DEFAULT_BACKGROUND, ANSI.WHITE_BRIGHT + ANSI.GREEN_BACKGROUND, ANSI.WHITE_BRIGHT + ANSI.BLUE_BACKGROUND);
     RangeFlexFormatter COLORS_ONLY = new WithAffixes("COLORS_ONLY", ANSI.WHITE, ANSI.DEFAULT_COLOR, ANSI.DEFAULT_COLOR, ANSI.UNDERLINED, ANSI.WHITE_BRIGHT + ANSI.GREEN_BACKGROUND, ANSI.WHITE + ANSI.DEFAULT_BACKGROUND, ANSI.WHITE_BRIGHT + ANSI.BOLD + ANSI.DOUBLE_UNDERLINED, ANSI.DEFAULT_COLOR + ANSI.NOT_BOLD + ANSI.UNDERLINED, ANSI.WHITE_BRIGHT + ANSI.BLUE_BACKGROUND, ANSI.DEFAULT_COLOR + ANSI.DEFAULT_BACKGROUND, ANSI.NOT_UNDERLINED, ANSI.WHITE, ANSI.RESET, ANSI.CYAN_BACKGROUND, ANSI.DEFAULT_BACKGROUND, ANSI.WHITE_BRIGHT + ANSI.GREEN_BACKGROUND, ANSI.WHITE_BRIGHT + ANSI.BLUE_BACKGROUND);
     RangeFlexFormatter UNDERLINE_ONLY = new WithIncludes("UNDERLINE_ONLY", ANSI.UNDERLINED, ANSI.NOT_UNDERLINED);
+    RangeFlexFormatter AS_CODE = Fixed.AS_CODE;
+
+    enum Fixed implements RangeFlexFormatter {
+        AS_CODE {
+            @Override
+            public String format(RangeFlex rangeFlex, String string) {
+                StringBuilder result = new StringBuilder("RangeFlex.of(%d, %d, %d, %d)"
+                                                                 .formatted(rangeFlex.start().from(), rangeFlex.start().to(), rangeFlex.end().from(), rangeFlex.end().to()));
+                rangeFlex.minLength().ifPresent(minLength -> result.append(".constrain(Constraint.toMinLength(%d))".formatted(minLength)));
+                rangeFlex.maxLength().ifPresent(maxLength -> result.append(".constrain(Constraint.toMaxLength(%d))".formatted(maxLength)));
+                result.append(".applyTo(\"%s\")".formatted(string));
+                return result.toString();
+            }
+        }
+    }
 
     record WithIncludes(String name, String startIncluded, String endIncluded) implements RangeFlexFormatter {
         @Override

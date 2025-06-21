@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("UnusedReturnValue")
 public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectAssert<SELF, Match> {
@@ -58,7 +57,7 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
     @API
     public SELF isFullMatch() {
         if (!actual.isFullMatch()) {
-            failWithActualExpectedAndMessage(actual, new Match.RootMatch(actual.expression(), actual.fullString()), "Expected actual to be a full match");
+            failWithActualExpectedAndMessage(actual, new Match.RootMatch(actual.expression(), actual.fullString(), Map.of()), "Expected actual to be a full match");
         }
         return myself;
     }
@@ -143,16 +142,17 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
     public SELF debugBindings(Expression expression) {
         System.out.println("-- Bindings");
         actual.bindings().forEach(binding -> {
-
-            System.out.println("---- " + binding.boundVariables().map(v -> v + "=" + binding.valueOf(v).orElse(null)).collect(Collectors.joining(", ", "{", "}")));
             System.out.println("---- " + binding);
-            System.out.printf("------ (%s) -> [%s] : %s, %s << %s%n",
-                              binding.matchRange().format(binding.match().fullString()),
+            System.out.printf("------ %s -> \"%s\" : %s, %s%n",
+                              binding.match().appliedRange().format(),
                               new ExpressionResolver(var -> binding.valueOf(var).orElse("")).resolve(expression),
                               binding.matchRange().isEmpty() ? "empty" : "not empty",
                               binding.match().isFullMatch() ? "full match" : "partial match",
                               binding.match()
             );
+            binding.match().multilineFormat().lines()
+                    .map(s -> "------ " + s)
+                    .forEach(System.out::println);
             System.out.println();
         });
         System.out.println();

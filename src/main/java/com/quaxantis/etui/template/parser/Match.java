@@ -14,11 +14,12 @@ import static java.util.function.Predicate.not;
 
 public sealed interface Match {
 
-    static Match of(@Nonnull Expression expression, @Nonnull String fullString) {
-        return new RootMatch(expression, fullString);
+    static Match of(@Nonnull Expression expression, @Nonnull String fullString, @Nonnull Map<String, String> bindings) {
+        return new RootMatch(expression, fullString, bindings);
     }
 
     Expression expression();
+
     String fullString();
 
     default String multilineFormat() {
@@ -28,6 +29,10 @@ public sealed interface Match {
     String multilineFormat(String indent);
 
     RangeFlex matchRange();
+
+    default RangeFlex.Applied appliedRange() {
+        return matchRange().applyTo(fullString());
+    }
 
     Match constrain(Constraint constraint);
 
@@ -51,7 +56,7 @@ public sealed interface Match {
     }
 
     default String matchedString() {
-        return matchRange().extractFrom(fullString());
+        return matchRange().extractMaxFrom(fullString());
     }
 
     default String matchRepresentation() {
@@ -62,8 +67,12 @@ public sealed interface Match {
         return matchRange().format(fullString());
     }
 
-    default Match binding(@Nonnull Expression expression, String boundVariable) {
+    default Match binding(@Nonnull Expression expression, @Nonnull String boundVariable) {
         return new BindingMatch(expression, this, boundVariable);
+    }
+
+    default Match bindingAll(@Nonnull Expression expression, @Nonnull List<Binding> bindings) {
+        return new MultiBindingMatch(expression, this, bindings);
     }
 
     default Match andThen(UnaryOperator<Match> mapper) {
@@ -99,7 +108,7 @@ public sealed interface Match {
 
         @Override
         public Stream<Binding> bindings() {
-            return Stream.of(Binding.empty(this, this.matchRange()));
+            return Stream.of(Binding.empty(this));
         }
 
         @Override
@@ -112,7 +121,7 @@ public sealed interface Match {
                 builder.append(" : because ").append(reason);
             }
             String subIndent = spaced(indent) + " |-- ";
-            ;
+
             for (Match mismatch : mismatches) {
                 builder.append(System.lineSeparator()).append(mismatch.multilineFormat(subIndent));
             }
@@ -120,7 +129,18 @@ public sealed interface Match {
         }
     }
 
-    record RootMatch(@Nonnull Expression expression, @Nonnull String fullString) implements Match {
+    record RootMatch(@Nonnull Expression expression, @Nonnull String fullString,
+                     @Nonnull Map<String, String> rootVariables, Binding binding) implements Match {
+
+        public RootMatch {
+            if (binding == null) {
+                binding = Binding.of(this, rootVariables);
+            }
+        }
+
+        public RootMatch(@Nonnull Expression expression, @Nonnull String fullString, @Nonnull Map<String, String> bindings) {
+            this(expression, fullString, bindings, null);
+        }
 
         @Override
         public RangeFlex matchRange() {
@@ -139,12 +159,12 @@ public sealed interface Match {
 
         @Override
         public boolean hasBoundVariables() {
-            return false;
+            return binding.hasBoundVariables();
         }
 
         @Override
         public Stream<Binding> bindings() {
-            return Stream.of(Binding.empty(this, this.matchRange()));
+            return Stream.of(binding);
         }
 
         @Override
@@ -155,6 +175,20 @@ public sealed interface Match {
 
     record BindingMatch(@Nonnull Expression expression, @Nonnull Match parent,
                         @Nonnull String boundVariable) implements Match {
+
+        public BindingMatch {
+            parent.bindings()
+                    .map(binding -> binding.valueRangeOf(boundVariable))
+                    .flatMap(Optional::stream)
+                    .filter(inherited -> RangeFlex.Applied.merge(inherited, parent.appliedRange()).isEmpty())
+                    .findAny()
+                    .ifPresent(incompatible -> {
+                        throw new IllegalStateException("Cannot combine new binding match for variable %s with inherited binding match:%n%s%n%s".formatted(
+                                boundVariable, parent.appliedRange(), incompatible));
+                    });
+
+        }
+
         @Override
         public String fullString() {
             return parent.fullString();
@@ -192,7 +226,7 @@ public sealed interface Match {
         @Override
         public Stream<Binding> bindings() {
             String format = simpleFormat();
-            return parent.bindings().map(binding -> binding.with(this, this.matchRange(), boundVariable, matchedString(), format));
+            return parent.bindings().map(binding -> binding.with(this, boundVariable, format));
         }
 
         @Override
@@ -208,6 +242,67 @@ public sealed interface Match {
         @Override
         public String multilineFormat(String indent) {
             return simpleFormat() + indent + getClass().getSimpleName() + "[" + boundVariable + "] " + matchRange().lengthRange() + " << " + expression().representationString();
+        }
+    }
+
+    record MultiBindingMatch(@Nonnull Expression expression, @Nonnull Match parent,
+                             @Nonnull List<Binding> addedBindings) implements Match {
+
+        @Override
+        public String fullString() {
+            return parent.fullString();
+        }
+
+        public String matchRepresentation() {
+            return parent.matchRepresentation();
+        }
+
+        @Override
+        public RangeFlex matchRange() {
+            return parent.matchRange();
+        }
+
+        @Override
+        public String matchedString() {
+            return parent.matchedString();
+        }
+
+        @Override
+        public Match constrain(Constraint constraint) {
+            return parent.constrain(constraint).andThen(parent -> new MultiBindingMatch(expression, parent, addedBindings));
+        }
+
+        @Override
+        public boolean isFullMatch() {
+            return parent.isFullMatch();
+        }
+
+        @Override
+        public boolean hasBoundVariables() {
+            return parent.hasBoundVariables() || addedBindings.stream().anyMatch(Binding::hasBoundVariables);
+        }
+
+        @Override
+        public Stream<Binding> bindings() {
+            return parent.bindings()
+                    .flatMap(leftBinding -> addedBindings.stream()
+                            .map(rightBinding -> Binding.combine(this, matchRange(), leftBinding, rightBinding))
+                    );
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[" + addedBindings + "]";
+        }
+
+        @Override
+        public String simpleFormat() {
+            return parent.simpleFormat();
+        }
+
+        @Override
+        public String multilineFormat(String indent) {
+            return simpleFormat() + indent + this + " " + matchRange().lengthRange() + " << " + expression().representationString();
         }
     }
 
@@ -258,7 +353,6 @@ public sealed interface Match {
     record ConcatMatch(@Nonnull Expression expression, @Nonnull String fullString,
                        @Nonnull Match left, @Nonnull Match right,
                        @Nonnull RangeFlex matchRange) implements Match {
-        @SuppressWarnings("StringEquality") // Identity match on purpose
         public ConcatMatch {
             Objects.requireNonNull(fullString, "fullString");
             Objects.requireNonNull(left, "left");
@@ -271,14 +365,13 @@ public sealed interface Match {
 
         @Override
         public Match constrain(Constraint constraint) {
-            return Match.tryConstrain(this, () -> switch (constraint) {
-                // minimum length does not apply to each side individually
-                case Constraint.MinLength minLength ->
-                        new ConcatMatch(expression, fullString, left, right, matchRange.constrain(minLength));
-                // other constraints can be applied to each side individually
-                default ->
-                        new ConcatMatch(expression, fullString, left.constrain(constraint), right.constrain(constraint), matchRange.constrain(constraint));
-            });
+            return Match.tryConstrain(this, () ->
+                    (constraint instanceof Constraint.MinLength minLength)
+                            // minimum length does not apply to each side individually
+                            ? new ConcatMatch(expression, fullString, left, right, matchRange.constrain(minLength))
+                            // other constraints can be applied to each side individually
+                            : new ConcatMatch(expression, fullString, left.constrain(constraint), right.constrain(constraint), matchRange.constrain(constraint))
+            );
         }
 
         @Override
@@ -288,10 +381,16 @@ public sealed interface Match {
 
         @Override
         public Stream<Binding> bindings() {
-            return left.bindings()
-                    .flatMap(leftBinding -> right.bindings()
-                            .map(rightBinding -> concat(leftBinding, rightBinding))
-                            .flatMap(Optional::stream));
+            List<Binding> bindings =
+                    left.bindings()
+                            .flatMap(leftBinding -> right.bindings()
+                                    .map(rightBinding -> concat(leftBinding, rightBinding))
+                                    .flatMap(Optional::stream)).toList();
+            if (bindings.isEmpty()) {
+                return Stream.of(Binding.empty(this));
+            } else {
+                return bindings.stream();
+            }
         }
 
         private Optional<Binding> concat(Binding leftBinding, Binding rightBinding) {
@@ -317,9 +416,6 @@ public sealed interface Match {
 
 
     record ChoiceMatch(@Nonnull Expression expression, List<Match> matches) implements Match {
-        public static Optional<Match> ofPossibleMatches(@Nonnull Expression expression, Match... matches) {
-            return ofPossibleMatches(expression, Arrays.stream(matches));
-        }
 
         public static Optional<Match> ofPossibleMatches(@Nonnull Expression expression, Stream<Match> matches) {
             List<Match> matchList = matches
@@ -332,10 +428,6 @@ public sealed interface Match {
             };
         }
 
-        public ChoiceMatch(@Nonnull Expression expression, Match... matches) {
-            this(expression, List.of(matches));
-        }
-
         @SuppressWarnings("StringEquality") // Identity match on purpose
         public ChoiceMatch {
             Objects.requireNonNull(matches, "matches");
@@ -343,7 +435,7 @@ public sealed interface Match {
             if (matches.isEmpty()) {
                 throw new IllegalArgumentException("Cannot create choice with zero matches");
             }
-            String fullString = matches.get(0).fullString();
+            String fullString = matches.getFirst().fullString();
             for (int i = 0; i < matches.size(); i++) {
                 var idx = i;
                 Match match = matches.get(i);
@@ -359,7 +451,7 @@ public sealed interface Match {
 
         @Override
         public String fullString() {
-            return matches.get(0).fullString();
+            return matches.getFirst().fullString();
         }
 
         @Override

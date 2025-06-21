@@ -4,6 +4,8 @@ import com.quaxantis.etui.template.parser.MatchAssert.MatchWithExpressionAssert;
 import com.quaxantis.support.ide.API;
 import org.assertj.core.api.AbstractObjectAssert;
 
+import java.util.Map;
+
 public class ExpressionAssert extends AbstractObjectAssert<ExpressionAssert, Expression> {
 
     private static final EELExpressionAnalyzer analyzer = new EELExpressionAnalyzer();
@@ -31,6 +33,11 @@ public class ExpressionAssert extends AbstractObjectAssert<ExpressionAssert, Exp
 
     @API
     public MatchWithExpressionAssert matching(String string) {
-        return new MatchWithExpressionAssert(analyzer.match(actual, string), actual);
+        return matching(string, Map.of());
+    }
+
+    @API
+    public MatchWithExpressionAssert matching(String string, Map<String, String> bindings) {
+        return new MatchWithExpressionAssert(analyzer.match(actual, string, bindings), actual);
     }
 }

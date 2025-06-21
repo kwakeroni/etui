@@ -977,6 +977,6 @@ class RangeFlexTest {
     }
 
     private static String apply(RangeFlex flex, String string) {
-        return flex.applyTo(string);
+        return flex.applyTo(string).toString();
     }
 }

@@ -1,7 +1,9 @@
 package com.quaxantis.etui.template.parser;
 
+import com.quaxantis.support.ide.API;
 import com.quaxantis.support.util.Result;
 
+import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
@@ -114,6 +116,7 @@ sealed interface RangeFlex {
         return Result.ofTry(() -> constrain(constraint));
     }
 
+    @SuppressWarnings("ConfusingMainMethod")
     default Optional<IntRange> main() {
         if (start().to() < end().from()) {
             return Optional.of(IntRange.of(start().exclusiveTo(), end().from()));
@@ -141,8 +144,31 @@ sealed interface RangeFlex {
         return lengthRange.from() == lengthRange.to();
     }
 
+    default Extract extractFrom(String string) {
+        // TODO what about fuzzy strings and other length constraints ?
+        if (maxLength().filter(max -> max == 0).isPresent()) {
+            return new Extract("", "", "");
+        } else if (start().from() <= end().exclusiveTo()) {
+            if (start().exclusiveTo() <= end().from()) {
+                return new Extract(
+                        string.substring(start().from(), start().exclusiveTo()),
+                        string.substring(start().exclusiveTo(), end().from()),
+                        string.substring(end().from(), end().exclusiveTo())
+                );
+            } else {
+                // Overlap
+                return new Extract(
+                        string.substring(start().from(), start().exclusiveTo()),
+                        "",
+                        string.substring(end().from(), end().exclusiveTo())
+                );
+            }
+        } else {
+            throw new IllegalStateException("Cannot extract valid string from range: " + applyTo(string));
+        }
+    }
 
-    default String extractFrom(String string) {
+    default String extractMaxFrom(String string) {
         // TODO what about fuzzy strings and other length constraints ?
 
         if (maxLength().filter(max -> max == 0).isPresent()) {
@@ -154,8 +180,8 @@ sealed interface RangeFlex {
         }
     }
 
-    default String applyTo(String string) {
-        return format(string, RangeFlexFormatter.SEPARATORS_ONLY);
+    default Applied applyTo(String string) {
+        return new Applied(string, this);
     }
 
     default String format(String string) {
@@ -330,4 +356,145 @@ sealed interface RangeFlex {
         }
     }
 
+    record Applied(@Nonnull String string, @Nonnull RangeFlex range) {
+
+        public static Applied ofComplete(String string) {
+            return new Applied(string, RangeFlex.ofComplete(string));
+        }
+
+        public static Applied ofCompleteFixed(String string) {
+            return new Applied(string, RangeFlex.ofCompleteFixed(string));
+        }
+
+        public String format() {
+            return range.format(string);
+        }
+
+        public String format(RangeFlexFormatter formatter) {
+            return range.format(string, formatter);
+        }
+
+        public Extract extract() {
+            return range.extractFrom(string);
+        }
+
+        public String extractMax() {
+            return range.extractMaxFrom(string);
+        }
+
+        @Override
+        public String toString() {
+            return range.format(string, RangeFlexFormatter.SEPARATORS_ONLY);
+        }
+
+        public static Optional<RangeFlex.Applied> merge(RangeFlex.Applied one, RangeFlex.Applied two) {
+            if (one.range().isEmpty() && two.range().isEmpty()) {
+                return Optional.of(RangeFlex.empty().applyTo(""));
+            }
+            RangeFlex.Extract extract1 = one.extract();
+            RangeFlex.Extract extract2 = two.extract();
+            if (extract1.main().isEmpty() && extract2.main().isEmpty()) {
+                if (isFullFlex(one.range()) && isFullFlex(two.range())) {
+                    return mergeFullFlex(extract1, extract2);
+                }
+            } else {
+                return mergeExtractsWithMain(extract1, extract2);
+            }
+
+            return Optional.empty();
+        }
+
+        private static Optional<RangeFlex.Applied> mergeExtractsWithMain(RangeFlex.Extract extract1, RangeFlex.Extract extract2) {
+            if (extract1.main().contains(extract2.main())) {
+                return mergeExtractsWithContainedMain(extract1, extract2);
+            } else if (extract2.main().contains(extract1.main())) {
+                return mergeExtractsWithContainedMain(extract2, extract1);
+            }
+            return Optional.empty();
+        }
+
+        private static Optional<RangeFlex.Applied> mergeExtractsWithContainedMain(RangeFlex.Extract bigExtract, RangeFlex.Extract smallExtract) {
+            // big.main contains small.main
+            String bigMain = bigExtract.main();
+            String smallMain = smallExtract.main();
+
+            // Expand the small main range into its prefix to match the big main range
+            String smallPrefix = smallExtract.prefix();
+            int smallPrefixToMain = 0;
+            for (int i = smallPrefix.length() - 1, j = bigMain.indexOf(smallMain) - 1; j >= 0; i--, j--) {
+                if (i >= 0 && bigMain.charAt(j) == smallPrefix.charAt(i)) {
+                    smallPrefixToMain++;
+                } else {
+                    // No match in the main range: cannot merge
+                    return Optional.empty();
+                }
+            }
+
+            // Expand the prefix as long as it matches
+            String bigPrefix = bigExtract.prefix();
+            int keepSmallPrefix = 0;
+            for (int i = smallPrefix.length() - 1 - smallPrefixToMain, j = bigPrefix.length() - 1; i >= 0 && j >= 0; i--, j--) {
+                if (bigPrefix.charAt(j) == smallPrefix.charAt(i)) {
+                    keepSmallPrefix++;
+                } else {
+                    break;
+                }
+            }
+
+            // Expand the small main range into its suffix to match the big main range
+            String smallSuffix = smallExtract.suffix();
+            int smallSuffixToMain = 0;
+            for (int i = 0, j = bigMain.indexOf(smallMain) + smallMain.length(); j < bigMain.length(); i++, j++) {
+                if (i < smallSuffix.length() && bigMain.charAt(j) == smallSuffix.charAt(i)) {
+                    smallSuffixToMain++;
+                } else {
+                    // No match in the main range: cannot merge
+                    return Optional.empty();
+                }
+            }
+
+            // Expand the suffix as long as it matches
+            String bigSuffix = bigExtract.suffix();
+            int keepSmallSuffix = 0;
+            for (int i = smallSuffixToMain, j = 0; i < smallSuffix.length() && j < bigSuffix.length(); i++, j++) {
+                if (bigSuffix.charAt(j) == smallSuffix.charAt(i)) {
+                    keepSmallSuffix++;
+                } else {
+                    break;
+                }
+            }
+
+            String newPrefix = smallPrefix.substring(smallPrefix.length() - keepSmallPrefix - smallPrefixToMain, smallPrefix.length() - smallPrefixToMain);
+            String newMain = smallPrefix.substring(smallPrefix.length() - smallPrefixToMain) + smallMain + smallSuffix.substring(0, smallSuffixToMain);
+            String newSuffix = smallSuffix.substring(smallSuffixToMain, smallSuffixToMain + keepSmallSuffix);
+            if (!newMain.equals(bigMain)) {
+                throw new IllegalStateException("Unexpected main mismatch when merging ranges. " + newMain + " <> " + bigMain);
+            }
+
+            IntRange newPrefixRange = IntRange.of(0, newPrefix.length());
+            IntRange newSuffixRange = IntRange.of(newPrefix.length() + newMain.length(), newPrefix.length() + newMain.length() + newSuffix.length());
+            return Optional.of(new Applied(newPrefix + newMain + newSuffix, RangeFlex.of(newPrefixRange, newSuffixRange)));
+        }
+
+        private static boolean isFullFlex(RangeFlex rangeFlex) {
+            return rangeFlex.start().equals(rangeFlex.end());
+        }
+
+        private static Optional<RangeFlex.Applied> mergeFullFlex(RangeFlex.Extract extract1, RangeFlex.Extract extract2) {
+            String fullOverlap = null;
+            if (extract1.prefix().contains(extract2.prefix())) {
+                fullOverlap = extract2.prefix();
+            } else if (extract2.prefix().contains(extract1.prefix())) {
+                fullOverlap = extract1.prefix();
+            }
+            return Optional.ofNullable(fullOverlap).map(Applied::ofComplete);
+        }
+    }
+
+    record Extract(@Nonnull String prefix, @Nonnull String main, @Nonnull String suffix) {
+        @API
+        public String fullString() {
+            return prefix + main + suffix;
+        }
+    }
 }

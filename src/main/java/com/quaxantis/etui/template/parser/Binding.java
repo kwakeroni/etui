@@ -3,6 +3,7 @@ package com.quaxantis.etui.template.parser;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -11,11 +12,19 @@ public interface Binding {
 
     Match match();
 
-    RangeFlex matchRange();
+    default RangeFlex matchRange() {
+        return match().matchRange();
+    }
+
+    boolean hasBoundVariables();
 
     Stream<String> boundVariables();
 
-    Optional<String> valueOf(String variable);
+    default Optional<String> valueOf(String variable) {
+        return valueRangeOf(variable).map(RangeFlex.Applied::extractMax);
+    }
+
+    Optional<RangeFlex.Applied> valueRangeOf(String variable);
 
     @Nullable
     default String valueRepresentation(String variable) {
@@ -23,14 +32,13 @@ public interface Binding {
     }
 
     default Map<String, String> asMap() {
-        return boundVariables().collect(Collectors.toUnmodifiableMap(key -> key, key -> valueOf(key).orElseThrow()));
+        return boundVariables()
+                .map(variable -> valueOf(variable).map(value -> Map.entry(variable, value)).orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    default Binding with(@Nonnull Match directParent, @Nonnull RangeFlex matchRange, @Nonnull String boundVariable, @Nonnull String value) {
-        return with(directParent, matchRange, boundVariable, value, null);
-    }
-
-    default Binding with(@Nonnull Match directParent, @Nonnull RangeFlex matchRange, @Nonnull String boundVariable, @Nonnull String value, @Nullable String valueRepresentation) {
+    default Binding with(@Nonnull Match directParent, @Nonnull String boundVariable, @Nullable String valueRepresentation) {
         Binding parent = this;
         class Single implements Binding {
 
@@ -40,8 +48,8 @@ public interface Binding {
             }
 
             @Override
-            public RangeFlex matchRange() {
-                return matchRange;
+            public boolean hasBoundVariables() {
+                return true;
             }
 
             @Override
@@ -50,8 +58,8 @@ public interface Binding {
             }
 
             @Override
-            public Optional<String> valueOf(String variable) {
-                return (boundVariable.equals(variable)) ? Optional.of(value) : parent.valueOf(boundVariable);
+            public Optional<RangeFlex.Applied> valueRangeOf(String variable) {
+                return (boundVariable.equals(variable)) ? Optional.of(directParent.appliedRange()) : parent.valueRangeOf(boundVariable);
             }
 
             @Nullable
@@ -68,7 +76,7 @@ public interface Binding {
         return new Single();
     }
 
-    static Binding empty(@Nonnull Match parent, @Nonnull RangeFlex matchRange) {
+    static Binding empty(Match parent) {
         class Empty implements Binding {
 
             @Override
@@ -77,8 +85,8 @@ public interface Binding {
             }
 
             @Override
-            public RangeFlex matchRange() {
-                return matchRange;
+            public boolean hasBoundVariables() {
+                return false;
             }
 
             @Override
@@ -87,7 +95,7 @@ public interface Binding {
             }
 
             @Override
-            public Optional<String> valueOf(String variable) {
+            public Optional<RangeFlex.Applied> valueRangeOf(String variable) {
                 return Optional.empty();
             }
 
@@ -98,6 +106,37 @@ public interface Binding {
         }
         ;
         return new Empty();
+    }
+
+    static Binding of(Match.RootMatch rootMatch, Map<String, String> values) {
+        var valueMap = Map.copyOf(values);
+        class OfMap implements Binding {
+            @Override
+            public Match match() {
+                return rootMatch;
+            }
+
+            @Override
+            public boolean hasBoundVariables() {
+                return !valueMap.isEmpty();
+            }
+
+            @Override
+            public Stream<String> boundVariables() {
+                return valueMap.keySet().stream();
+            }
+
+            @Override
+            public Optional<String> valueOf(String variable) {
+                return Optional.ofNullable(valueMap.get(variable));
+            }
+
+            @Override
+            public Optional<RangeFlex.Applied> valueRangeOf(String variable) {
+                return valueOf(variable).map(RangeFlex.Applied::ofCompleteFixed);
+            }
+        }
+        return new OfMap();
     }
 
     static Binding combine(@Nonnull Match directParent, @Nonnull RangeFlex matchRange, @Nonnull Binding one, @Nonnull Binding two) {
@@ -114,6 +153,11 @@ public interface Binding {
             }
 
             @Override
+            public boolean hasBoundVariables() {
+                return one.hasBoundVariables() || two.hasBoundVariables();
+            }
+
+            @Override
             public Stream<String> boundVariables() {
                 return Stream.concat(one.boundVariables(), two.boundVariables()).distinct();
             }
@@ -123,15 +167,37 @@ public interface Binding {
                 var leftOpt = one.valueOf(variable);
                 var rightOpt = two.valueOf(variable);
                 if (leftOpt.isPresent()) {
-                    if (rightOpt.isPresent()) {
-                        // TODO: merge left and right
-                        return Optional.empty();
+                    if (rightOpt.isPresent() && !rightOpt.get().equals(leftOpt.get())) {
+                        return Binding.super.valueOf(variable);
                     } else {
                         return leftOpt;
                     }
                 } else {
                     return rightOpt;
                 }
+            }
+
+            @Override
+            public Optional<RangeFlex.Applied> valueRangeOf(String variable) {
+                var range1 = one.valueRangeOf(variable);
+                var range2 = two.valueRangeOf(variable);
+                if (range1.isPresent()) {
+                    if (range2.isPresent()) {
+                        return mergeRanges(variable, range1.get(), range2.get());
+                    } else {
+                        return range1;
+                    }
+                } else {
+                    return range2;
+                }
+            }
+
+            private Optional<RangeFlex.Applied> mergeRanges(String variable, RangeFlex.Applied one, RangeFlex.Applied two) {
+                Optional<RangeFlex.Applied> result = RangeFlex.Applied.merge(one, two);
+                if (result.isEmpty()) {
+                    System.out.printf(">>> Variable %s cannot merge bindings '%s' and '%s'%n", variable, one, two);
+                }
+                return result;
             }
 
             @Nullable
@@ -141,8 +207,12 @@ public interface Binding {
                 var rightOpt = two.valueOf(variable);
                 if (leftOpt.isPresent()) {
                     if (rightOpt.isPresent()) {
-                        // TODO: merge left and right
-                        return "<empty> TODO: merge " + one.valueRepresentation(variable) + " and " + two.valueRepresentation(variable);
+                        return "%s = %s & %s".formatted(
+                                one.valueRangeOf(variable).flatMap(app1 -> two.valueRangeOf(variable).flatMap(app2 -> RangeFlex.Applied.merge(app1, app2)))
+                                        .map(RangeFlex.Applied::format).orElse(null),
+                                one.valueRangeOf(variable).map(RangeFlex.Applied::format).orElse(null),
+                                two.valueRangeOf(variable).map(RangeFlex.Applied::format).orElse(null)
+                        );
                     } else {
                         return one.valueRepresentation(variable);
                     }
@@ -162,11 +232,9 @@ public interface Binding {
     }
 
     private static String asString(Binding binding) {
-        return variablesAsString(binding);
-    }
-
-    private static String variablesAsString(Binding binding) {
-        return binding.boundVariables().map(v -> v + "=" + binding.valueRepresentation(v)).collect(Collectors.joining(", ", "{", "}"));
+        return binding.boundVariables().map(v -> v + "=" + binding.valueOf(v).map(s -> '"' + s + '"').orElse("null")
+                                                 + "(" + binding.valueRepresentation(v) + ")")
+                .collect(Collectors.joining(", ", "Binding{", "}"));
     }
 
 }

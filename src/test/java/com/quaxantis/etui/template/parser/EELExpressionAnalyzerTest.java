@@ -18,14 +18,7 @@ class EELExpressionAnalyzerTest {
                 new Expression.OptSuffix(new Expression.Identifier("var2"), new Expression.Text("suffix")));
 
         assertThat(concat).matching("prefixsuffix")
-                .satisfies(match -> {
-                    match.bindings()
-                            .forEach(binding -> {
-                                System.out.println("-- " + binding + " (" + binding.matchRange().format("prefixsuffix") + ") " + (binding.matchRange().isEmpty() ? "empty" : "not empty"));
-                                System.out.println(new ExpressionResolver(var -> binding.valueOf(var).orElse(""))
-                                                           .resolve(concat));
-                            });
-                })
+                .debugBindings()
                 .isFullMatch()
                 .hasOnlyBindingsMatchingOrEmpty(concat)
                 .hasBindings(Map.of("var1", "suffix", "var2", ""),
@@ -84,6 +77,20 @@ class EELExpressionAnalyzerTest {
                 )
                 .hasOnlyBindingsPartiallyMatchingExpression();
 
+    }
+
+    @Test
+    @DisplayName("providing bindings for dot concat with original binding")
+    void matchWithDotConcatWithOriginalBinding() {
+        var concat = new Expression.Concat(new Expression.Identifier("title"), new Expression.Text("."),
+                                           new Expression.OptSuffix(new Expression.OptPrefix(new Expression.Text(" "), new Expression.Identifier("author")), new Expression.Text(".")),
+                                           new Expression.Text(" "), new Expression.Identifier("publisher"), new Expression.Text("."));
+
+        assertThat(concat).matching("A Title. An Author. Publisher's.", Map.of("author", "An Author"))
+                .isFullMatch()
+                .debugBindings()
+                .hasBindings(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"))
+                .hasOnlyBindingsMatchingExpression();
     }
 
 }
