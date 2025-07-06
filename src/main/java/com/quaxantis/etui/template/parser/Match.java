@@ -5,17 +5,22 @@ import com.quaxantis.support.util.Result;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.*;
 
 public sealed interface Match {
 
     static Match of(@Nonnull Expression expression, @Nonnull String fullString, @Nonnull Map<String, String> bindings) {
-        return new RootMatch(expression, fullString, bindings);
+        Map<String, RangeFlex.Applied> givenBindings = bindings.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> RangeFlex.Applied.ofCompleteFixed(entry.getValue())));
+        return new RootMatch(expression, fullString, givenBindings);
     }
 
     Expression expression();
@@ -34,7 +39,7 @@ public sealed interface Match {
         return matchRange().applyTo(fullString());
     }
 
-    Match constrain(Constraint constraint);
+    Match constrain(Constraint constraint, Expression causeExpression);
 
     private static Match tryConstrain(Match self, Supplier<Match> supplier) {
         try {
@@ -46,7 +51,13 @@ public sealed interface Match {
 
     boolean hasBoundVariables();
 
-    Stream<Binding> bindings();
+    default Stream<Binding> bindings() {
+        return Stream.of(Binding.empty(this));
+    }
+
+    Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings();
+
+    List<Match> parentMatches();
 
     default boolean isFullMatch() {
         int length = fullString().length();
@@ -71,12 +82,40 @@ public sealed interface Match {
         return new BindingMatch(expression, this, boundVariable);
     }
 
-    default Match bindingAll(@Nonnull Expression expression, @Nonnull List<Binding> bindings) {
-        return new MultiBindingMatch(expression, this, bindings);
+    default Match bindingAll(@Nonnull Expression causeExpression, @Nonnull List<Binding> bindings) {
+        Supplier<Stream<Map.Entry<String, RangeFlex.Applied>>> givenBindings = () ->
+                bindings.stream().flatMap(
+                        binding -> binding.boundVariables()
+                                .map(var -> binding.valueRangeOf(var).map(range -> Map.entry(var, range)))
+                                .flatMap(Optional::stream)
+                );
+        return new AddGivenBindings(causeExpression, this, givenBindings);
     }
 
     default Match andThen(UnaryOperator<Match> mapper) {
         return mapper.apply(this);
+    }
+
+    Stats recursiveStats();
+
+    record Stats(int depth, int size, int noMatches) {
+        Stats andThen(IntUnaryOperator depthOperator, IntUnaryOperator sizeOperator, IntUnaryOperator noMatchesOperator) {
+            return new Stats(depthOperator.applyAsInt(depth), sizeOperator.applyAsInt(size), noMatchesOperator.applyAsInt(noMatches));
+        }
+
+        static Collector<Match, ?, Stats> toStats() {
+            return mapping(Match::recursiveStats,
+                           teeing(
+                                   mapping(Stats::depth, maxBy(Comparator.naturalOrder())),
+                                   teeing(
+                                           summingInt(Stats::size),
+                                           summingInt(Stats::noMatches),
+                                           (size, noMatches) -> new int[]{size, noMatches}
+                                   ),
+                                   (depth, array) -> new Stats(depth.orElse(0), array[0], array[1])
+                           )
+            );
+        }
     }
 
     record NoMatch(@Nonnull Expression expression, @Nonnull String fullString, @Nullable String reason,
@@ -87,12 +126,19 @@ public sealed interface Match {
         }
 
         @Override
+        public Stats recursiveStats() {
+            return mismatches.stream()
+                    .collect(Stats.toStats())
+                    .andThen(d -> d + 1, s -> s + 1, n -> n + 1);
+        }
+
+        @Override
         public RangeFlex matchRange() {
             return RangeFlex.empty();
         }
 
         @Override
-        public Match constrain(Constraint constraint) {
+        public Match constrain(Constraint constraint, Expression causeExpression) {
             return this;
         }
 
@@ -107,8 +153,13 @@ public sealed interface Match {
         }
 
         @Override
-        public Stream<Binding> bindings() {
-            return Stream.of(Binding.empty(this));
+        public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
+            return Stream.empty();
+        }
+
+        @Override
+        public List<Match> parentMatches() {
+            return List.of();
         }
 
         @Override
@@ -127,19 +178,19 @@ public sealed interface Match {
             }
             return builder.toString();
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName();
+        }
     }
 
     record RootMatch(@Nonnull Expression expression, @Nonnull String fullString,
-                     @Nonnull Map<String, String> rootVariables, Binding binding) implements Match {
+                     @Nonnull Map<String, RangeFlex.Applied> givenBindingsMap) implements Match {
 
-        public RootMatch {
-            if (binding == null) {
-                binding = Binding.of(this, rootVariables);
-            }
-        }
-
-        public RootMatch(@Nonnull Expression expression, @Nonnull String fullString, @Nonnull Map<String, String> bindings) {
-            this(expression, fullString, bindings, null);
+        @Override
+        public Stats recursiveStats() {
+            return new Stats(1, 1, 0);
         }
 
         @Override
@@ -153,24 +204,35 @@ public sealed interface Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint) {
-            return tryConstrain(this, () -> new PartialMatch(expression, this, matchRange().constrain(constraint)));
+        public Match constrain(Constraint constraint, Expression causeExpression) {
+            return tryConstrain(this, () -> new PartialMatch(causeExpression, this, matchRange().constrain(constraint)));
         }
 
         @Override
         public boolean hasBoundVariables() {
-            return binding.hasBoundVariables();
+            return false;
         }
 
         @Override
-        public Stream<Binding> bindings() {
-            return Stream.of(binding);
+        public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
+            return givenBindingsMap.entrySet().stream();
+        }
+
+        @Override
+        public List<Match> parentMatches() {
+            return List.of();
         }
 
         @Override
         public String multilineFormat(String indent) {
             return fullString;
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[given=" + givenBindings().count() + ", string=" + fullString + "]";
+        }
+
     }
 
     record BindingMatch(@Nonnull Expression expression, @Nonnull Match parent,
@@ -190,6 +252,12 @@ public sealed interface Match {
         }
 
         @Override
+        public Stats recursiveStats() {
+            Stats parentStats = parent.recursiveStats();
+            return new Stats(parentStats.depth() + 1, parentStats.size() + 1, parentStats.noMatches());
+        }
+
+        @Override
         public String fullString() {
             return parent.fullString();
         }
@@ -209,18 +277,38 @@ public sealed interface Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint) {
-            return parent.constrain(constraint).andThen(parent -> new BindingMatch(expression, parent, boundVariable));
+        public Match constrain(Constraint constraint, Expression causeExpression) {
+            return parent.constrain(constraint, causeExpression).andThen(newParent -> {
+                BindingMatch newMatch = new BindingMatch(expression, newParent, boundVariable);
+                List<RangeFlex.Applied> newValues = newMatch.bindings().map(binding -> binding.valueRangeOf(boundVariable)).flatMap(Optional::stream).toList();
+                List<RangeFlex.Applied> parValues = parent.bindings().map(binding -> binding.valueRangeOf(boundVariable)).flatMap(Optional::stream).toList();
+
+//                int score = newValues.stream().flatMap(newRange -> parValues.stream().map(
+//                                parentRange -> RangeFlex.Applied.merge(parentRange, newRange).map(_ -> 1).orElse(9)))
+//                        .mapToInt(i -> i)
+//                        .max()
+//                        .orElse(1);
+
+//                System.out.println("Constrained binding: " + score + " = " + parValues.stream().map(a -> a.format(RangeFlexFormatter.SEPARATORS_ONLY)).toList() + " ->  " + newValues.stream().map(a -> a.format(RangeFlexFormatter.SEPARATORS_ONLY)).toList());
+
+
+//                parent.bindings()
+//                    .map(binding -> binding.valueRangeOf(boundVariable))
+//                    .flatMap(Optional::stream)
+//                    .filter(inherited -> RangeFlex.Applied.merge(inherited, parent.appliedRange()).isEmpty())
+//                    .findAny()
+//                    .ifPresent(incompatible -> {
+//                        throw new IllegalStateException("Cannot combine new binding match for variable %s with inherited binding match:%n%s%n%s".formatted(
+//                                boundVariable, parent.appliedRange(), incompatible));
+//                    });
+//
+                return newMatch;
+            });
         }
 
         @Override
         public boolean isFullMatch() {
             return parent.isFullMatch();
-        }
-
-        @Override
-        public boolean hasBoundVariables() {
-            return true;
         }
 
         @Override
@@ -230,8 +318,23 @@ public sealed interface Match {
         }
 
         @Override
+        public boolean hasBoundVariables() {
+            return true;
+        }
+
+        @Override
+        public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
+            return parent.givenBindings();
+        }
+
+        @Override
+        public List<Match> parentMatches() {
+            return List.of(parent);
+        }
+
+        @Override
         public String toString() {
-            return getClass().getSimpleName() + "[" + boundVariable + "=" + matchRange().format(fullString()) + "]";
+            return getClass().getSimpleName() + "[" + boundVariable + "=\"" + parent.appliedRange().extractMax() + "\"]";
         }
 
         @Override
@@ -245,8 +348,14 @@ public sealed interface Match {
         }
     }
 
-    record MultiBindingMatch(@Nonnull Expression expression, @Nonnull Match parent,
-                             @Nonnull List<Binding> addedBindings) implements Match {
+    record AddGivenBindings(@Nonnull Expression expression, @Nonnull Match parent,
+                            @Nonnull Supplier<Stream<Map.Entry<String, RangeFlex.Applied>>> addedGivenBindings) implements Match {
+
+        @Override
+        public Stats recursiveStats() {
+            Stats parentStats = parent.recursiveStats();
+            return new Stats(parentStats.depth() + 1, parentStats.size() + 1, parentStats.noMatches());
+        }
 
         @Override
         public String fullString() {
@@ -268,8 +377,8 @@ public sealed interface Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint) {
-            return parent.constrain(constraint).andThen(parent -> new MultiBindingMatch(expression, parent, addedBindings));
+        public Match constrain(Constraint constraint, Expression causeExpression) {
+            return parent.constrain(constraint, causeExpression).andThen(parent -> new AddGivenBindings(expression, parent, addedGivenBindings));
         }
 
         @Override
@@ -279,20 +388,27 @@ public sealed interface Match {
 
         @Override
         public boolean hasBoundVariables() {
-            return parent.hasBoundVariables() || addedBindings.stream().anyMatch(Binding::hasBoundVariables);
+            return parent.hasBoundVariables();
         }
 
         @Override
         public Stream<Binding> bindings() {
-            return parent.bindings()
-                    .flatMap(leftBinding -> addedBindings.stream()
-                            .map(rightBinding -> Binding.combine(this, matchRange(), leftBinding, rightBinding))
-                    );
+            return parent.bindings();
+        }
+
+        @Override
+        public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
+            return Stream.concat(parent.givenBindings(), addedGivenBindings.get());
+        }
+
+        @Override
+        public List<Match> parentMatches() {
+            return List.of(parent);
         }
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "[" + addedBindings + "]";
+            return getClass().getSimpleName() + "[given=" + addedGivenBindings.get().map(Map.Entry::getKey).collect(joining(", ")) + "]";
         }
 
         @Override
@@ -315,6 +431,12 @@ public sealed interface Match {
         }
 
         @Override
+        public Stats recursiveStats() {
+            Stats parentStats = parent.recursiveStats();
+            return new Stats(parentStats.depth() + 1, parentStats.size() + 1, parentStats.noMatches());
+        }
+
+        @Override
         public String fullString() {
             return parent.fullString();
         }
@@ -325,8 +447,8 @@ public sealed interface Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint) {
-            return Match.tryConstrain(this, () -> new PartialMatch(expression, parent, range.constrain(constraint)));
+        public Match constrain(Constraint constraint, Expression causeExpression) {
+            return Match.tryConstrain(this, () -> new PartialMatch(causeExpression, this, range.constrain(constraint)));
         }
 
         @Override
@@ -340,8 +462,18 @@ public sealed interface Match {
         }
 
         @Override
+        public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
+            return parent.givenBindings();
+        }
+
+        @Override
+        public List<Match> parentMatches() {
+            return List.of(parent);
+        }
+
+        @Override
         public String toString() {
-            return getClass().getSimpleName() + "[" + simpleFormat() + "]";
+            return getClass().getSimpleName() + "[" + range + "]";
         }
 
         @Override
@@ -363,14 +495,24 @@ public sealed interface Match {
             }
         }
 
+
         @Override
-        public Match constrain(Constraint constraint) {
+        public Stats recursiveStats() {
+            Stats leftStats = left.recursiveStats();
+            Stats rightStats = right.recursiveStats();
+
+            return new Stats(Math.max(leftStats.depth, rightStats.depth()) + 1, leftStats.depth() + rightStats.depth() + 1, leftStats.noMatches() + rightStats.noMatches());
+        }
+
+
+        @Override
+        public Match constrain(Constraint constraint, Expression causeExpression) {
             return Match.tryConstrain(this, () ->
                     (constraint instanceof Constraint.MinLength minLength)
                             // minimum length does not apply to each side individually
                             ? new ConcatMatch(expression, fullString, left, right, matchRange.constrain(minLength))
                             // other constraints can be applied to each side individually
-                            : new ConcatMatch(expression, fullString, left.constrain(constraint), right.constrain(constraint), matchRange.constrain(constraint))
+                            : new ConcatMatch(expression, fullString, left.constrain(constraint, causeExpression), right.constrain(constraint, causeExpression), matchRange.constrain(constraint))
             );
         }
 
@@ -393,15 +535,25 @@ public sealed interface Match {
             }
         }
 
+        @Override
+        public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
+            return Stream.concat(left.givenBindings(), right.givenBindings());
+        }
+
+        @Override
+        public List<Match> parentMatches() {
+            return List.of(left, right);
+        }
+
         private Optional<Binding> concat(Binding leftBinding, Binding rightBinding) {
-            return Result.ofTry(() -> RangeFlex.concat((leftBinding.match().matchRange()), rightBinding.match().matchRange()))
+            return Result.ofTry(() -> RangeFlex.concat((leftBinding.matchRange()), rightBinding.matchRange()))
                     .ifSuccess()
                     .map(concatRange -> Binding.combine(this, concatRange.combined(), leftBinding, rightBinding));
         }
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "[" + simpleFormat() + " = " + left + " + " + right + "]";
+            return getClass().getSimpleName() + "[" + left.getClass().getSimpleName() + ", " + right.getClass().getSimpleName() + "]";
         }
 
         @Override
@@ -414,7 +566,7 @@ public sealed interface Match {
         }
     }
 
-
+    @Deprecated
     record ChoiceMatch(@Nonnull Expression expression, List<Match> matches) implements Match {
 
         public static Optional<Match> ofPossibleMatches(@Nonnull Expression expression, Stream<Match> matches) {
@@ -450,6 +602,11 @@ public sealed interface Match {
         }
 
         @Override
+        public Stats recursiveStats() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public String fullString() {
             return matches.getFirst().fullString();
         }
@@ -477,9 +634,9 @@ public sealed interface Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint) {
-            return Match.tryConstrain(this, () -> ChoiceMatch.ofPossibleMatches(expression(), matches().stream().map(m -> m.constrain(constraint)))
-                    .orElse(new NoMatch(expression(), fullString(), "No choices left when applying constraint " + constraint, matches().stream().map(m -> m.constrain(constraint)).toList())));
+        public Match constrain(Constraint constraint, Expression causeExpression) {
+            return Match.tryConstrain(this, () -> ChoiceMatch.ofPossibleMatches(expression(), matches().stream().map(m -> m.constrain(constraint, causeExpression)))
+                    .orElse(new NoMatch(expression(), fullString(), "No choices left when applying constraint " + constraint, matches().stream().map(m -> m.constrain(constraint, causeExpression)).toList())));
         }
 
         @Override
@@ -489,7 +646,18 @@ public sealed interface Match {
 
         @Override
         public Stream<Binding> bindings() {
-            return matches.stream().flatMap(Match::bindings);
+            return matches.stream().flatMap(match -> match.bindings()
+                    .map(binding -> (match.isFullMatch()) ? binding : binding.adaptScore(score -> score.times(0.5, "not full match"))));
+        }
+
+        @Override
+        public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Match> parentMatches() {
+            return matches;
         }
 
         @Override
@@ -503,6 +671,10 @@ public sealed interface Match {
                                                 ""));
         }
 
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[choices=" + matches.size() + "]";
+        }
     }
 
     private static String spaced(String indent) {

@@ -36,7 +36,7 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
         assertThat(optPrefix).matching("something else and ")
                 .isNotFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("{[][]}something else and ");
+                .hasMatchRepresentation("{[[something else and ]]}");
     }
 
     @Test
@@ -46,7 +46,7 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
         assertThat(optPrefix).matching("a prefix and ")
                 .isNotFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("{[][]}a prefix and ")
+                .hasMatchRepresentation("{[[a prefix and ]]}")
                 .hasOnlyBindingsMatchingOrEmpty(optPrefix);
     }
 

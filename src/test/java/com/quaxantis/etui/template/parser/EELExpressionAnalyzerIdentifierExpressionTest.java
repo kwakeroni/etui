@@ -29,8 +29,8 @@ class EELExpressionAnalyzerIdentifierExpressionTest {
         assertThat(identifier).matching("my test value", Map.of("testVar", "my test value", "otherVar", "my other value"))
                 .isFullMatch()
                 .hasBoundVariables()
-                .hasBindings(Map.of("testVar", "my test value", "otherVar", "my other value"))
-                .hasMatchRepresentation("{[]my test value[]}")
+                .hasBindings(Map.of("testVar", "my test value"))
+                .hasMatchRepresentation("{[[my test value]]}")
                 .hasOnlyBindingsMatching(identifier);
     }
 
@@ -40,6 +40,7 @@ class EELExpressionAnalyzerIdentifierExpressionTest {
     void noMatchWithConflictingBinding() {
         var identifier = new Expression.Identifier("testVar");
         assertThat(identifier).matching("my test value", Map.of("testVar", "my original value"))
-                .isNoMatch();
+                .isMatch()
+                .hasBindings(Map.of("testVar", "my test value"));
     }
 }

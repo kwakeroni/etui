@@ -9,54 +9,62 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static com.quaxantis.etui.template.parser.Constraint.*;
+import static java.util.function.Predicate.not;
 
 public class EELExpressionAnalyzer {
+
+    private static final boolean REMOVE_NO_MATCHES = true;
 
     private static final Logger log = LoggerFactory.getLogger(EELExpressionAnalyzer.class);
 
     public Match match(Expression expression, String string, Map<String, String> bindings) {
-        Collection<Match> matches = doMatch(expression, string, Match.of(expression, string, bindings));
-        Match match = (matches.size() == 0) ? new NoMatch(expression, string, "No resulting matches")
+        var fullExpr = new Expression.Delegate(expression);
+        Collection<Match> matches = doMatch(fullExpr, string, Match.of(fullExpr, string, bindings));
+        Match match = (matches.size() == 0) ? new NoMatch(fullExpr, string, "No resulting matches")
                 : (matches.size() == 1) ? matches.iterator().next()
-                : Match.ChoiceMatch.ofPossibleMatches(expression, matches.stream()).orElseGet(() -> new NoMatch(expression, string, "No matches", matches));
+                : Match.ChoiceMatch.ofPossibleMatches(fullExpr, matches.stream()).orElseGet(() -> new NoMatch(fullExpr, string, "No matches", matches));
 
         if (match instanceof NoMatch) {
-            log.debug("Match result for {}{}{}", expression.representationString(), System.lineSeparator(), match.multilineFormat());
+            log.debug("Match result for {}{}{}", fullExpr.representationString(), System.lineSeparator(), match.multilineFormat());
         } else {
-            log.trace("Match result for {}{}{}", expression.representationString(), System.lineSeparator(), match.multilineFormat());
+            log.trace("Match result for {}{}{}", fullExpr.representationString(), System.lineSeparator(), match.multilineFormat());
         }
         return match;
     }
 
     Collection<Match> doMatch(Expression expression, String string, Match parent) {
-        return switch (expression) {
+        Collection<Match> result = switch (expression) {
             case Expression.Text text -> matchText(text, string, parent);
             case Expression.Identifier identifier -> matchIdentifier(identifier, string, parent);
             case Expression.Elvis elvis -> matchElvis(elvis, string, parent);
             case Expression.OptPrefix optPrefix -> matchOptPrefix(optPrefix, string, parent);
             case Expression.OptSuffix optSuffix -> matchOptSuffix(optSuffix, string, parent);
             case Expression.Concat concat -> matchConcat(concat, string, parent);
+            case Expression.Delegate(var delegate) -> doMatch(delegate, string, parent);
         };
+
+//        System.out.println("Collected Matches: " + result.stream().collect(Match.Stats.toStats()));
+        if (REMOVE_NO_MATCHES) {
+            result = result.stream().filter(not(NoMatch.class::isInstance)).toList();
+        }
+
+        return result;
     }
 
     private Collection<Match> matchIdentifier(Expression.Identifier identifier, String fullString, Match parent) {
-        return parent.bindings()
-                .flatMap(binding -> matchIdentifier(identifier, fullString, parent, binding))
-                .toList();
-    }
+//        return parent.bindings()
+//                .flatMap(binding -> matchIdentifier(identifier, fullString, parent, binding))
+//                .toList();
 
-    private Stream<Match> matchIdentifier(Expression.Identifier identifier, String fullString, Match parent, Binding binding) {
         String variable = identifier.name();
-        return binding.valueOf(variable)
-                .map(value -> matchLiteral(value, identifier, fullString, parent))
-                .orElseGet(() -> {
-                    IntRange fullRange = IntRange.of(0, fullString.length());
-                    RangeFlex flex = RangeFlex.of(fullRange, fullRange);
-                    Match match = parent
-                            .constrain(toRange(flex).and(toMinLength(0)))
-                            .binding(identifier, variable);
-                    return Stream.of(match);
-                });
+        IntRange fullRange = IntRange.of(0, fullString.length());
+        RangeFlex flex = RangeFlex.of(fullRange, fullRange);
+        return
+//                Stream.concat(
+//                binding.valueOf(variable).map(value -> matchLiteral(value, identifier, fullString, parent)).orElseGet(Stream::empty),
+                List.of(parent.constrain(toRange(flex).and(toMinLength(0)), identifier).binding(identifier, variable))
+//        )
+                ;
     }
 
     private Collection<Match> matchText(Expression.Text textExpr, String fullString, Match parent) {
@@ -72,10 +80,11 @@ public class EELExpressionAnalyzer {
             int end = fullString.length() - 1;
             RangeFlex matchRange = RangeFlex.ofFixed(0, end);
             int matchLength = end + 1;
-            return Stream.of(literalMatch(parent, matchRange, matchLength));
+            return Stream.of(literalMatch(parent, matchRange, matchLength, expression));
         } else if (literal.isEmpty()) {
-            // Special case match empty literal only at the start
-            return Stream.of(literalMatch(parent, RangeFlex.empty(), 0));
+            return Stream.of(parent.constrain(Constraint.toMaxLength(0), expression));
+//             Special case match empty literal only at the start
+//            return Stream.of(literalMatch(parent, RangeFlex.empty(), 0));
         } else {
             List<Match> matches = new ArrayList<>();
             int index = -1;
@@ -83,7 +92,7 @@ public class EELExpressionAnalyzer {
                 int end = index + literal.length() - 1;
                 RangeFlex matchRange = RangeFlex.ofFixed(index, end);
                 int matchLength = end - index + 1;
-                matches.add(literalMatch(parent, matchRange, matchLength));
+                matches.add(literalMatch(parent, matchRange, matchLength, expression));
             }
 
             if (matches.isEmpty()) {
@@ -94,12 +103,12 @@ public class EELExpressionAnalyzer {
         }
     }
 
-    private static Match literalMatch(Match parent, RangeFlex matchRange, int matchLength) {
+    private static Match literalMatch(Match parent, RangeFlex matchRange, int matchLength, Expression expression) {
         return parent.constrain(
                 toRange(matchRange)
                         .and(toFixedRange())
                         .and(toMinLength(matchLength))
-                        .and(toMaxLength(matchLength)));
+                        .and(toMaxLength(matchLength)), expression);
     }
 
     private List<Match> matchElvis(Expression.Elvis elvis, String string, Match parent) {
@@ -108,12 +117,12 @@ public class EELExpressionAnalyzer {
     }
 
     private Stream<Match> elvisMatch(Expression.Elvis elvis, String string, Match leftMatch, Match parent) {
-        Match mainMatch = leftMatch.constrain(toMinLength(1));
-        Match emptyMainMatch = leftMatch.constrain(toMaxLength(0));
+        Match mainMatch = leftMatch.constrain(toMinLength(1), elvis);
+        Match emptyMainMatch = leftMatch.constrain(toMaxLength(0), elvis);
         if (emptyMainMatch instanceof NoMatch) {
             return Stream.of(mainMatch);
         } else {
-            Collection<Match> fallbackMatches = doMatch(elvis.orElse(), string, parent.bindingAll(parent.expression(), emptyMainMatch.bindings().toList()));
+            Collection<Match> fallbackMatches = doMatch(elvis.orElse(), string, parent.bindingAll(elvis, emptyMainMatch.bindings().toList()));
             return Stream.concat(Stream.of(mainMatch),
                                  fallbackMatches.stream().map(fallbackMatch -> elvisMatchFallback(elvis, string, emptyMainMatch, fallbackMatch)));
         }
@@ -121,8 +130,8 @@ public class EELExpressionAnalyzer {
 
     private static Match elvisMatchFallback(Expression.Elvis elvis, String string, Match emptyMainMatch, Match fallbackMatch) {
         RangeFlex.ConcatResult concatRange = RangeFlex.concat(emptyMainMatch.matchRange(), fallbackMatch.matchRange());
-        Match constrainedEmptyMatch = emptyMainMatch.constrain(toRange(concatRange.left()));
-        Match constrainedFallbackMatch = fallbackMatch.constrain(toRange(concatRange.right()));
+        Match constrainedEmptyMatch = emptyMainMatch.constrain(toRange(concatRange.left()), elvis);
+        Match constrainedFallbackMatch = fallbackMatch.constrain(toRange(concatRange.right()), elvis);
         return constrainedFallbackMatch.andThen(cfm -> new Match.ConcatMatch(elvis, string, constrainedEmptyMatch, cfm, concatRange.combined()));
     }
 
@@ -141,9 +150,9 @@ public class EELExpressionAnalyzer {
             return Stream.of(new NoMatch(optPrefix, string, null, exprMatch));
         }
 
-        Match mainMatch = exprMatch.constrain(toMinLength(1));
-        Match emptyMainMatch = exprMatch.constrain(toMaxLength(0));
-        Collection<Match> prefixMatches = doMatch(optPrefix.prefix(), string, parent.bindingAll(parent.expression(), mainMatch.bindings().toList()));
+        Match mainMatch = exprMatch.constrain(toMinLength(1), optPrefix);
+        Match emptyMainMatch = exprMatch.constrain(toMaxLength(0), optPrefix);
+        Collection<Match> prefixMatches = doMatch(optPrefix.prefix(), string, parent.bindingAll(optPrefix, mainMatch.bindings().toList()));
         return Stream.concat(
                 prefixMatches.stream().map(prefixMatch -> concatMatches(optPrefix, string, prefixMatch, mainMatch)),
                 Stream.of(emptyMainMatch));
@@ -155,9 +164,9 @@ public class EELExpressionAnalyzer {
             return Stream.of(new NoMatch(optSuffix, string, null, exprMatch));
         }
 
-        Match mainMatch = exprMatch.constrain(toMinLength(1));
-        Match emptymainMatch = exprMatch.constrain(toMaxLength(0));
-        Collection<Match> suffixMatches = doMatch(optSuffix.suffix(), string, parent.bindingAll(parent.expression(), mainMatch.bindings().toList()));
+        Match mainMatch = exprMatch.constrain(toMinLength(1), optSuffix);
+        Match emptymainMatch = exprMatch.constrain(toMaxLength(0), optSuffix);
+        Collection<Match> suffixMatches = doMatch(optSuffix.suffix(), string, parent.bindingAll(optSuffix, mainMatch.bindings().toList()));
         return Stream.concat(
                 suffixMatches.stream().map(suffixMatch -> concatMatches(optSuffix, string, mainMatch, suffixMatch)),
                 Stream.of(emptymainMatch));
@@ -167,7 +176,7 @@ public class EELExpressionAnalyzer {
         Iterator<Expression> iter = concat.parts().iterator();
 
         if (!iter.hasNext()) {
-            return List.of(parent.constrain(toRange(RangeFlex.empty()).and(toMaxLength(0))));
+            return List.of(parent.constrain(toRange(RangeFlex.empty()).and(toMaxLength(0)), concat));
         }
 
         Expression part = iter.next();
@@ -198,8 +207,8 @@ public class EELExpressionAnalyzer {
 
             return switch (RangeFlex.tryConcat(leftFlex, rightFlex)) {
                 case Result.Success(RangeFlex.ConcatResult(var left, var right, var combined)) -> {
-                    var constrainedLeftMatch = leftMatch.constrain(toRange(left));
-                    var constrainedRightMatch = rightMatch.constrain(toRange(right));
+                    var constrainedLeftMatch = leftMatch.constrain(toRange(left), expression);
+                    var constrainedRightMatch = rightMatch.constrain(toRange(right), expression);
                     if (constrainedLeftMatch instanceof NoMatch || constrainedRightMatch instanceof NoMatch) {
                         yield new NoMatch(expression, string, null, constrainedLeftMatch, constrainedRightMatch);
                     }

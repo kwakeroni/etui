@@ -1,5 +1,11 @@
 package com.quaxantis.support.util;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class ANSI {
     // Reset
     public static final String RESET = "\033[0m";  // Text Reset
@@ -22,36 +28,6 @@ public class ANSI {
     public static final String CYAN_BRIGHT = "\033[96m";   // CYAN
     public static final String WHITE_BRIGHT = "\033[97m";  // WHITE
 
-    // Regular Colors
-    public static final String BLACK_REGULAR = "\033[0;30m";   // BLACK
-    public static final String RED_REGULAR = "\033[0;31m";     // RED
-    public static final String GREEN_REGULAR = "\033[0;32m";   // GREEN
-    public static final String YELLOW_REGULAR = "\033[0;33m";  // YELLOW
-    public static final String BLUE_REGULAR = "\033[0;34m";    // BLUE
-    public static final String PURPLE_REGULAR = "\033[0;35m";  // PURPLE
-    public static final String CYAN_REGULAR = "\033[0;36m";    // CYAN
-    public static final String WHITE_REGULAR = "\033[0;37m";   // WHITE
-
-    // Bold
-    public static final String BLACK_BOLD = "\033[1;30m";  // BLACK
-    public static final String RED_BOLD = "\033[1;31m";    // RED
-    public static final String GREEN_BOLD = "\033[1;32m";  // GREEN
-    public static final String YELLOW_BOLD = "\033[1;33m"; // YELLOW
-    public static final String BLUE_BOLD = "\033[1;34m";   // BLUE
-    public static final String PURPLE_BOLD = "\033[1;35m"; // PURPLE
-    public static final String CYAN_BOLD = "\033[1;36m";   // CYAN
-    public static final String WHITE_BOLD = "\033[1;37m";  // WHITE
-
-    // Underline
-    public static final String BLACK_UNDERLINED = "\033[4;30m";  // BLACK
-    public static final String RED_UNDERLINED = "\033[4;31m";    // RED
-    public static final String GREEN_UNDERLINED = "\033[4;32m";  // GREEN
-    public static final String YELLOW_UNDERLINED = "\033[4;33m"; // YELLOW
-    public static final String BLUE_UNDERLINED = "\033[4;34m";   // BLUE
-    public static final String PURPLE_UNDERLINED = "\033[4;35m"; // PURPLE
-    public static final String CYAN_UNDERLINED = "\033[4;36m";   // CYAN
-    public static final String WHITE_UNDERLINED = "\033[4;37m";  // WHITE
-
     // Background
     public static final String BLACK_BACKGROUND = "\033[40m";  // BLACK
     public static final String RED_BACKGROUND = "\033[41m";    // RED
@@ -61,36 +37,6 @@ public class ANSI {
     public static final String PURPLE_BACKGROUND = "\033[45m"; // PURPLE
     public static final String CYAN_BACKGROUND = "\033[46m";   // CYAN
     public static final String WHITE_BACKGROUND = "\033[47m";  // WHITE
-
-    // High Intensity
-    public static final String BLACK_BRIGHT_REGULAR = "\033[0;90m";  // BLACK
-    public static final String RED_BRIGHT_REGULAR = "\033[0;91m";    // RED
-    public static final String GREEN_BRIGHT_REGULAR = "\033[0;92m";  // GREEN
-    public static final String YELLOW_BRIGHT_REGULAR = "\033[0;93m"; // YELLOW
-    public static final String BLUE_BRIGHT_REGULAR = "\033[0;94m";   // BLUE
-    public static final String PURPLE_BRIGHT_REGULAR = "\033[0;95m"; // PURPLE
-    public static final String CYAN_BRIGHT_REGULAR = "\033[0;96m";   // CYAN
-    public static final String WHITE_BRIGHT_REGULAR = "\033[0;97m";  // WHITE
-
-    // Bold High Intensity
-    public static final String BLACK_BOLD_BRIGHT = "\033[1;90m"; // BLACK
-    public static final String RED_BOLD_BRIGHT = "\033[1;91m";   // RED
-    public static final String GREEN_BOLD_BRIGHT = "\033[1;92m"; // GREEN
-    public static final String YELLOW_BOLD_BRIGHT = "\033[1;93m";// YELLOW
-    public static final String BLUE_BOLD_BRIGHT = "\033[1;94m";  // BLUE
-    public static final String PURPLE_BOLD_BRIGHT = "\033[1;95m";// PURPLE
-    public static final String CYAN_BOLD_BRIGHT = "\033[1;96m";  // CYAN
-    public static final String WHITE_BOLD_BRIGHT = "\033[1;97m"; // WHITE
-
-    // High Intensity backgrounds
-    public static final String BLACK_BACKGROUND_BRIGHT = "\033[0;100m";// BLACK
-    public static final String RED_BACKGROUND_BRIGHT = "\033[0;101m";// RED
-    public static final String GREEN_BACKGROUND_BRIGHT = "\033[0;102m";// GREEN
-    public static final String YELLOW_BACKGROUND_BRIGHT = "\033[0;103m";// YELLOW
-    public static final String BLUE_BACKGROUND_BRIGHT = "\033[0;104m";// BLUE
-    public static final String PURPLE_BACKGROUND_BRIGHT = "\033[0;105m"; // PURPLE
-    public static final String CYAN_BACKGROUND_BRIGHT = "\033[0;106m";  // CYAN
-    public static final String WHITE_BACKGROUND_BRIGHT = "\033[0;107m";   // WHITE
 
 
     public static final String DEFAULT_COLOR = "\033[39m";
@@ -104,7 +50,158 @@ public class ANSI {
     public static final String NOT_ITALIC = "\033[23m";
     public static final String NOT_UNDERLINED = "\033[24m";
 
+    private static final Pattern REGEX = Pattern.compile("\033\\[\\d+(?:;\\d*)*m");
+
     public static String strip(String ansiString) {
-        return ansiString.replaceAll("\033\\[\\d+(?:;\\d*)*m", "");
+        return REGEX.matcher(ansiString).replaceAll("");
+    }
+
+    public static String escape(String ansiString) {
+        return ansiString.replace('\033', '\\');
+    }
+
+    public static String toHTML(String ansiString) {
+        ansiString = ansiString.replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;");
+        StyleStack stack = new StyleStack();
+        StringBuilder result = new StringBuilder();
+        Matcher matcher = REGEX.matcher(ansiString);
+        int i = 0;
+        while (matcher.find()) {
+            i++;
+            matcher.appendReplacement(result, replace(matcher.group(), stack));
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    private static String replace(String ansi, StyleStack stack) {
+        return switch (ansi) {
+            case BLACK -> stack.replaceColor("black");
+            case RED -> stack.replaceColor("maroon");
+            case GREEN -> stack.replaceColor("green");
+            case YELLOW -> stack.replaceColor("olive");
+            case BLUE -> stack.replaceColor("navy");
+            case PURPLE -> stack.replaceColor("purple");
+            case CYAN -> stack.replaceColor("teal");
+            case WHITE -> stack.replaceColor("silver");
+            case BLACK_BRIGHT -> stack.replaceColor("gray");
+            case RED_BRIGHT -> stack.replaceColor("red");
+            case GREEN_BRIGHT -> stack.replaceColor("lime");
+            case YELLOW_BRIGHT -> stack.replaceColor("yellow");
+            case BLUE_BRIGHT -> stack.replaceColor("blue");
+            case PURPLE_BRIGHT -> stack.replaceColor("fuchsia");
+            case CYAN_BRIGHT -> stack.replaceColor("aqua");
+            case WHITE_BRIGHT -> stack.replaceColor("white");
+            case DEFAULT_COLOR -> stack.replaceColor(null);
+            case BLACK_BACKGROUND -> stack.replaceBgColor("black");
+            case RED_BACKGROUND -> stack.replaceBgColor("maroon");
+            case GREEN_BACKGROUND -> stack.replaceBgColor("green");
+            case YELLOW_BACKGROUND -> stack.replaceBgColor("olive");
+            case BLUE_BACKGROUND -> stack.replaceBgColor("navy");
+            case PURPLE_BACKGROUND -> stack.replaceBgColor("purple");
+            case CYAN_BACKGROUND -> stack.replaceBgColor("teal");
+            case WHITE_BACKGROUND -> stack.replaceBgColor("silver");
+            case DEFAULT_BACKGROUND -> stack.replaceBgColor(null);
+            case BOLD -> stack.replaceWeight("bold");
+            case FAINT -> stack.replaceWeight("200");
+            case NOT_BOLD -> stack.replaceWeight(null);
+            case ITALIC -> stack.replaceItalic("italic");
+            case NOT_ITALIC -> stack.replaceItalic(null);
+            case UNDERLINED -> stack.replaceUnderline("solid");
+            case DOUBLE_UNDERLINED -> stack.replaceUnderline("double");
+            case NOT_UNDERLINED -> stack.replaceUnderline(null);
+            case RESET -> stack.resetAll();
+            default -> "";
+        };
+    }
+
+    private static class StyleStack {
+        private final Map<String, String> current = new HashMap<>();
+        private final Stack<String> active = new Stack<>();
+
+        private String replaceColor(String color) {
+            return replaceStyle("color", "<span style='color:%s;'>", color);
+        }
+
+        private String replaceBgColor(String bgColor) {
+            return replaceStyle("bgColor", "<span style='background-color:%s;'>", bgColor);
+        }
+
+        private String replaceWeight(String weight) {
+            return replaceStyle("weight", "<span style='font-weight:%s;'>", weight);
+        }
+
+        private String replaceItalic(String italic) {
+            return replaceStyle("italic", "<span style='font-style:%s;'>", italic);
+        }
+
+        private String replaceUnderline(String underline) {
+            return replaceStyle("underline", "<span style='text-decoration: underline %s;'>", underline);
+        }
+
+        private String replaceStyle(String type, String stylePattern, String styleArg) {
+            String closeSpan = reset(type);
+            return (styleArg == null) ? closeSpan : closeSpan + push(type, stylePattern.formatted(styleArg));
+        }
+
+        private String reset(String type) {
+            if (contains(type)) {
+                return pop(type, "</span>");
+            } else {
+                return "";
+            }
+        }
+
+        private String resetAll() {
+            StringBuilder builder = new StringBuilder();
+            while (!active.isEmpty()) {
+                builder.append("</span>");
+                current.remove(active.pop());
+            }
+            return builder.toString();
+        }
+
+        private String push(String type, String text) {
+            active.push(type);
+            return current.merge(type, text, (old, _) -> {
+                throw new IllegalStateException(type + " is already set to " + old);
+            });
+        }
+
+        private boolean contains(String type) {
+            return active.contains(type);
+        }
+
+        private String pop(String type, String closer) {
+            Stack<String> backup = new Stack<>();
+            StringBuilder builder = new StringBuilder();
+            while (!type.equals(active.peek())) {
+                builder.append(closer);
+                backup.push(active.pop());
+            }
+            builder.append(closer);
+            active.pop();
+            current.remove(type);
+            while (!backup.isEmpty()) {
+                builder.append(current.get(active.push(backup.pop())));
+            }
+            return builder.toString();
+        }
+    }
+
+
+    public static void main(String[] args) {
+//        System.out.println(RESET + "HAHA" + "HAHA" + "HAHA");
+//        System.out.println(RESET + "HAHA" + "\033[9m" + "HAHA" + "\033[29m" + "HAHA");
+//        System.out.println(RESET + "HAHA" + "\033[7m" + "HAHA" + "\033[27m" + "HAHA");
+//        System.out.println(RESET + "HAHA" + "\033[21m" + "HAHA" + UNDERLINED + "HAHA" + "\033[24m" + "HAHA");
+//        System.out.println(RESET + UNDERLINED + "HAHA" + "\033[58:5:13m" + "HAHA" + "\033[59m" + "HAHA");
+//        System.out.println(RESET + UNDERLINED + "HAHA" + "\033[53m" + "\033[8m" + "\033[11m" + "\033[18m" + "\033[20m" + "\033[73m" + "HAHA" + "\033[59m" + "HAHA");
+        String string = "HAHA " + WHITE + "HAHA" + BLUE_BACKGROUND + "HAHA" + RED_BRIGHT + "HA" + GREEN_BACKGROUND + "HA" + DEFAULT_COLOR + "HA" + DEFAULT_BACKGROUND + "HA";
+        System.out.println(string + NOT_UNDERLINED);
+        System.out.println(strip(string));
+        System.out.println(toHTML(string));
     }
 }

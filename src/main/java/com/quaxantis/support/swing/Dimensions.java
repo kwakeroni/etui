@@ -59,6 +59,10 @@ public class Dimensions {
         return new Dimension(Math.max(dimension.width, minimumWidth), Math.max(dimension.height, minimumHeight));
     }
 
+    public static Dimension withMaximumWidthAndHeight(Dimension dimension, int maximumWidth, int maximumHeight) {
+        return new Dimension(Math.min(dimension.width, maximumWidth), Math.min(dimension.height, maximumHeight));
+    }
+
     public static int maxWidth(Dimension... dimensions) {
         return maxWidth(Function.identity(), dimensions);
     }

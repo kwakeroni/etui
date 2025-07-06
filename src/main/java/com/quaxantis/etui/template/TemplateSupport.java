@@ -1,23 +1,25 @@
 package com.quaxantis.etui.template;
 
-import com.quaxantis.etui.Tag;
-import com.quaxantis.etui.Template;
 import com.quaxantis.etui.HasDescription;
 import com.quaxantis.etui.HasLabel;
+import com.quaxantis.etui.Tag;
+import com.quaxantis.etui.Template;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
-
-import static java.util.stream.Collectors.toMap;
 
 public class TemplateSupport implements Template {
     private final String name;
+    private final String source;
     private final List<Variable> variables;
     private final List<TagMapping> mappings;
     private final ExpressionEvaluator expressionEvaluator;
 
-    private TemplateSupport(String name, List<Variable> variables, List<TagMapping> mappings) {
+    private TemplateSupport(String name, String source, List<Variable> variables, List<TagMapping> mappings) {
         this.name = name;
+        this.source = source;
         this.variables = variables;
         this.mappings = mappings;
         this.expressionEvaluator = ExpressionEvaluator.of(ExpressionEvaluator.Context.of(this.variables));
@@ -61,12 +63,19 @@ public class TemplateSupport implements Template {
 
     public static class Builder {
         String name;
+        String source;
         List<Variable> variables = new ArrayList<>();
         List<TagMapping> mappings = new ArrayList<>();
         Function<ExpressionEvaluator.Context, ExpressionEvaluator> evaluator = ExpressionEvaluator::of;
 
         public Builder(String name) {
             this.name = name;
+            this.source = new Exception().getStackTrace()[1].toString();
+        }
+
+        public Builder withSource(String source) {
+            this.source = source;
+            return this;
         }
 
         public Builder addVariable(Variable variable) {
@@ -118,7 +127,7 @@ public class TemplateSupport implements Template {
 
         public Template build() {
             List<Variable> unmodifiableVariables = List.copyOf(this.variables);
-            return new TemplateSupport(this.name, unmodifiableVariables, this.mappings);
+            return new TemplateSupport(this.name, this.source, unmodifiableVariables, this.mappings);
         }
     }
 

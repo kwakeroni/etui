@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static java.util.Comparator.comparing;
+import static java.util.function.Predicate.not;
 
 @SuppressWarnings("UnusedReturnValue")
 public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectAssert<SELF, Match> {
@@ -27,6 +31,14 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
     protected MatchAssert(Match match, Class<?> selfType) {
         super(match, selfType);
         StandardRepresentation.registerFormatterForType(FormattedMatch.class, FormattedMatch::formatted);
+    }
+
+    @API
+    public SELF isMatch() {
+        if (actual instanceof Match.NoMatch noMatch) {
+            failWithActualAndMessage("Expected actual to be a match, but it was not");
+        }
+        return myself;
     }
 
     @API
@@ -100,7 +112,19 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
     @API
     @SafeVarargs
     public final SELF hasBindings(Map<String, String>... bindings) {
+        return hasBindings(_ -> true, bindings);
+    }
+
+    @API
+    @SafeVarargs
+    public final SELF hasBindings(double filterByMinimalScore, Map<String, String>... bindings) {
+        return hasBindings(b -> b.score() >= filterByMinimalScore, bindings);
+    }
+
+    @SafeVarargs
+    private SELF hasBindings(Predicate<Binding> predicate, Map<String, String>... bindings) {
         Assertions.assertThat(actual.bindings())
+                .filteredOn(predicate)
                 .extracting(Binding::asMap)
                 .containsExactlyInAnyOrder(bindings);
         return myself;
@@ -108,8 +132,18 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
 
     @API
     public SELF hasOnlyBindingsMatching(Expression expression) {
+        return hasOnlyBindingsMatching(_ -> true, expression);
+    }
+
+    @API
+    public SELF hasOnlyBindingsMatching(double filterByMinimalScore, Expression expression) {
+        return hasOnlyBindingsMatching(b -> b.score() >= filterByMinimalScore, expression);
+    }
+
+    private SELF hasOnlyBindingsMatching(Predicate<Binding> predicate, Expression expression) {
         Assertions.assertThat(
                         actual.bindings()
+                                .filter(predicate)
                                 .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
                                 .map(resolver -> resolver.resolve(expression))
                                 .distinct())
@@ -140,23 +174,43 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
     }
 
     public SELF debugBindings(Expression expression) {
-        System.out.println("-- Bindings");
-        actual.bindings().forEach(binding -> {
-            System.out.println("---- " + binding);
-            System.out.printf("------ %s -> \"%s\" : %s, %s%n",
-                              binding.match().appliedRange().format(),
-                              new ExpressionResolver(var -> binding.valueOf(var).orElse("")).resolve(expression),
-                              binding.matchRange().isEmpty() ? "empty" : "not empty",
-                              binding.match().isFullMatch() ? "full match" : "partial match",
-                              binding.match()
-            );
-            binding.match().multilineFormat().lines()
-                    .map(s -> "------ " + s)
-                    .forEach(System.out::println);
-            System.out.println();
-        });
-        System.out.println();
+        GenericTreeModel.build()
+                .with(Match.class, m -> toHtml("%s [%s] %s".formatted(m.simpleFormat(), m, m.expression().emphasisString())), Match::parentMatches)
+                .with(Binding.class, MatchAssert::toNodeString, MatchAssert::toNodeList)
+                .withToString(RangeFlex.Applied.class, range -> toHtml(range.format()))
+                .with(Binding.VariableInfo.class, MatchAssert::toNodeString, Binding.VariableInfo::sources)
+                .show(Map.entry("Bindings", actual.bindings().sorted(comparing(Binding::score).reversed()).toList()), actual);
         return myself;
+    }
+
+    private static String toNodeString(Binding binding) {
+        String matchString = binding.match().appliedRange().format(RangeFlexFormatter.UNDERLINE_ONLY);
+        return toHtml(matchString + " (" + ANSI.BOLD + binding.score() + ANSI.NOT_BOLD + " " + binding.scoreObject().reason() + ") variables = " + binding.boundVariables().toList());
+    }
+
+    private static List<Binding> toNodeList(Binding binding) {
+        return binding.parentBindings().filter(not(Binding.Empty.class::isInstance)).toList();
+//        return binding.boundVariables().map(var -> binding.infoOf(var).orElse(new Binding.VariableInfo(var, binding, null, null, List.of()))).toList();
+    }
+
+    private static String toNodeString(Binding.VariableInfo info) {
+        return toHtml("%s=%s %s %s %s  - %s".formatted(
+                info.name(),
+                ((info.range() instanceof RangeFlex.Applied range) ? '"' + range.extractMax() + '"' : "null"),
+                ANSI.BOLD + ((info.score() instanceof Binding.Score score) ? score.value() : "?") + ANSI.NOT_BOLD,
+                ANSI.ITALIC + ((info.score() instanceof Binding.Score score) ? score.reason() : "") + ANSI.NOT_ITALIC,
+                ((info.range() instanceof RangeFlex.Applied range) ? range.format() + range.range().lengthString() : "?"),
+                info.binding().match()
+        ));
+    }
+
+    static int i = 0;
+
+    private static String toHtml(String string) {
+        String ansiHtml = ANSI.toHTML(string);
+        if (i++ < 100)
+            System.out.println(string + " = " + ansiHtml);
+        return "<html>" + ansiHtml + "</html>";
     }
 
     @API
@@ -236,21 +290,29 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
             this.expression = expression;
         }
 
+        @API
         public MatchWithExpressionAssert hasOnlyBindingsMatchingExpression() {
             return hasOnlyBindingsMatching(expression);
         }
 
+        @API
+        public MatchWithExpressionAssert hasOnlyBindingsMatchingExpression(double filterByMinimalScore) {
+            return hasOnlyBindingsMatching(filterByMinimalScore, expression);
+        }
+
+        @API
         public MatchWithExpressionAssert hasOnlyBindingsMatchingExpressionOrEmpty() {
             return hasOnlyBindingsMatchingOrEmpty(expression);
         }
 
+        @API
         public MatchWithExpressionAssert hasOnlyBindingsPartiallyMatchingExpression() {
             return hasOnlyBindingsPartiallyMatching(expression);
         }
 
+        @API
         public MatchWithExpressionAssert debugBindings() {
             return debugBindings(expression);
         }
-
     }
 }

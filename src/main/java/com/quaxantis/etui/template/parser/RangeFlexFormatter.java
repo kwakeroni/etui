@@ -68,6 +68,9 @@ public interface RangeFlexFormatter {
                 }
                 builder.append(string.charAt(i));
             }
+            if (contains) {
+                builder.append(endIncluded);
+            }
             return builder.toString();
         }
 

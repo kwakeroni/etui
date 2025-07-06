@@ -207,9 +207,18 @@ sealed interface RangeFlex {
         String midString = ((start.to() + 1 == end.from() - 1) ? singletonPattern : (start.to() + 1 < end.from() - 1) ? rangePattern : empty).formatted(start.to() + 1, end.from() - 1);
         String midSpace = (midString.isEmpty()) ? "" : " ";
         String rightString = (end.from() == end.to() ? singletonPattern : (end.from() < end.to()) ? rangePattern : empty).formatted(end.from(), end.to());
-        String minLengthString = (minLength == null && maxLength == null) ? "" : ("!" + Objects.toString(minLength, "") + "<" + Objects.toString(maxLength, ""));
+        String minLengthString = lengthString(minLength, maxLength);
         return "{[" + leftString + "]" + midSpace + midString + midSpace + "[" + rightString + "]" + minLengthString + "}";
     }
+
+    default String lengthString() {
+        return lengthString(this.minLength().orElse(null), this.maxLength().orElse(null));
+    }
+
+    private static String lengthString(Integer minLength, Integer maxLength) {
+        return (minLength == null && maxLength == null) ? "" : ("!" + Objects.toString(minLength, "") + "<" + Objects.toString(maxLength, ""));
+    }
+
 
     private static <R> R verify(R range, Consumer<? super R> verification) {
         verification.accept(range);
@@ -393,15 +402,37 @@ sealed interface RangeFlex {
             }
             RangeFlex.Extract extract1 = one.extract();
             RangeFlex.Extract extract2 = two.extract();
-            if (extract1.main().isEmpty() && extract2.main().isEmpty()) {
-                if (isFullFlex(one.range()) && isFullFlex(two.range())) {
+            if (extract1.main().isEmpty() && isFullFlex(one.range())) {
+                if (extract2.main().isEmpty() && isFullFlex(two.range())) {
                     return mergeFullFlex(extract1, extract2);
+                } else if (!extract2.main().isEmpty()) {
+                    return mergeMainWithFullFlex(extract2, extract1);
+                }
+            } else if (extract2.main().isEmpty() && isFullFlex(two.range())) {
+                if (!extract1.main().isEmpty()) {
+                    return mergeMainWithFullFlex(extract1, extract2);
                 }
             } else {
                 return mergeExtractsWithMain(extract1, extract2);
             }
 
             return Optional.empty();
+        }
+
+        private static Optional<RangeFlex.Applied> mergeMainWithFullFlex(RangeFlex.Extract mainFlex, RangeFlex.Extract fullFlex) {
+            // fullFlex.prefix equals fullFlex.suffix
+            String full = fullFlex.prefix();
+            String main = mainFlex.main();
+            int index = full.indexOf(main);
+            var optResult = Optional.<RangeFlex.Applied>empty();
+            while (index >= 0) {
+                Extract newFullFlex = new Extract(full.substring(0, index), full.substring(index, index + main.length()), full.substring(index + main.length()));
+                var newResult = mergeExtractsWithContainedMain(newFullFlex, mainFlex);
+                optResult = optResult.filter(r -> r.extractMax().length() >= newResult.map(nr -> nr.extractMax().length()).orElse(-1)).or(() -> newResult);
+                index = full.indexOf(main, index + 1);
+            }
+
+            return optResult;
         }
 
         private static Optional<RangeFlex.Applied> mergeExtractsWithMain(RangeFlex.Extract extract1, RangeFlex.Extract extract2) {

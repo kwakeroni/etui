@@ -36,7 +36,15 @@ public record StreamEntry<K, V>(K key, V value) implements Map.Entry<K, V> {
         return new StreamEntry<>(key, mapper.apply(value));
     }
 
-    public static <Q, T, S> Function<StreamEntry<Q, T>, StreamEntry<Q, S>> mapping(Function<T, S> mapper) {
+    public <S> StreamEntry<K, S> map(BiFunction<K, V, S> mapper) {
+        return new StreamEntry<>(key, mapper.apply(key, value));
+    }
+
+    public static <K, T, S> Function<StreamEntry<K, T>, StreamEntry<K, S>> mapping(Function<T, S> mapper) {
+        return entry -> entry.map(mapper);
+    }
+
+    public static <K, T, S> Function<StreamEntry<K, T>, StreamEntry<K, S>> mapping(BiFunction<K, T, S> mapper) {
         return entry -> entry.map(mapper);
     }
 
@@ -48,11 +56,11 @@ public record StreamEntry<K, V>(K key, V value) implements Map.Entry<K, V> {
         return new StreamEntry<>(mapper.apply(key, value), value);
     }
 
-    public static <Q, T, R> Function<StreamEntry<Q, T>, StreamEntry<R, T>> mappingKey(Function<Q, R> mapper) {
+    public static <K, T, R> Function<StreamEntry<K, T>, StreamEntry<R, T>> mappingKey(Function<K, R> mapper) {
         return entry -> entry.mapKey(mapper);
     }
 
-    public static <Q, T, R> Function<StreamEntry<Q, T>, StreamEntry<R, T>> mappingKey(BiFunction<Q, T, R> mapper) {
+    public static <K, T, R> Function<StreamEntry<K, T>, StreamEntry<R, T>> mappingKey(BiFunction<K, T, R> mapper) {
         return entry -> entry.mapKey(mapper);
     }
 

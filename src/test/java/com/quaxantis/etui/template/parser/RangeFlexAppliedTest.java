@@ -121,6 +121,58 @@ class RangeFlexAppliedTest {
         }
 
         @Test
+        void mergeMainWithFullFlex() {
+            var range1 = RangeFlex.of(0, -1, 2, 1).applyTo("30");
+            var range2 = RangeFlex.of(0, 65, 0, 65).constrain(Constraint.toMinLength(1)).applyTo("Cursor jg. 30 nr. 37. 03.06.88. Technische Universiteit Eindhoven.");
+            var result = merge(range1, range2);
+            assertThat(result).hasValueSatisfying(
+                    merged -> assertThat(merged.extract())
+                            .returns("", RangeFlex.Extract::prefix)
+                            .returns("30", RangeFlex.Extract::main)
+                            .returns("", RangeFlex.Extract::suffix)
+            );
+        }
+
+        @Test
+        void mergeMainWithFullFlexWithMultipleOccurencesMatchesLongest() {
+            var range1 = RangeFlex.of(0, 0, 3, 3).applyTo(".30.");
+            var range2 = RangeFlex.of(0, 65, 0, 65).constrain(Constraint.toMinLength(1)).applyTo("Cursor jg. 30 nr. 37. 03.30.88. Technische Universiteit Eindhoven.");
+            var result = merge(range1, range2);
+            assertThat(result).hasValueSatisfying(
+                    merged -> assertThat(merged.extract())
+                            .returns(".", RangeFlex.Extract::prefix)
+                            .returns("30", RangeFlex.Extract::main)
+                            .returns(".", RangeFlex.Extract::suffix)
+            );
+        }
+
+        @Test
+        void mergeMainWithFullFlexWithMultipleOccurencesMatchesFirst() {
+            var range1 = RangeFlex.of(0, 0, 3, 3).applyTo(".30 ");
+            var range2 = RangeFlex.of(0, 65, 0, 65).constrain(Constraint.toMinLength(1)).applyTo("Cursor jg. 30 nr. 37. 03.30.88. Technische Universiteit Eindhoven.");
+            var result = merge(range1, range2);
+            assertThat(result).hasValueSatisfying(
+                    merged -> assertThat(merged.extract())
+                            .returns("", RangeFlex.Extract::prefix)
+                            .returns("30", RangeFlex.Extract::main)
+                            .returns(" ", RangeFlex.Extract::suffix)
+            );
+        }
+
+        @Test
+        void mergeFullFlexWithMain() {
+            var range1 = RangeFlex.of(0, 65, 0, 65).constrain(Constraint.toMinLength(1)).applyTo("Cursor jg. 30 nr. 37. 03.06.88. Technische Universiteit Eindhoven.");
+            var range2 = RangeFlex.of(0, -1, 2, 1).applyTo("30");
+            var result = merge(range1, range2);
+            assertThat(result).hasValueSatisfying(
+                    merged -> assertThat(merged.extract())
+                            .returns("", RangeFlex.Extract::prefix)
+                            .returns("30", RangeFlex.Extract::main)
+                            .returns("", RangeFlex.Extract::suffix)
+            );
+        }
+
+        @Test
         void mergeRangeWithoutMainAndSuffixOverlap() {
             RangeFlex range1 = RangeFlex.of(5, 9, 5, 9);
             RangeFlex range2 = RangeFlex.of(0, 9, 0, 9);

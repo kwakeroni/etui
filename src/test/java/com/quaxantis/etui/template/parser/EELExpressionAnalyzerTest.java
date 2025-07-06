@@ -3,9 +3,14 @@ package com.quaxantis.etui.template.parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Comparator;
 import java.util.Map;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
+import static java.util.Map.entry;
+import static java.util.function.Predicate.not;
 
 @DisplayName("EELExpressionAnalyzer analyzes complex expressions")
 class EELExpressionAnalyzerTest {
@@ -18,7 +23,6 @@ class EELExpressionAnalyzerTest {
                 new Expression.OptSuffix(new Expression.Identifier("var2"), new Expression.Text("suffix")));
 
         assertThat(concat).matching("prefixsuffix")
-                .debugBindings()
                 .isFullMatch()
                 .hasOnlyBindingsMatchingOrEmpty(concat)
                 .hasBindings(Map.of("var1", "suffix", "var2", ""),
@@ -35,7 +39,7 @@ class EELExpressionAnalyzerTest {
                 new Expression.OptSuffix(new Expression.Identifier("var2"), new Expression.Text("suffix")),
                 new Expression.Text("stop"));
 
-        assertThat(concat).matching("prefixandstop").debugBindings()
+        assertThat(concat).matching("prefixandstop")
                 .isFullMatch()
                 .hasOnlyBindingsMatchingExpressionOrEmpty()
                 .hasBindings(Map.of("var1", "and", "var2", ""),
@@ -69,14 +73,22 @@ class EELExpressionAnalyzerTest {
 
         assertThat(concat).matching("A Title. An Author. Publisher's.")
                 .isFullMatch()
-                .debugBindings()
                 .hasBindings(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"),
                              Map.of("title", "A Title. An Author", "publisher", "Publisher's", "author", ""),
                              Map.of("title", "A Title", "publisher", "An Author. Publisher's", "author", ""),
                              Map.of("title", "A Title", "publisher", "An Author", "author", "") // partial match
                 )
                 .hasOnlyBindingsPartiallyMatchingExpression();
+    }
 
+    @Test
+    @DisplayName("providing a combined binding")
+    void combinedBinding() {
+        var optSuffix = new Expression.OptSuffix(new Expression.Identifier("var1"), new Expression.Text(" there"));
+
+        assertThat(optSuffix).matching("Hello there", Map.of("var2", "value"))
+                .hasBindings(1.0, Map.of("var1", "Hello"))
+        ;
     }
 
     @Test
@@ -88,9 +100,69 @@ class EELExpressionAnalyzerTest {
 
         assertThat(concat).matching("A Title. An Author. Publisher's.", Map.of("author", "An Author"))
                 .isFullMatch()
-                .debugBindings()
-                .hasBindings(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"))
-                .hasOnlyBindingsMatchingExpression();
+                .hasBindings(1.0, Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"))
+                .hasOnlyBindingsMatchingExpression(1.0);
     }
 
+    @Test
+    @DisplayName("providing bindings allowing for an empty variable replacing an original binding")
+    void matchWithEmptyReplacingOriginalBinding() {
+        var concat = new Expression.Concat(new Expression.Identifier("title"), new Expression.Text("."),
+                                           new Expression.OptSuffix(new Expression.OptPrefix(new Expression.Text(" "), new Expression.Identifier("author")), new Expression.Text(".")),
+                                           new Expression.Text(" "), new Expression.Identifier("publisher"), new Expression.Text("."));
+
+
+        assertThat(concat)
+                .matching("A Title. Publisher's.",
+                          Map.of("author", "An author", "title", "A Title", "publisher", "Publisher's"))
+                .isFullMatch()
+                .hasBindings(Map.of("title", "A Title", "publisher", "Publisher's", "author", ""));
+    }
+
+    @Test
+    @DisplayName("does not run out of memory when evaluating a realistic expression")
+    void noOutOfMemory() {
+        var expression = new SimpleParser().parse("${name}${' jg. '+?volume}${' nr. '+?number}.${' '+?(coverDisplayDate?:coverDate)?+'.'}${' '+?creatorName?+'.'}${' '+?publisher?+'.'}");
+        var variables = Map.ofEntries(
+                entry("date", "1988:06:03"),
+                entry("creator", "https://www.tue.nl/"),
+                entry("subject", "Weekblad voor personeelsleden en studenten van de Technische Universiteit Eindhoven"),
+                entry("creatorName", "Technische Universiteit Eindhoven"),
+                entry("language", "nl"),
+                entry("title", "Cursor jaargang 30 nummer 37"),
+                entry("type", "Text"),
+                entry("url", "https://www.cursor.tue.nl/magazine-archief/volume/30/"),
+                entry("volume", "30"),
+                entry("number", "37"),
+                entry("issn", "0920-6876"),
+                entry("subtitle", "Weekblad voor personeelsleden en studenten van de Technische Universiteit Eindhoven"),
+                entry("publisher", "Technische Universiteit Eindhoven"),
+                entry("comment", "Cursor jg. 30 nr. 37. 03.06.88. Technische Universiteit Eindhoven."),
+                entry("originPlatform", "Print"),
+                entry("coverDate", "1988:06:03"),
+                entry("coverDisplayDate", "03.06.88")
+        );
+
+//        String string = compare("Cursor jg. 30 nr. 37. 03.06.88. Technische Universiteit Eindhoven. Technische Universiteit Eindhoven.", expression, variables, evaluated1 -> "Cursor" + evaluated1);
+        String string = compare("Cursor jg. 30 nr. 37. 03.06.88. Technische Universiteit Eindhoven.", expression, variables, evaluated1 -> "Cursor" + evaluated1);
+
+
+        assertThat(expression).matching(string, variables)
+                .isFullMatch()
+                .satisfies(match -> {
+                    match.bindings()
+//                            .filter(b -> "Cursor".equals(b.valueOf("name").orElse("")))
+                            .sorted(Comparator.comparing(Binding::score).reversed())
+                            .map(binding -> binding.boundVariables().filter(not(variables::containsKey)).collect(Collectors.toMap(var -> var, var -> binding.valueOf(var).orElse("<null>"))).toString() + binding.scoreObject())
+                            .forEach(System.out::println);
+                });
+    }
+
+    private static String compare(String string, Expression expression, Map<String, String> variables, UnaryOperator<String> tweaker) {
+        String evaluated = new ExpressionResolver(var -> variables.get(var)).resolve(expression);
+        String expected = tweaker.apply(evaluated);
+        System.out.println("   " + string);
+        System.out.println((string.equals(expected) ? "== " : "!= ") + expected);
+        return string;
+    }
 }

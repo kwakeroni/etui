@@ -3,11 +3,14 @@ package com.quaxantis.etui.template.parser;
 import com.quaxantis.etui.TemplateValues;
 import com.quaxantis.etui.template.ExpressionEvaluator;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 public class EELExpressionEvaluator implements ExpressionEvaluator {
     private final Context context;
     private final SimpleParser parser = new SimpleParser();
+    private final EELExpressionAnalyzer analyzer = new EELExpressionAnalyzer();
 
     public EELExpressionEvaluator(Context context) {
         this.context = context;
@@ -18,6 +21,14 @@ public class EELExpressionEvaluator implements ExpressionEvaluator {
         ExpressionResolver resolver = new ExpressionResolver(
                 varName -> resolveVariable(values, varName).orElse(null));
         return resolver.resolve(parser.parse(expression));
+    }
+
+    @Override
+    public Collection<Binding> deinterpolate(String expression, Map<String, String> boundVariables, String evaluatedExpression) {
+        Expression expr = parser.parse(expression);
+        return analyzer.match(expr, evaluatedExpression, boundVariables)
+                .bindings()
+                .toList();
     }
 
     private Optional<String> resolveVariable(TemplateValues values, String varName) {

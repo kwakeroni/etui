@@ -2,15 +2,23 @@ package com.quaxantis.etui.template;
 
 import com.quaxantis.etui.Template;
 import com.quaxantis.etui.TemplateValues;
+import com.quaxantis.etui.template.parser.Binding;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public interface ExpressionEvaluator {
     String evaluate(String expression, TemplateValues values);
+
+    default Collection<Binding> deinterpolate(String expression, Map<String, String> boundVariables, String evaluatedExpression) {
+        // TODO make Binding EEL-independent
+        return Set.of();
+    }
 
     interface Context {
         Optional<Template.Variable> resolveVariable(String name);

@@ -16,7 +16,7 @@ class EELExpressionAnalyzerTextExpressionTest {
         assertThat(text).matching("my literal value")
                 .isNotFullMatch()
                 .hasNoBoundVariables()
-                .hasMatchRepresentation("{[][]}my literal value")
+                .hasMatchRepresentation("{[[my literal value]]}")
                 .hasOnlyBindingsMatchingExpressionOrEmpty();
     }
 

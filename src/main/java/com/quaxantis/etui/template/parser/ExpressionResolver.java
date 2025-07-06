@@ -23,6 +23,7 @@ public class ExpressionResolver {
             case Expression.Elvis(var main, var orElse) -> resolveElvis(main, orElse);
             case Expression.OptPrefix(var prefix, var main) -> resolveOptPrefix(prefix, main);
             case Expression.OptSuffix(var main, var suffix) -> resolveOptSuffix(main, suffix);
+            case Expression.Delegate(var delegate) -> resolve(delegate);
         };
     }
 

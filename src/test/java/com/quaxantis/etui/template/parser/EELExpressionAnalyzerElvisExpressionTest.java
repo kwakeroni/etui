@@ -70,7 +70,7 @@ class EELExpressionAnalyzerElvisExpressionTest {
                     List<Map<String, String>> list = match.bindings().map(Binding::asMap).toList();
                     System.out.println(list);
                 }).hasBindings(Map.of("var1", "my value"))
-                .hasMatchRepresentation("{[][my value]}")
+                .hasMatchRepresentation("{[[my value]]}")
                 .hasOnlyBindingsMatching(elvis);
     }
 
@@ -109,7 +109,6 @@ class EELExpressionAnalyzerElvisExpressionTest {
         var elvis = new Expression.Elvis(new Expression.Identifier("var1"), new Expression.Elvis(new Expression.Identifier("var2"), new Expression.Text("my")));
         assertThat(elvis).matching("my value my")
                 .isFullMatch()
-                .debugBindings()
                 .hasBindings(Map.of("var1", "my value my"),
                              Map.of("var1", "", "var2", "my value my"),
                              Map.of("var1", "", "var2", ""),
