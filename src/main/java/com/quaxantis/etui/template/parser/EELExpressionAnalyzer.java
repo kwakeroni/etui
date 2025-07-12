@@ -14,22 +14,18 @@ import static java.util.function.Predicate.not;
 
 public class EELExpressionAnalyzer {
 
-    private static final Predicate<Match> BINDING_FILTER;
-
-    static {
-        BINDING_FILTER =
-                // Remove No matches
-                not((Match match) -> match instanceof NoMatch)
-                        // Remove low scores
-                        .and((Match match) -> match.score() >= 0.3)
-        ;
-    }
-
     private static final Logger log = LoggerFactory.getLogger(EELExpressionAnalyzer.class);
+
+    private static final List<Predicate<Match>> FILTERS = List.of(
+            not((Match match) -> match instanceof NoMatch).and(match -> match.score() >= 0.4),
+            not((Match match) -> match instanceof NoMatch).and(match -> match.score() >= 0.2),
+            not((Match match) -> match instanceof NoMatch).and(match -> match.score() >= 0.1)
+    );
 
     public Match match(Expression expression, String string, Map<String, String> bindings) {
         var fullExpr = new Expression.Delegate(expression);
-        Collection<Match> matches = doMatch(fullExpr, string, Match.of(fullExpr, string, bindings));
+        Collection<Match> matches = doMatch(string, bindings, fullExpr);
+
         Match match = (matches.size() == 0) ? new NoMatch(fullExpr, string, "No resulting matches")
                 : (matches.size() == 1) ? matches.iterator().next()
                 : Match.ChoiceMatch.ofPossibleMatches(fullExpr, matches.stream()).orElseGet(() -> new NoMatch(fullExpr, string, "No matches", matches));
@@ -37,18 +33,31 @@ public class EELExpressionAnalyzer {
         return match;
     }
 
-    Collection<Match> doMatch(Expression expression, String string, Match parent) {
+    private Collection<Match> doMatch(String string, Map<String, String> bindings, Expression.Delegate fullExpr) {
+        Collection<Match> matches = List.of();
+        Match rootMatch = Match.of(fullExpr, string, bindings);
+
+        // Try again with lesser strict filter if no results are found
+        for (int i = 0; matches.isEmpty() && i < FILTERS.size(); i++) {
+            matches = doMatch(fullExpr, string, rootMatch, FILTERS.get(i));
+        }
+
+        return matches;
+    }
+
+
+    Collection<Match> doMatch(Expression expression, String string, Match parent, Predicate<Match> matchFilter) {
         Collection<Match> result = switch (expression) {
             case Expression.Text text -> matchText(text, string, parent);
             case Expression.Identifier identifier -> matchIdentifier(identifier, string, parent);
-            case Expression.Elvis elvis -> matchElvis(elvis, string, parent);
-            case Expression.OptPrefix optPrefix -> matchOptPrefix(optPrefix, string, parent);
-            case Expression.OptSuffix optSuffix -> matchOptSuffix(optSuffix, string, parent);
-            case Expression.Concat concat -> matchConcat(concat, string, parent);
-            case Expression.Delegate(var delegate) -> doMatch(delegate, string, parent);
+            case Expression.Elvis elvis -> matchElvis(elvis, string, parent, matchFilter);
+            case Expression.OptPrefix optPrefix -> matchOptPrefix(optPrefix, string, parent, matchFilter);
+            case Expression.OptSuffix optSuffix -> matchOptSuffix(optSuffix, string, parent, matchFilter);
+            case Expression.Concat concat -> matchConcat(concat, string, parent, matchFilter);
+            case Expression.Delegate(var delegate) -> doMatch(delegate, string, parent, matchFilter);
         };
 
-        return result.stream().filter(BINDING_FILTER).toList();
+        return result.stream().filter(matchFilter).toList();
     }
 
     private Collection<Match> matchIdentifier(Expression.Identifier identifier, String fullString, Match parent) {
@@ -111,18 +120,18 @@ public class EELExpressionAnalyzer {
                         .and(toMaxLength(matchLength)), expression);
     }
 
-    private List<Match> matchElvis(Expression.Elvis elvis, String string, Match parent) {
-        Collection<Match> leftMatches = doMatch(elvis.expression(), string, parent);
-        return leftMatches.stream().flatMap(leftMatch -> elvisMatch(elvis, string, leftMatch, parent)).toList();
+    private List<Match> matchElvis(Expression.Elvis elvis, String string, Match parent, Predicate<Match> matchFilter) {
+        Collection<Match> leftMatches = doMatch(elvis.expression(), string, parent, matchFilter);
+        return leftMatches.stream().flatMap(leftMatch -> elvisMatch(elvis, string, leftMatch, parent, matchFilter)).toList();
     }
 
-    private Stream<Match> elvisMatch(Expression.Elvis elvis, String string, Match leftMatch, Match parent) {
+    private Stream<Match> elvisMatch(Expression.Elvis elvis, String string, Match leftMatch, Match parent, Predicate<Match> matchFilter) {
         Match mainMatch = leftMatch.constrain(toMinLength(1), elvis);
         Match emptyMainMatch = leftMatch.constrain(toMaxLength(0), elvis);
         if (emptyMainMatch instanceof NoMatch) {
             return Stream.of(mainMatch);
         } else {
-            Collection<Match> fallbackMatches = doMatch(elvis.orElse(), string, parent.bindingAll(elvis, emptyMainMatch.bindings().toList()));
+            Collection<Match> fallbackMatches = doMatch(elvis.orElse(), string, parent.bindingAll(elvis, emptyMainMatch.bindings().toList()), matchFilter);
             return Stream.concat(Stream.of(mainMatch),
                                  fallbackMatches.stream().map(fallbackMatch -> elvisMatchFallback(elvis, string, emptyMainMatch, fallbackMatch)));
         }
@@ -135,30 +144,30 @@ public class EELExpressionAnalyzer {
         return constrainedFallbackMatch.andThen(cfm -> new Match.ConcatMatch(elvis, string, constrainedEmptyMatch, cfm, concatRange.combined()));
     }
 
-    private List<Match> matchOptPrefix(Expression.OptPrefix optPrefix, String string, Match parent) {
-        Collection<Match> exprMatches = doMatch(optPrefix.expression(), string, parent);
-        return exprMatches.stream().flatMap(exprMatch -> optPrefixMatch(optPrefix, string, exprMatch, parent)).toList();
+    private List<Match> matchOptPrefix(Expression.OptPrefix optPrefix, String string, Match parent, Predicate<Match> matchFilter) {
+        Collection<Match> exprMatches = doMatch(optPrefix.expression(), string, parent, matchFilter);
+        return exprMatches.stream().flatMap(exprMatch -> optPrefixMatch(optPrefix, string, exprMatch, parent, matchFilter)).toList();
     }
 
-    private List<Match> matchOptSuffix(Expression.OptSuffix optSuffix, String string, Match parent) {
-        Collection<Match> exprMatches = doMatch(optSuffix.expression(), string, parent);
-        return exprMatches.stream().flatMap(exprMatch -> optSuffixMatch(optSuffix, string, exprMatch, parent)).toList();
+    private List<Match> matchOptSuffix(Expression.OptSuffix optSuffix, String string, Match parent, Predicate<Match> matchFilter) {
+        Collection<Match> exprMatches = doMatch(optSuffix.expression(), string, parent, matchFilter);
+        return exprMatches.stream().flatMap(exprMatch -> optSuffixMatch(optSuffix, string, exprMatch, parent, matchFilter)).toList();
     }
 
-    private Stream<Match> optPrefixMatch(Expression.OptPrefix optPrefix, String string, Match exprMatch, Match parent) {
+    private Stream<Match> optPrefixMatch(Expression.OptPrefix optPrefix, String string, Match exprMatch, Match parent, Predicate<Match> matchFilter) {
         if (exprMatch instanceof NoMatch) {
             return Stream.of(new NoMatch(optPrefix, string, null, exprMatch));
         }
 
         Match mainMatch = exprMatch.constrain(toMinLength(1), optPrefix);
         Match emptyMainMatch = exprMatch.constrain(toMaxLength(0), optPrefix);
-        Collection<Match> prefixMatches = doMatch(optPrefix.prefix(), string, parent.bindingAll(optPrefix, mainMatch.bindings().toList()));
+        Collection<Match> prefixMatches = doMatch(optPrefix.prefix(), string, parent.bindingAll(optPrefix, mainMatch.bindings().toList()), matchFilter);
         return Stream.concat(
                 prefixMatches.stream().map(prefixMatch -> concatMatches(optPrefix, string, prefixMatch, mainMatch)),
                 Stream.of(emptyMainMatch));
     }
 
-    private Stream<Match> optSuffixMatch(Expression.OptSuffix optSuffix, String string, Match exprMatch, Match parent) {
+    private Stream<Match> optSuffixMatch(Expression.OptSuffix optSuffix, String string, Match exprMatch, Match parent, Predicate<Match> matchFilter) {
 
         if (exprMatch instanceof NoMatch) {
             return Stream.of(new NoMatch(optSuffix, string, null, exprMatch));
@@ -166,13 +175,13 @@ public class EELExpressionAnalyzer {
 
         Match mainMatch = exprMatch.constrain(toMinLength(1), optSuffix);
         Match emptymainMatch = exprMatch.constrain(toMaxLength(0), optSuffix);
-        Collection<Match> suffixMatches = doMatch(optSuffix.suffix(), string, parent.bindingAll(optSuffix, mainMatch.bindings().toList()));
+        Collection<Match> suffixMatches = doMatch(optSuffix.suffix(), string, parent.bindingAll(optSuffix, mainMatch.bindings().toList()), matchFilter);
         return Stream.concat(
                 suffixMatches.stream().map(suffixMatch -> concatMatches(optSuffix, string, mainMatch, suffixMatch)),
                 Stream.of(emptymainMatch));
     }
 
-    private Collection<Match> matchConcat(Expression.Concat concat, String string, Match parent) {
+    private Collection<Match> matchConcat(Expression.Concat concat, String string, Match parent, Predicate<Match> matchFilter) {
         Iterator<Expression> iter = concat.parts().iterator();
 
         if (!iter.hasNext()) {
@@ -180,11 +189,11 @@ public class EELExpressionAnalyzer {
         }
 
         Expression part = iter.next();
-        Collection<Match> results = doMatch(part, string, parent);
+        Collection<Match> results = doMatch(part, string, parent, matchFilter);
 
         while (iter.hasNext()) {
             Expression nextPart = iter.next();
-            Collection<Match> nextMatches = doMatch(nextPart, string, parent);
+            Collection<Match> nextMatches = doMatch(nextPart, string, parent, matchFilter);
             part = new Expression.Concat(part, nextPart);
             final var expression = part;
             results = results.stream().flatMap(match -> concatMatch(expression, string, match, nextMatches)).toList();
