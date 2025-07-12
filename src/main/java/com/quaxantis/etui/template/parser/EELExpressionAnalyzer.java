@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static com.quaxantis.etui.template.parser.Constraint.*;
@@ -13,7 +14,16 @@ import static java.util.function.Predicate.not;
 
 public class EELExpressionAnalyzer {
 
-    private static final boolean REMOVE_NO_MATCHES = true;
+    private static final Predicate<Match> BINDING_FILTER;
+
+    static {
+        BINDING_FILTER =
+                // Remove No matches
+                not((Match match) -> match instanceof NoMatch)
+                        // Remove low scores
+                        .and((Match match) -> match.score() >= 0.3)
+        ;
+    }
 
     private static final Logger log = LoggerFactory.getLogger(EELExpressionAnalyzer.class);
 
@@ -24,11 +34,6 @@ public class EELExpressionAnalyzer {
                 : (matches.size() == 1) ? matches.iterator().next()
                 : Match.ChoiceMatch.ofPossibleMatches(fullExpr, matches.stream()).orElseGet(() -> new NoMatch(fullExpr, string, "No matches", matches));
 
-        if (match instanceof NoMatch) {
-            log.debug("Match result for {}{}{}", fullExpr.representationString(), System.lineSeparator(), match.multilineFormat());
-        } else {
-            log.trace("Match result for {}{}{}", fullExpr.representationString(), System.lineSeparator(), match.multilineFormat());
-        }
         return match;
     }
 
@@ -43,12 +48,7 @@ public class EELExpressionAnalyzer {
             case Expression.Delegate(var delegate) -> doMatch(delegate, string, parent);
         };
 
-//        System.out.println("Collected Matches: " + result.stream().collect(Match.Stats.toStats()));
-        if (REMOVE_NO_MATCHES) {
-            result = result.stream().filter(not(NoMatch.class::isInstance)).toList();
-        }
-
-        return result;
+        return result.stream().filter(BINDING_FILTER).toList();
     }
 
     private Collection<Match> matchIdentifier(Expression.Identifier identifier, String fullString, Match parent) {

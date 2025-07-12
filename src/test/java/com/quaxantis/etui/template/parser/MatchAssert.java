@@ -173,7 +173,7 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
         return myself;
     }
 
-    public SELF debugBindings(Expression expression) {
+    public SELF debugBindings() {
         GenericTreeModel.build()
                 .with(Match.class, m -> toHtml("%s [%s] %s".formatted(m.simpleFormat(), m, m.expression().emphasisString())), Match::parentMatches)
                 .with(Binding.class, MatchAssert::toNodeString, MatchAssert::toNodeList)
@@ -197,19 +197,15 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
         return toHtml("%s=%s %s %s %s  - %s".formatted(
                 info.name(),
                 ((info.range() instanceof RangeFlex.Applied range) ? '"' + range.extractMax() + '"' : "null"),
-                ANSI.BOLD + ((info.score() instanceof Binding.Score score) ? score.value() : "?") + ANSI.NOT_BOLD,
-                ANSI.ITALIC + ((info.score() instanceof Binding.Score score) ? score.reason() : "") + ANSI.NOT_ITALIC,
+                ANSI.BOLD + ((info.score() instanceof Match.Score score) ? score.value() : "?") + ANSI.NOT_BOLD,
+                ANSI.ITALIC + ((info.score() instanceof Match.Score score) ? score.reason() : "") + ANSI.NOT_ITALIC,
                 ((info.range() instanceof RangeFlex.Applied range) ? range.format() + range.range().lengthString() : "?"),
                 info.binding().match()
         ));
     }
 
-    static int i = 0;
-
     private static String toHtml(String string) {
         String ansiHtml = ANSI.toHTML(string);
-        if (i++ < 100)
-            System.out.println(string + " = " + ansiHtml);
         return "<html>" + ansiHtml + "</html>";
     }
 
@@ -308,11 +304,6 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
         @API
         public MatchWithExpressionAssert hasOnlyBindingsPartiallyMatchingExpression() {
             return hasOnlyBindingsPartiallyMatching(expression);
-        }
-
-        @API
-        public MatchWithExpressionAssert debugBindings() {
-            return debugBindings(expression);
         }
     }
 }

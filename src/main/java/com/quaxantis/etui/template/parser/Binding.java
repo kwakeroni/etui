@@ -28,65 +28,9 @@ public interface Binding {
         return scoreObject().value();
     }
 
-    Score scoreObject();
-
-    interface Score {
-        double value();
-
-        String reason();
-
-
-        static Score base(String reason) {
-            return Score.of(1.0, reason);
-        }
-
-        static Score of(double factor, String reason) {
-            return new Score() {
-                @Override
-                public double value() {
-                    return factor;
-                }
-
-                @Override
-                public String reason() {
-                    return reason;
-                }
-            };
-        }
-
-        default Score times(double factor, String reason) {
-            Score parent = this;
-            return new Score() {
-                @Override
-                public double value() {
-                    return parent.value() * factor;
-                }
-
-                @Override
-                public String reason() {
-                    return reason;
-                }
-            };
-        }
-
-        default Score times(Score right, String reason) {
-            Score left = this;
-            return new Score() {
-                @Override
-                public double value() {
-                    return left.value() * right.value();
-                }
-
-                @Override
-                public String reason() {
-                    return reason;
-                }
-            };
-        }
+    default Match.Score scoreObject() {
+        return match().scoreObject();
     }
-
-//    Optional<Score> scoreOf(String variable);
-//    Optional<VariableInfo> infoOf(String variable);
 
     default Optional<String> valueOf(String variable) {
         return valueRangeOf(variable).map(RangeFlex.Applied::extractMax);
@@ -110,60 +54,18 @@ public interface Binding {
         return boundVariables().map(var -> Map.entry(var, valueRangeOf(var).orElseThrow()));
     }
 
-    default Binding with(@Nonnull Match directParent, @Nonnull String boundVariable, @Nullable String valueRepresentation) {
+    default Binding with(@Nonnull Match match, @Nonnull String boundVariable, @Nullable String valueRepresentation) {
         Binding parent = this;
         class Single implements Binding {
 
             @Override
             public Match match() {
-                return directParent;
-            }
-
-            @Override
-            public Score scoreObject() {
-                Score boundVariableScore = boundVariableScore();
-                return parent.scoreObject().times(boundVariableScore, boundVariableScore.reason());
+                return match;
             }
 
             @Override
             public Stream<Binding> parentBindings() {
                 return Stream.of(parent);
-            }
-
-//            @Override
-//            public Optional<VariableInfo> infoOf(String variable) {
-//                Optional<VariableInfo> parentInfo = parent.infoOf(variable);
-//                if (boundVariable.equals(variable)) {
-//                    return Optional.of(new VariableInfo(variable, this, boundVariableScore(), boundRange(), parentInfo.stream().toList()));
-//                } else {
-//                    return parentInfo;
-//                }
-//            }
-//
-//            @Override
-//            public Optional<Score> scoreOf(String variable) {
-//                return (boundVariable.equals(variable)) ? Optional.of(this.boundVariableScore()) : parent.scoreOf(variable);
-//            }
-
-            private Score boundVariableScore() {
-                return match().givenBindings()
-                        .filter(entry -> entry.getKey().equals(boundVariable))
-                        .map(Map.Entry::getValue)
-                        .map(givenRange -> score(boundRange(), givenRange))
-                        .reduce(Score.of(1.0, boundVariable + "=" + boundRange().format()), (current, given) -> current.times(given, current.reason() + " & " + given.reason()));
-            }
-
-            private Score score(RangeFlex.Applied bound, RangeFlex.Applied given) {
-                String value1 = bound.extractMax();
-                String value2 = given.extractMax();
-                if (value1.equals(value2)) {
-                    return Score.of(1.0, "equal to given value: " + given);
-                } else if (value1.isEmpty() && !value2.isEmpty()) {
-                    return Score.of(0.5, "omitted given value: " + given.format());
-                } else {
-                    return RangeFlex.Applied.merge(bound, given).map(merged -> Score.of(.9, "merged with given value: " + given.format()))
-                            .orElseGet(() -> Score.of(0.2, "different from given value: " + given.format()));
-                }
             }
 
             @Override
@@ -182,7 +84,7 @@ public interface Binding {
             }
 
             private RangeFlex.Applied boundRange() {
-                return directParent.appliedRange();
+                return match.appliedRange();
             }
 
             @Nullable
@@ -197,51 +99,6 @@ public interface Binding {
             }
         }
         return new Single();
-    }
-
-    default Binding adaptScore(UnaryOperator<Score> operator) {
-        Binding parent = this;
-        return new Binding() {
-            @Override
-            public Stream<Binding> parentBindings() {
-                return Stream.of(parent);
-            }
-
-            @Override
-            public Match match() {
-                return parent.match();
-            }
-
-            @Override
-            public boolean hasBoundVariables() {
-                return parent.hasBoundVariables();
-            }
-
-            @Override
-            public Stream<String> boundVariables() {
-                return parent.boundVariables();
-            }
-
-            @Override
-            public Score scoreObject() {
-                return operator.apply(parent.scoreObject());
-            }
-//
-//            @Override
-//            public Optional<Score> scoreOf(String variable) {
-//                return parent.scoreOf(variable);
-//            }
-//
-//            @Override
-//            public Optional<VariableInfo> infoOf(String variable) {
-//                return parent.infoOf(variable);
-//            }
-
-            @Override
-            public Optional<RangeFlex.Applied> valueRangeOf(String variable) {
-                return parent.valueRangeOf(variable);
-            }
-        };
     }
 
     static Binding empty(Match parent) {
@@ -261,21 +118,6 @@ public interface Binding {
             public Stream<Binding> parentBindings() {
                 return Stream.empty();
             }
-
-            @Override
-            public Score scoreObject() {
-                return Score.base("map");
-            }
-
-//            @Override
-//            public Optional<Score> scoreOf(String variable) {
-//                return valueOf(variable).map(_ -> scoreObject());
-//            }
-//
-//            @Override
-//            public Optional<VariableInfo> infoOf(String variable) {
-//                return valueOf(variable).map(value -> new VariableInfo(variable, this, scoreObject(), RangeFlex.Applied.ofCompleteFixed(value),List.of()));
-//            }
 
             @Override
             public boolean hasBoundVariables() {
@@ -316,25 +158,9 @@ public interface Binding {
             }
 
             @Override
-            public Score scoreObject() {
-                return parent.scoreObject().times(1.0, "expanded");
-            }
-
-            @Override
             public Stream<Binding> parentBindings() {
                 return Stream.of(parent);
             }
-
-//            @Override
-//            public Optional<Score> scoreOf(String variable) {
-//                return parent.scoreOf(variable);
-//            }
-//
-//            @Override
-//            public Optional<VariableInfo> infoOf(String variable) {
-//                Optional<VariableInfo> info2 = parent.infoOf(variable);
-//                return valueRangeOf(variable).map(range -> new VariableInfo(variable, this, scoreOf(variable).orElseThrow(), range, info2.stream().toList()));
-//            }
 
             @Override
             public RangeFlex matchRange() {
@@ -388,28 +214,9 @@ public interface Binding {
             }
 
             @Override
-            public Score scoreObject() {
-                return one.scoreObject().times(two.scoreObject(), "combined");
-            }
-
-            @Override
             public Stream<Binding> parentBindings() {
                 return Stream.of(one, two);
             }
-
-//            @Override
-//            public Optional<Score> scoreOf(String variable) {
-//                return one.scoreOf(variable)
-//                        .map(scoreOne -> two.scoreOf(variable).map(scoreTwo -> scoreOne.times(scoreTwo, "combined")).orElse(scoreOne))
-//                        .or(() -> two.scoreOf(variable));
-//            }
-//
-//            @Override
-//            public Optional<VariableInfo> infoOf(String variable) {
-//                Optional<VariableInfo> info1 = one.infoOf(variable);
-//                Optional<VariableInfo> info2 = two.infoOf(variable);
-//                return valueRangeOf(variable).map(range -> new VariableInfo(variable, this, scoreOf(variable).orElseThrow(), range, Stream.concat(info1.stream(), info2.stream()).toList()));
-//            }
 
             @Override
             public RangeFlex matchRange() {
@@ -512,10 +319,8 @@ public interface Binding {
                 .collect(Collectors.joining(", ", "Binding{", "}"));
     }
 
-    record VariableInfo(String name, Binding binding, Score score, RangeFlex.Applied range,
+    record VariableInfo(String name, Binding binding, Match.Score score, RangeFlex.Applied range,
                         List<VariableInfo> sources) {}
-
-    ;
 
     class Empty implements Binding {
 
@@ -546,20 +351,6 @@ public interface Binding {
             return Stream.empty();
         }
 
-        @Override
-        public Score scoreObject() {
-            return Score.base("empty");
-        }
-//
-//        @Override
-//        public Optional<Score> scoreOf(String variable) {
-//            return Optional.empty();
-//        }
-//
-//        @Override
-//        public Optional<VariableInfo> infoOf(String variable) {
-//            return Optional.empty();
-//        }
 
         @Override
         public boolean hasBoundVariables() {
@@ -579,6 +370,46 @@ public interface Binding {
         @Override
         public String toString() {
             return "{}";
+        }
+    }
+
+    default Binding withNormalizedScore() {
+        if (this.match().isFullMatch()) {
+            return this;
+        } else {
+            Binding parent = this;
+            class WithScore implements Binding {
+                @Override
+                public Match.Score scoreObject() {
+                    return ((UnaryOperator<Match.Score>) score -> score.times(0.5, "no full match")).apply(parent.scoreObject());
+                }
+
+                @Override
+                public Stream<Binding> parentBindings() {
+                    return Stream.of(parent);
+                }
+
+                @Override
+                public Match match() {
+                    return parent.match();
+                }
+
+                @Override
+                public boolean hasBoundVariables() {
+                    return parent.hasBoundVariables();
+                }
+
+                @Override
+                public Stream<String> boundVariables() {
+                    return parent.boundVariables();
+                }
+
+                @Override
+                public Optional<RangeFlex.Applied> valueRangeOf(String variable) {
+                    return parent.valueRangeOf(variable);
+                }
+            }
+            return new WithScore();
         }
     }
 }

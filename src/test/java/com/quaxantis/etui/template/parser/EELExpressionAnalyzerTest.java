@@ -3,14 +3,11 @@ package com.quaxantis.etui.template.parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
 import static java.util.Map.entry;
-import static java.util.function.Predicate.not;
 
 @DisplayName("EELExpressionAnalyzer analyzes complex expressions")
 class EELExpressionAnalyzerTest {
@@ -143,26 +140,23 @@ class EELExpressionAnalyzerTest {
                 entry("coverDisplayDate", "03.06.88")
         );
 
-//        String string = compare("Cursor jg. 30 nr. 37. 03.06.88. Technische Universiteit Eindhoven. Technische Universiteit Eindhoven.", expression, variables, evaluated1 -> "Cursor" + evaluated1);
-        String string = compare("Cursor jg. 30 nr. 37. 03.06.88. Technische Universiteit Eindhoven.", expression, variables, evaluated1 -> "Cursor" + evaluated1);
+        String string = "Cursor jg. 30 nr. 37. 03.06.88. Technische Universiteit Eindhoven.";
 
+        Map<String, String> commonBindings = Map.of("name", "Cursor", "volume", "30", "number", "37", "coverDisplayDate", "03.06.88");
 
+        long start = System.currentTimeMillis();
         assertThat(expression).matching(string, variables)
+                .satisfies(match -> System.out.println(System.currentTimeMillis() - start + "ms for count " + match.bindings().count()))
                 .isFullMatch()
-                .satisfies(match -> {
-                    match.bindings()
-//                            .filter(b -> "Cursor".equals(b.valueOf("name").orElse("")))
-                            .sorted(Comparator.comparing(Binding::score).reversed())
-                            .map(binding -> binding.boundVariables().filter(not(variables::containsKey)).collect(Collectors.toMap(var -> var, var -> binding.valueOf(var).orElse("<null>"))).toString() + binding.scoreObject())
-                            .forEach(System.out::println);
-                });
+                .hasBindings(0.5,
+                             combine(commonBindings, Map.of("creatorName", "Technische Universiteit Eindhoven", "publisher", "")),
+                             combine(commonBindings, Map.of("creatorName", "", "publisher", "Technische Universiteit Eindhoven")));
     }
 
-    private static String compare(String string, Expression expression, Map<String, String> variables, UnaryOperator<String> tweaker) {
-        String evaluated = new ExpressionResolver(var -> variables.get(var)).resolve(expression);
-        String expected = tweaker.apply(evaluated);
-        System.out.println("   " + string);
-        System.out.println((string.equals(expected) ? "== " : "!= ") + expected);
-        return string;
+    private Map<String, String> combine(Map<String, String> one, Map<String, String> two) {
+        var map = new HashMap<String, String>();
+        map.putAll(one);
+        map.putAll(two);
+        return map;
     }
 }

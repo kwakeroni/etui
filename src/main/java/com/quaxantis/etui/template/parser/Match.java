@@ -23,6 +23,12 @@ public sealed interface Match {
         return new RootMatch(expression, fullString, givenBindings);
     }
 
+    default double score() {
+        return scoreObject().value();
+    }
+
+    Score scoreObject();
+
     Expression expression();
 
     String fullString();
@@ -98,6 +104,82 @@ public sealed interface Match {
 
     Stats recursiveStats();
 
+    interface Score {
+        double value();
+
+        String reason();
+
+        private static String asString(Score score) {
+            return score.value() + "[" + score.reason() + "]";
+        }
+
+        static Score base(String reason) {
+            return Score.of(1.0, reason);
+        }
+
+        static Score of(double factor, String reason) {
+            return new Score() {
+                @Override
+                public double value() {
+                    return factor;
+                }
+
+                @Override
+                public String reason() {
+                    return reason;
+                }
+
+                @Override
+                public String toString() {
+                    return asString(this);
+                }
+            };
+        }
+
+        default Score times(double factor, String reason) {
+            Score parent = this;
+            return new Score() {
+                @Override
+                public double value() {
+                    return parent.value() * factor;
+                }
+
+                @Override
+                public String reason() {
+                    return reason;
+                }
+
+                @Override
+                public String toString() {
+                    return asString(this);
+                }
+
+            };
+        }
+
+        default Score times(Score right, String reason) {
+            Score left = this;
+            return new Score() {
+                @Override
+                public double value() {
+                    return left.value() * right.value();
+                }
+
+                @Override
+                public String reason() {
+                    return reason;
+                }
+
+
+                @Override
+                public String toString() {
+                    return asString(this);
+                }
+
+            };
+        }
+    }
+
     record Stats(int depth, int size, int noMatches) {
         Stats andThen(IntUnaryOperator depthOperator, IntUnaryOperator sizeOperator, IntUnaryOperator noMatchesOperator) {
             return new Stats(depthOperator.applyAsInt(depth), sizeOperator.applyAsInt(size), noMatchesOperator.applyAsInt(noMatches));
@@ -150,6 +232,11 @@ public sealed interface Match {
         @Override
         public boolean hasBoundVariables() {
             return false;
+        }
+
+        @Override
+        public Score scoreObject() {
+            return Score.of(0.0, "no match");
         }
 
         @Override
@@ -211,6 +298,11 @@ public sealed interface Match {
         @Override
         public boolean hasBoundVariables() {
             return false;
+        }
+
+        @Override
+        public Score scoreObject() {
+            return Score.base("no bindings");
         }
 
         @Override
@@ -312,6 +404,33 @@ public sealed interface Match {
         }
 
         @Override
+        public Score scoreObject() {
+            Score boundVariableScore = boundVariableScore();
+            return parent.scoreObject().times(boundVariableScore, boundVariableScore.reason());
+        }
+
+        private Score boundVariableScore() {
+            return givenBindings()
+                    .filter(entry -> entry.getKey().equals(boundVariable))
+                    .map(Map.Entry::getValue)
+                    .map(givenRange -> score(appliedRange(), givenRange))
+                    .reduce(Score.of(1.0, boundVariable + "=" + appliedRange().format()), (current, given) -> current.times(given, current.reason() + " & " + given.reason()));
+        }
+
+        private Score score(RangeFlex.Applied bound, RangeFlex.Applied given) {
+            String value1 = bound.extractMax();
+            String value2 = given.extractMax();
+            if (value1.equals(value2)) {
+                return Score.of(1.0, "equal to given value: " + given);
+            } else if (value1.isEmpty() && !value2.isEmpty()) {
+                return Score.of(0.5, "omitted given value: " + given.format());
+            } else {
+                return RangeFlex.Applied.merge(bound, given).map(merged -> Score.of(.9, "merged with given value: " + given.format()))
+                        .orElseGet(() -> Score.of(0.2, "different from given value: " + given.format()));
+            }
+        }
+
+        @Override
         public Stream<Binding> bindings() {
             String format = simpleFormat();
             return parent.bindings().map(binding -> binding.with(this, boundVariable, format));
@@ -392,6 +511,11 @@ public sealed interface Match {
         }
 
         @Override
+        public Score scoreObject() {
+            return parent.scoreObject();
+        }
+
+        @Override
         public Stream<Binding> bindings() {
             return parent.bindings();
         }
@@ -457,6 +581,11 @@ public sealed interface Match {
         }
 
         @Override
+        public Score scoreObject() {
+            return parent.scoreObject();
+        }
+
+        @Override
         public Stream<Binding> bindings() {
             return parent.bindings();
         }
@@ -519,6 +648,11 @@ public sealed interface Match {
         @Override
         public boolean hasBoundVariables() {
             return left.hasBoundVariables() || right.hasBoundVariables();
+        }
+
+        @Override
+        public Score scoreObject() {
+            return left.scoreObject().times(right.scoreObject(), "concatenated");
         }
 
         @Override
@@ -646,12 +780,18 @@ public sealed interface Match {
 
         @Override
         public Stream<Binding> bindings() {
-            return matches.stream().flatMap(match -> match.bindings()
-                    .map(binding -> (match.isFullMatch()) ? binding : binding.adaptScore(score -> score.times(0.5, "not full match"))));
+            return matches.stream()
+                    .flatMap(match -> match.bindings())
+                    .map(Binding::withNormalizedScore);
         }
 
         @Override
         public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Score scoreObject() {
             throw new UnsupportedOperationException();
         }
 
