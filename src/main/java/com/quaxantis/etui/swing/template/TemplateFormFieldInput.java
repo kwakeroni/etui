@@ -18,10 +18,13 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.quaxantis.support.swing.form.InfoMarker.Type.INFO;
+import static com.quaxantis.support.swing.form.InfoMarker.Type.WARNING;
+
 class TemplateFormFieldInput extends WrappedFormFieldInput<JComponent, com.quaxantis.etui.TemplateValues.Entry, String> {
     private final Logger log = LoggerFactory.getLogger(TemplateFormFieldInput.class);
 
-    private final InfoMarker warning;
+    private final InfoMarker marker;
     private final String variableName;
     private final Supplier<Optional<String>> expression;
     private boolean isDirty;
@@ -31,30 +34,30 @@ class TemplateFormFieldInput extends WrappedFormFieldInput<JComponent, com.quaxa
              expression,
              inputDelegate,
              new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0)),
-             new InfoMarker('!').setType(InfoMarker.Type.WARNING)
+             new InfoMarker('i').setType(INFO)
         );
     }
 
-    private TemplateFormFieldInput(String variableName, Supplier<Optional<String>> expression, FormFieldInput<?, String> inputDelegate, JPanel panel, InfoMarker warning) {
+    private TemplateFormFieldInput(String variableName, Supplier<Optional<String>> expression, FormFieldInput<?, String> inputDelegate, JPanel panel, InfoMarker marker) {
         super(panel, entry -> entry.value().orElse(""), inputDelegate, (entry1, newValue) -> entryWithValue(entry1, newValue));
         this.variableName = variableName;
-        this.warning = warning;
+        this.marker = marker;
         this.expression = expression;
 
-        hideWarning();
+        hideMarker();
 
         JComponent component = inputDelegate.component();
         SpringLayoutOrganizer.organize(panel)
-                .add(warning)
+                .add(marker)
                 .atRightSide()
                 .withSameMiddleAs(component)
                 .and()
                 .add(component)
                 .atTop()
                 .atLeftSide()
-                .leftOf(warning, 5);
-        panel.setPreferredSize(new Dimension(Dimensions.sumWidth(warning.getPreferredSize(), component.getPreferredSize()),
-                                             Dimensions.maxHeight(warning.getPreferredSize(), component.getPreferredSize())));
+                .leftOf(marker, 5);
+        panel.setPreferredSize(new Dimension(Dimensions.sumWidth(marker.getPreferredSize(), component.getPreferredSize()),
+                                             Dimensions.maxHeight(marker.getPreferredSize(), component.getPreferredSize())));
         SpringLayoutOrganizer.setNotStretchingVertically(panel);
     }
 
@@ -79,33 +82,38 @@ class TemplateFormFieldInput extends WrappedFormFieldInput<JComponent, com.quaxa
                             "</li><li>",
                             "Source is inconsistent with template. Multiple values for variable '%s':<ul><li>".formatted(variableName),
                             "</li></ul>"));
-            showWarning(message);
+            showMarker(message, WARNING);
             isDirty = true;
         } else {
             String expressionValue = expression.get().orElse(null);
             if (expressionValue == null || entry.value().filter(expressionValue::equals).isPresent()) {
-                hideWarning();
+                entry.info().ifPresentOrElse(message -> showMarker(message, INFO), () -> hideMarker());
             } else {
                 String message = "Source is inconsistent with expression for variable '%s'. Expected: '%s'"
                         .formatted(variableName, expressionValue);
-                showWarning(message);
+                showMarker(message, WARNING);
                 isDirty = true;
             }
         }
     }
 
-    private void showWarning(String message) {
-        warning.setPreferredSize(null);
-        warning.setToolTipAsHtml(message);
-        warning.setVisible(true);
+    private void showMarker(String message, InfoMarker.Type type) {
+        switch (type) {
+            case INFO -> marker.setInfoCharacter('i');
+            case WARNING -> marker.setInfoCharacter('!');
+        }
+        marker.setType(type);
+        marker.setPreferredSize(null);
+        marker.setToolTipAsHtml(message);
+        marker.setVisible(true);
         log.warn(message);
     }
 
-    private void hideWarning() {
-        warning.setMaximumSize(new Dimension(0, 0));
-        warning.setPreferredSize(new Dimension(0, 0));
-        warning.setToolTipAsHtml(null);
-        warning.setVisible(false);
+    private void hideMarker() {
+        marker.setMaximumSize(new Dimension(0, 0));
+        marker.setPreferredSize(new Dimension(0, 0));
+        marker.setToolTipAsHtml(null);
+        marker.setVisible(false);
     }
 
     @Override

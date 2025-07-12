@@ -1,13 +1,11 @@
 package com.quaxantis.support.swing.form;
 
 import com.quaxantis.support.swing.ToolTips;
-import org.apache.commons.lang3.ObjectUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.JComponent;
 import java.awt.*;
-import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
@@ -17,7 +15,7 @@ public class InfoMarker extends JComponent {
     private static final Font MONOSPACE = new Font(Font.MONOSPACED, Font.BOLD, 12);
 
     @Nonnull
-    private final char[] infoCharacters;
+    private char[] infoCharacters;
     @Nonnull
     private Type type = Type.INFO;
     @Nullable
@@ -55,6 +53,11 @@ public class InfoMarker extends JComponent {
 
     public InfoMarker setShape(Shape shape) {
         this.shape = shape;
+        return this;
+    }
+
+    public InfoMarker setInfoCharacter(char infoCharacter) {
+        this.infoCharacters = new char[]{infoCharacter};
         return this;
     }
 

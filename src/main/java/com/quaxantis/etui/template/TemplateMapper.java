@@ -27,7 +27,7 @@ public class TemplateMapper {
     }
 
     public TemplateValues fromTags(TagSet tagSet) {
-        var map = new HashMap<String, TemplateValues.Entry>();
+        var specifiedValues = new HashMap<String, TemplateValues.Entry>();
         var unspecifiedVariables = new ArrayList<Variable>();
 
         for (Variable variable : template.variables()) {
@@ -36,50 +36,45 @@ public class TemplateMapper {
                     .map(tagSet::getTag)
                     .flatMap(Optional::stream)
                     .collect(TemplateValuesSupport.toTemplateValue());
-            optEntry.ifPresentOrElse(entry -> map.put(variable.name(), entry),
+            optEntry.ifPresentOrElse(entry -> specifiedValues.put(variable.name(), entry),
                                      () -> unspecifiedVariables.add(variable));
         }
 
-        analyzeUnspecifiedVariables(unspecifiedVariables, map);
-        unspecifiedVariables.forEach(variable -> map.computeIfAbsent(variable.name(), _ -> TemplateValues.Entry.of("")));
+        var unspecifiedValues = analyzeUnspecifiedVariables(unspecifiedVariables, specifiedValues);
+        var result = new HashMap<String, TemplateValues.Entry>();
+        result.putAll(unspecifiedValues);
+        result.putAll(specifiedValues);
 
-        return new TemplateValuesSupport(map);
+        return new TemplateValuesSupport(result);
     }
 
-    private void analyzeUnspecifiedVariables(Collection<Variable> variables, Map<String, TemplateValues.Entry> specifiedVariables) {
+    private Map<String, TemplateValues.Entry> analyzeUnspecifiedVariables(Collection<Variable> variables, Map<String, TemplateValues.Entry> specifiedVariables) {
         Map<String, String> boundVariables = specifiedVariables.entrySet().stream()
                 .collect(filtering((Map.Entry<String, TemplateValues.Entry> entry) -> entry.getValue().value().isPresent(),
                                    toMap(Map.Entry::getKey, entry -> entry.getValue().value().orElse(null))));
-
-        System.out.println(specifiedVariables.entrySet().stream()
-                                   .filter(entry -> entry.getValue().value().isPresent())
-                                   .map(entry -> "entry(\"%s\", \"%s\")".formatted(entry.getKey(), entry.getValue().value().orElse("")))
-                                   .collect(Collectors.joining("," + System.lineSeparator(), "Map.ofEntries(" + System.lineSeparator(), ");"))
-        );
 
         ExpressionEvaluator evaluator = this.template.expressionEvaluator();
         Collection<Binding> bindings = this.template.variables()
                 .stream()
                 .filter(variable -> variable.hasExpression() && boundVariables.get(variable.name()) != null)
-                .peek(variable -> System.out.printf("Deinterpolating variable %s with value '%s' for expression %s%n", variable.name(), boundVariables.get(variable.name()), variable.expression()))
                 .map(variable -> evaluator.deinterpolate(variable.expression(), boundVariables, boundVariables.get(variable.name())))
                 .flatMap(Collection::stream)
                 .toList();
 
-        for (Variable variable : variables) {
-            analyzeUnspecifiedVariable(variable, bindings);
-        }
-
+        return variables.stream()
+                .map(variable -> Map.entry(variable.name(),
+                                           analyzeUnspecifiedVariable(variable, bindings)
+                                                   .orElseGet(() -> TemplateValues.Entry.of(""))))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private void analyzeUnspecifiedVariable(Variable variable, Collection<Binding> bindings) {
-        List<String> values = bindings.stream()
-                .map(binding -> binding.valueOf(variable.name()).map(value -> value + " (" + binding.score() + ")"))
-                .flatMap(Optional::stream)
-                .distinct()
-                .toList();
-
-        System.out.printf("--- possible values for variable %s: %s%n", variable.name(), values);
+    private Optional<TemplateValues.Entry> analyzeUnspecifiedVariable(Variable variable, Collection<Binding> bindings) {
+        return bindings.stream()
+                .filter(binding -> binding.valueOf(variable.name()).isPresent())
+                .sorted(Comparator.comparing(Binding::score).reversed())
+                .flatMap(binding -> binding.valueOf(variable.name()).stream())
+                .findFirst()
+                .map(value -> TemplateValues.Entry.of(value, List.of(), "Variable value was reconstituted from other expressions in the template."));
     }
 
     public TagSet toTags(TemplateValues values) {
