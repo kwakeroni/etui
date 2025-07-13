@@ -22,20 +22,18 @@ public class EELExpressionAnalyzer {
             not((Match match) -> match instanceof NoMatch).and(match -> match.score() >= 0.1)
     );
 
-    public Match match(Expression expression, String string, Map<String, String> bindings) {
-        var fullExpr = new Expression.Delegate(expression);
-        Collection<Match> matches = doMatch(string, bindings, fullExpr);
-
-        Match match = (matches.size() == 0) ? new NoMatch(fullExpr, string, "No resulting matches")
-                : (matches.size() == 1) ? matches.iterator().next()
-                : Match.ChoiceMatch.ofPossibleMatches(fullExpr, matches.stream()).orElseGet(() -> new NoMatch(fullExpr, string, "No matches", matches));
-
-        return match;
+    public Stream<Binding> findBindings(Expression expression, String string, Map<String, String> bindings) {
+        return match(expression, string, bindings).flatMap(Match::bindings);
     }
 
-    private Collection<Match> doMatch(String string, Map<String, String> bindings, Expression.Delegate fullExpr) {
+    Stream<Match> match(Expression expression, String string, Map<String, String> bindings) {
+        var fullExpr = new Expression.Delegate(expression);
+        Collection<Match> matches = doMatch(fullExpr, string, Match.of(fullExpr, string, bindings));
+        return matches.stream();
+    }
+
+    private Collection<Match> doMatch(Expression.Delegate fullExpr, String string, Match rootMatch) {
         Collection<Match> matches = List.of();
-        Match rootMatch = Match.of(fullExpr, string, bindings);
 
         // Try again with lesser strict filter if no results are found
         for (int i = 0; matches.isEmpty() && i < FILTERS.size(); i++) {
@@ -44,7 +42,6 @@ public class EELExpressionAnalyzer {
 
         return matches;
     }
-
 
     Collection<Match> doMatch(Expression expression, String string, Match parent, Predicate<Match> matchFilter) {
         Collection<Match> result = switch (expression) {
@@ -61,19 +58,10 @@ public class EELExpressionAnalyzer {
     }
 
     private Collection<Match> matchIdentifier(Expression.Identifier identifier, String fullString, Match parent) {
-//        return parent.bindings()
-//                .flatMap(binding -> matchIdentifier(identifier, fullString, parent, binding))
-//                .toList();
-
         String variable = identifier.name();
         IntRange fullRange = IntRange.of(0, fullString.length());
         RangeFlex flex = RangeFlex.of(fullRange, fullRange);
-        return
-//                Stream.concat(
-//                binding.valueOf(variable).map(value -> matchLiteral(value, identifier, fullString, parent)).orElseGet(Stream::empty),
-                List.of(parent.constrain(toRange(flex).and(toMinLength(0)), identifier).binding(identifier, variable))
-//        )
-                ;
+        return List.of(parent.constrain(toRange(flex).and(toMinLength(0)), identifier).binding(identifier, variable));
     }
 
     private Collection<Match> matchText(Expression.Text textExpr, String fullString, Match parent) {
@@ -92,8 +80,6 @@ public class EELExpressionAnalyzer {
             return Stream.of(literalMatch(parent, matchRange, matchLength, expression));
         } else if (literal.isEmpty()) {
             return Stream.of(parent.constrain(Constraint.toMaxLength(0), expression));
-//             Special case match empty literal only at the start
-//            return Stream.of(literalMatch(parent, RangeFlex.empty(), 0));
         } else {
             List<Match> matches = new ArrayList<>();
             int index = -1;

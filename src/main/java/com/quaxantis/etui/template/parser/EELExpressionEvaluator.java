@@ -26,9 +26,7 @@ public class EELExpressionEvaluator implements ExpressionEvaluator {
     @Override
     public Collection<Binding> deinterpolate(String expression, Map<String, String> boundVariables, String evaluatedExpression) {
         Expression expr = parser.parse(expression);
-        return analyzer.match(expr, evaluatedExpression, boundVariables)
-                .bindings()
-                .toList();
+        return analyzer.findBindings(expr, evaluatedExpression, boundVariables).toList();
     }
 
     private Optional<String> resolveVariable(TemplateValues values, String varName) {

@@ -15,11 +15,12 @@ public class EELExpressionAnalyzerConcatExpressionTest {
     void matchEmptyConcat() {
         var concat = new Expression.Concat();
         assertThat(concat).matching("an expression")
-                .isNotInstanceOf(Match.NoMatch.class)
+                .singleElement()
                 .isNotFullMatch()
                 .hasNoBoundVariables()
-                .hasOnlyBindingsMatchingOrEmpty(concat)
-                .hasMatchRepresentation("{[][]}an expression");
+                .hasMatchRepresentation("{[][]}an expression")
+                .bindings()
+                .allFullyMatchExpressionOrEmpty();
     }
 
 
@@ -28,10 +29,12 @@ public class EELExpressionAnalyzerConcatExpressionTest {
     void matchConcatSingle() {
         var concat = new Expression.Concat(new Expression.Text("an expression"));
         assertThat(concat).matching("an expression")
+                .singleElement()
                 .isFullMatch()
                 .hasNoBoundVariables()
-                .hasOnlyBindingsMatching(concat)
-                .hasMatchRepresentation("{[]an expression[]}");
+                .hasMatchRepresentation("{[]an expression[]}")
+                .bindings()
+                .allFullyMatchExpressionOrEmpty();
     }
 
     @Test
@@ -39,10 +42,12 @@ public class EELExpressionAnalyzerConcatExpressionTest {
     void matchIfTwoExpressionsConcat() {
         var concat = new Expression.Concat(new Expression.Text("one "), new Expression.Text("expression"));
         assertThat(concat).matching("one expression")
+                .singleElement()
                 .isFullMatch()
                 .hasNoBoundVariables()
-                .hasOnlyBindingsMatching(concat)
-                .hasMatchRepresentation("{[]one expression[]}");
+                .hasMatchRepresentation("{[]one expression[]}")
+                .bindings()
+                .allFullyMatchExpressionOrEmpty();
     }
 
     @Test
@@ -55,10 +60,12 @@ public class EELExpressionAnalyzerConcatExpressionTest {
                                            new Expression.Text("five "),
                                            new Expression.Text("expressions"));
         assertThat(concat).matching("one two three four five expressions")
+                .singleElement()
                 .isFullMatch()
                 .hasNoBoundVariables()
-                .hasOnlyBindingsMatching(concat)
-                .hasMatchRepresentation("{[]one two three four five expressions[]}");
+                .hasMatchRepresentation("{[]one two three four five expressions[]}")
+                .bindings()
+                .allFullyMatchExpressionOrEmpty();
     }
 
 
@@ -72,11 +79,13 @@ public class EELExpressionAnalyzerConcatExpressionTest {
                                            new Expression.Text("five "),
                                            new Expression.Text("expressions"));
         assertThat(concat).matching("one two three four five expressions")
+                .singleElement()
                 .isFullMatch()
                 .hasBoundVariables()
                 .hasMatchRepresentation("{[]one two three four five expressions[]}")
-                .hasBindings(Map.of("var1", "three"))
-                .hasOnlyBindingsMatching(concat);
+                .bindings()
+                .containValues(Map.of("var1", "three"))
+                .allFullyMatchExpressionOrEmpty();
     }
 
     @Test
@@ -89,11 +98,13 @@ public class EELExpressionAnalyzerConcatExpressionTest {
                                            new Expression.Identifier("var2"),
                                            new Expression.Text(" expressions"));
         assertThat(concat).matching("one two three four five expressions")
+                .singleElement()
                 .isFullMatch()
                 .hasBoundVariables()
                 .hasMatchRepresentation("{[]one two three four five expressions[]}")
-                .hasBindings(Map.of("var1", "three", "var2", "five"))
-                .hasOnlyBindingsMatching(concat);
+                .bindings()
+                .containValues(Map.of("var1", "three", "var2", "five"))
+                .allFullyMatchExpressionOrEmpty();
     }
 
     @Test
@@ -104,9 +115,7 @@ public class EELExpressionAnalyzerConcatExpressionTest {
                                            new Expression.Text("three "),
                                            new Expression.Text("expressions"));
         assertThat(concat).matching("one deux three expressions")
-                .isInstanceOf(Match.NoMatch.class)
-                .hasNoBoundVariables()
-                .hasMatchRepresentation("{[][]}one deux three expressions");
+                .isEmpty();
     }
 
 
@@ -116,10 +125,10 @@ public class EELExpressionAnalyzerConcatExpressionTest {
         var concat = new Expression.Concat(new Expression.Identifier("title"), new Expression.Text(". "), new Expression.Identifier("author"), new Expression.Text(". "), new Expression.Identifier("publisher"), new Expression.Text("."));
 
         assertThat(concat).matching("A Title. An Author. Publisher's.")
+                .singleElement()
                 .isFullMatch()
-                .hasBindings(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"))
-                .hasOnlyBindingsMatchingExpression();
-
+                .bindings()
+                .containValues(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"))
+                .allFullyMatchExpressionOrEmpty();
     }
-
 }

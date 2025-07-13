@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("EELExpressionAnalyzer analyzes an Identifier expression")
 class EELExpressionAnalyzerIdentifierExpressionTest {
@@ -15,11 +16,13 @@ class EELExpressionAnalyzerIdentifierExpressionTest {
     void match() {
         var identifier = new Expression.Identifier("testVar");
         assertThat(identifier).matching("my test value")
+                .singleElement()
                 .isFullMatch()
                 .hasBoundVariables()
-                .hasBindings(Map.of("testVar", "my test value"))
                 .hasMatchRepresentation("{[[my test value]]}")
-                .hasOnlyBindingsMatching(identifier);
+                .bindings()
+                .containValues(Map.of("testVar", "my test value"))
+                .allFullyMatchExpression();
     }
 
     @Test
@@ -27,20 +30,24 @@ class EELExpressionAnalyzerIdentifierExpressionTest {
     void matchWithExistingBinding() {
         var identifier = new Expression.Identifier("testVar");
         assertThat(identifier).matching("my test value", Map.of("testVar", "my test value", "otherVar", "my other value"))
+                .singleElement()
                 .isFullMatch()
                 .hasBoundVariables()
-                .hasBindings(Map.of("testVar", "my test value"))
                 .hasMatchRepresentation("{[[my test value]]}")
-                .hasOnlyBindingsMatching(identifier);
+                .bindings()
+                .containValues(Map.of("testVar", "my test value"))
+                .allFullyMatchExpression();
     }
 
 
     @Test
-    @DisplayName("providing no match when there is a conflicting existing binding")
+    @DisplayName("providing a match when there is a conflicting existing binding")
     void noMatchWithConflictingBinding() {
         var identifier = new Expression.Identifier("testVar");
         assertThat(identifier).matching("my test value", Map.of("testVar", "my original value"))
-                .isMatch()
-                .hasBindings(Map.of("testVar", "my test value"));
+                .singleElement()
+                .isFullMatch()
+                .hasBindings(Map.of("testVar", "my test value"))
+                .satisfies(match -> assertThat(match.score()).isLessThan(0.3));
     }
 }

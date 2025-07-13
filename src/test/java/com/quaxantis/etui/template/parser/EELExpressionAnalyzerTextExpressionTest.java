@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
-import static com.quaxantis.etui.template.parser.MatchAssert.assertThat;
 
 @DisplayName("EELExpressionAnalyzer analyzes a text expression")
 class EELExpressionAnalyzerTextExpressionTest {
@@ -14,10 +13,12 @@ class EELExpressionAnalyzerTextExpressionTest {
     void emptyLiteralMatch() {
         var text = new Expression.Text("");
         assertThat(text).matching("my literal value")
+                .singleElement()
                 .isNotFullMatch()
                 .hasNoBoundVariables()
                 .hasMatchRepresentation("{[[my literal value]]}")
-                .hasOnlyBindingsMatchingExpressionOrEmpty();
+                .bindings()
+                .allFullyMatchExpressionOrEmpty();
     }
 
     @Test
@@ -25,10 +26,12 @@ class EELExpressionAnalyzerTextExpressionTest {
     void fullMatch() {
         var text = new Expression.Text("my literal value");
         assertThat(text).matching("my literal value")
+                .singleElement()
                 .isFullMatch()
                 .hasNoBoundVariables()
                 .hasMatchRepresentation("{[]my literal value[]}")
-                .hasOnlyBindingsMatching(text);
+                .bindings()
+                .allFullyMatchExpressionOrEmpty();
     }
 
     @Test
@@ -36,9 +39,7 @@ class EELExpressionAnalyzerTextExpressionTest {
     void noMatch() {
         var text = new Expression.Text("my literal value");
         assertThat(text).matching("my other value")
-                .isNoMatch()
-                .isNotFullMatch()
-                .hasNoBoundVariables();
+                .isEmpty();
     }
 
     @Test
@@ -46,10 +47,12 @@ class EELExpressionAnalyzerTextExpressionTest {
     void partialMatchLeft() {
         var text = new Expression.Text("my lite");
         assertThat(text).matching("my literal value")
+                .singleElement()
                 .isNotFullMatch()
                 .hasNoBoundVariables()
                 .hasMatchRepresentation("{[]my lite[]}ral value")
-                .hasOnlyBindingsPartiallyMatching(text);
+                .bindings()
+                .allPartiallyMatchExpression();
     }
 
     @Test
@@ -57,10 +60,12 @@ class EELExpressionAnalyzerTextExpressionTest {
     void partialMatchRight() {
         var text = new Expression.Text("al value");
         assertThat(text).matching("my literal value")
+                .singleElement()
                 .isNotFullMatch()
                 .hasNoBoundVariables()
                 .hasMatchRepresentation("my liter{[]al value[]}")
-                .hasOnlyBindingsPartiallyMatching(text);
+                .bindings()
+                .allPartiallyMatchExpression();
     }
 
 
@@ -69,36 +74,42 @@ class EELExpressionAnalyzerTextExpressionTest {
     void partialMatchMid() {
         var text = new Expression.Text("eral val");
         assertThat(text).matching("my literal value")
+                .singleElement()
                 .isNotFullMatch()
                 .hasNoBoundVariables()
                 .hasMatchRepresentation("my lit{[]eral val[]}ue")
-                .hasOnlyBindingsPartiallyMatching(text);
+                .bindings()
+                .allPartiallyMatchExpression();
     }
 
     @Test
-    @DisplayName("providing a choice if multiple matches")
+    @DisplayName("providing multiple matches")
     void multipleMatches() {
         var text = new Expression.Text("my");
         assertThat(text).matching("my match my match")
-                .isNotFullMatch()
-                .hasNoBoundVariables()
-                .hasMatchRepresentation("{[[my match my]]} match")
-                .hasChoicesSatisfying(first -> assertThat(first).hasMatchRepresentation("{[]my[]} match my match"),
-                                      second -> assertThat(second).hasMatchRepresentation("my match {[]my[]} match")
-                ).hasOnlyBindingsPartiallyMatching(text);
+                .hasOnlyEmptyBindings()
+                .assertAll(match -> match.isNotFullMatch()
+                        .hasNoBoundVariables())
+                .assertExactlyInAnyOrder(
+                        match -> match.hasMatchRepresentation("{[]my[]} match my match"),
+                        match -> match.hasMatchRepresentation("my match {[]my[]} match")
+                ).bindings()
+                .allPartiallyMatchExpression();
     }
 
     @Test
-    @DisplayName("providing a choice if multiple matches with repeated pattern")
+    @DisplayName("providing multiple matches with repeated pattern")
     void multipleMatchesWithRepeatedPattern() {
         var text = new Expression.Text("mymy");
         assertThat(text).matching("mymymymy")
-                .isNotFullMatch()
-                .hasNoBoundVariables()
-                .hasMatchRepresentation("{[[mymymymy]]}")
-                .hasChoicesSatisfying(first -> assertThat(first).hasMatchRepresentation("{[]mymy[]}mymy"),
-                                      second -> assertThat(second).hasMatchRepresentation("my{[]mymy[]}my"),
-                                      third -> assertThat(third).hasMatchRepresentation("mymy{[]mymy[]}")
-                ).hasOnlyBindingsPartiallyMatching(text);
+                .hasOnlyEmptyBindings()
+                .assertAll(match -> match.isNotFullMatch()
+                        .hasNoBoundVariables())
+                .assertExactlyInAnyOrder(
+                        match -> match.hasMatchRepresentation("{[]mymy[]}mymy"),
+                        match -> match.hasMatchRepresentation("my{[]mymy[]}my"),
+                        match -> match.hasMatchRepresentation("mymy{[]mymy[]}")
+                ).bindings()
+                .allPartiallyMatchExpression();
     }
 }

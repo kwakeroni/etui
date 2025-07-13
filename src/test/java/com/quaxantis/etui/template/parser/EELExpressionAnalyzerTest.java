@@ -20,11 +20,11 @@ class EELExpressionAnalyzerTest {
                 new Expression.OptSuffix(new Expression.Identifier("var2"), new Expression.Text("suffix")));
 
         assertThat(concat).matching("prefixsuffix")
-                .isFullMatch()
-                .hasOnlyBindingsMatchingOrEmpty(concat)
-                .hasBindings(Map.of("var1", "suffix", "var2", ""),
-                             Map.of("var1", "", "var2", "prefix"),
-                             Map.of("var1", "", "var2", ""))
+                .bindings()
+                .allFullyMatchExpressionOrEmpty()
+                .containValues(Map.of("var1", "suffix", "var2", ""),
+                               Map.of("var1", "", "var2", "prefix"),
+                               Map.of("var1", "", "var2", ""))
         ;
     }
 
@@ -37,10 +37,10 @@ class EELExpressionAnalyzerTest {
                 new Expression.Text("stop"));
 
         assertThat(concat).matching("prefixandstop")
-                .isFullMatch()
-                .hasOnlyBindingsMatchingExpressionOrEmpty()
-                .hasBindings(Map.of("var1", "and", "var2", ""),
-                             Map.of("var1", "", "var2", "")) // not happy about this one (reporting as full match)
+                .bindings()
+                .allFullyMatchExpressionOrEmpty()
+                .containValues(Map.of("var1", "and", "var2", ""),
+                               Map.of("var1", "", "var2", "")) // not happy about this one (reporting as full match)
         ;
     }
 
@@ -56,9 +56,9 @@ class EELExpressionAnalyzerTest {
                 new Expression.Text(end));
 
         assertThat(concat).matching(start + end)
-                .isFullMatch()
-                .hasBindings(Map.of("var1", "", "var2", ""))
-                .hasOnlyBindingsMatchingExpression();
+                .bindings()
+                .allFullyMatchExpression()
+                .containValues(Map.of("var1", "", "var2", ""));
     }
 
     @Test
@@ -69,13 +69,13 @@ class EELExpressionAnalyzerTest {
                                            new Expression.Text(" "), new Expression.Identifier("publisher"), new Expression.Text("."));
 
         assertThat(concat).matching("A Title. An Author. Publisher's.")
-                .isFullMatch()
-                .hasBindings(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"),
-                             Map.of("title", "A Title. An Author", "publisher", "Publisher's", "author", ""),
-                             Map.of("title", "A Title", "publisher", "An Author. Publisher's", "author", ""),
-                             Map.of("title", "A Title", "publisher", "An Author", "author", "") // partial match
-                )
-                .hasOnlyBindingsPartiallyMatchingExpression();
+                .bindings()
+                .allPartiallyMatchExpression()
+                .containValues(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"),
+                               Map.of("title", "A Title. An Author", "publisher", "Publisher's", "author", ""),
+                               Map.of("title", "A Title", "publisher", "An Author. Publisher's", "author", ""),
+                               Map.of("title", "A Title", "publisher", "An Author", "author", "") // partial match
+                );
     }
 
     @Test
@@ -84,7 +84,10 @@ class EELExpressionAnalyzerTest {
         var optSuffix = new Expression.OptSuffix(new Expression.Identifier("var1"), new Expression.Text(" there"));
 
         assertThat(optSuffix).matching("Hello there", Map.of("var2", "value"))
-                .hasBindings(1.0, Map.of("var1", "Hello"))
+                .normalizedBindings()
+                .filteredOnScore(1.0)
+                .allFullyMatchExpression()
+                .containValues(Map.of("var1", "Hello"))
         ;
     }
 
@@ -96,9 +99,10 @@ class EELExpressionAnalyzerTest {
                                            new Expression.Text(" "), new Expression.Identifier("publisher"), new Expression.Text("."));
 
         assertThat(concat).matching("A Title. An Author. Publisher's.", Map.of("author", "An Author"))
-                .isFullMatch()
-                .hasBindings(1.0, Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"))
-                .hasOnlyBindingsMatchingExpression(1.0);
+                .bindings()
+                .filteredOnScore(1.0)
+                .allFullyMatchExpression()
+                .containValues(Map.of("title", "A Title", "author", "An Author", "publisher", "Publisher's"));
     }
 
     @Test
@@ -112,7 +116,6 @@ class EELExpressionAnalyzerTest {
         assertThat(concat)
                 .matching("A Title. Publisher's.",
                           Map.of("author", "An author", "title", "A Title", "publisher", "Publisher's"))
-                .isFullMatch()
                 .hasBindings(Map.of("title", "A Title", "publisher", "Publisher's", "author", ""));
     }
 
@@ -146,11 +149,10 @@ class EELExpressionAnalyzerTest {
 
         long start = System.currentTimeMillis();
         assertThat(expression).matching(string, variables)
-                .satisfies(match -> System.out.println(System.currentTimeMillis() - start + "ms for count " + match.bindings().count()))
-                .isFullMatch()
-                .hasBindings(0.5,
-                             combine(commonBindings, Map.of("creatorName", "Technische Universiteit Eindhoven", "publisher", "")),
-                             combine(commonBindings, Map.of("creatorName", "", "publisher", "Technische Universiteit Eindhoven")));
+                .normalizedBindings()
+                .filteredOnScore(0.5)
+                .containValues(combine(commonBindings, Map.of("creatorName", "Technische Universiteit Eindhoven", "publisher", "")),
+                               combine(commonBindings, Map.of("creatorName", "", "publisher", "Technische Universiteit Eindhoven")));
     }
 
     private Map<String, String> combine(Map<String, String> one, Map<String, String> two) {

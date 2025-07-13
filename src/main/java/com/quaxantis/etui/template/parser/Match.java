@@ -12,7 +12,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.*;
 
 public sealed interface Match {
@@ -697,123 +696,6 @@ public sealed interface Match {
             return simpleFormat() + indent + localContext + System.lineSeparator() +
                    left.multilineFormat(subIndent) + System.lineSeparator()
                    + right.multilineFormat(subIndent);
-        }
-    }
-
-    @Deprecated
-    record ChoiceMatch(@Nonnull Expression expression, List<Match> matches) implements Match {
-
-        public static Optional<Match> ofPossibleMatches(@Nonnull Expression expression, Stream<Match> matches) {
-            List<Match> matchList = matches
-                    .filter(not(NoMatch.class::isInstance))
-                    .toList();
-            return switch (matchList.size()) {
-                case 0 -> Optional.empty();
-                case 1 -> Optional.of(matchList.getFirst());
-                default -> Optional.of(new ChoiceMatch(expression, matchList));
-            };
-        }
-
-        @SuppressWarnings("StringEquality") // Identity match on purpose
-        public ChoiceMatch {
-            Objects.requireNonNull(matches, "matches");
-            matches = List.copyOf(matches);
-            if (matches.isEmpty()) {
-                throw new IllegalArgumentException("Cannot create choice with zero matches");
-            }
-            String fullString = matches.getFirst().fullString();
-            for (int i = 0; i < matches.size(); i++) {
-                var idx = i;
-                Match match = matches.get(i);
-                Objects.requireNonNull(match, () -> "matches[" + idx + "]");
-                if (match instanceof NoMatch) {
-                    throw new IllegalArgumentException("Cannot create choice with no match at index %s: %s".formatted(i, match));
-                }
-                if (match.fullString() != fullString) {
-                    throw new IllegalArgumentException("Cannot create choice from different sources at indexes 0 and %s :%n%s%n%s%n".formatted(i, fullString, match.fullString()));
-                }
-            }
-        }
-
-        @Override
-        public Stats recursiveStats() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String fullString() {
-            return matches.getFirst().fullString();
-        }
-
-        @Override
-        public RangeFlex matchRange() {
-            RangeFlex result = RangeFlex.expand(matches.stream().map(Match::matchRange).toList());
-            Integer minLength = matches.stream().map(Match::matchRange).map(RangeFlex::minLength)
-                    .reduce((opt1, opt2) -> opt1.flatMap(l1 -> opt2.map(l2 -> Math.min(l1, l2))))
-                    .flatMap(o -> o)
-                    .orElse(null);
-            if (minLength != null) {
-                result = result.constrain(Constraint.toMinLength(minLength));
-            }
-
-            Integer maxLength = matches.stream().map(Match::matchRange).map(RangeFlex::maxLength)
-                    .reduce((opt1, opt2) -> opt1.flatMap(l1 -> opt2.map(l2 -> Math.max(l1, l2))))
-                    .flatMap(o -> o)
-                    .orElse(null);
-            if (maxLength != null) {
-                result = result.constrain(Constraint.toMaxLength(maxLength));
-            }
-
-            return result;
-        }
-
-        @Override
-        public Match constrain(Constraint constraint, Expression causeExpression) {
-            return Match.tryConstrain(this, () -> ChoiceMatch.ofPossibleMatches(expression(), matches().stream().map(m -> m.constrain(constraint, causeExpression)))
-                    .orElse(new NoMatch(expression(), fullString(), "No choices left when applying constraint " + constraint, matches().stream().map(m -> m.constrain(constraint, causeExpression)).toList())));
-        }
-
-        @Override
-        public boolean hasBoundVariables() {
-            return matches.stream().anyMatch(Match::hasBoundVariables);
-        }
-
-        @Override
-        public Stream<Binding> bindings() {
-            return matches.stream()
-                    .flatMap(match -> match.bindings())
-                    .map(Binding::withNormalizedScore);
-        }
-
-        @Override
-        public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Score scoreObject() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<Match> parentMatches() {
-            return matches;
-        }
-
-        @Override
-        public String multilineFormat(String indent) {
-            String localContext = getClass().getSimpleName() + " << " + expression().representationString();
-            String subIndent = spaced(indent) + " |-- OR ";
-            return matches.stream()
-                    .map(match -> match.multilineFormat(subIndent))
-                    .collect(Collectors.joining(System.lineSeparator(),
-                                                simpleFormat() + indent + localContext + System.lineSeparator(),
-                                                ""));
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + "[choices=" + matches.size() + "]";
         }
     }
 

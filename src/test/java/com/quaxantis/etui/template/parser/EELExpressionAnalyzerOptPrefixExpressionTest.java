@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
-import static com.quaxantis.etui.template.parser.MatchAssert.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("EELExpressionAnalyzer analyzes an OptPrefix expression")
 public class EELExpressionAnalyzerOptPrefixExpressionTest {
@@ -16,8 +14,7 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
     void noMatchIfMainDoesNotMatch() {
         var optPrefix = new Expression.OptPrefix(new Expression.Text("a prefix and "), new Expression.Text("my text"));
         assertThat(optPrefix).matching("a prefix and something else")
-                .isNoMatch()
-                .hasNoBoundVariables();
+                .isEmpty();
     }
 
     @Test
@@ -25,8 +22,7 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
     void noMatchIfPrefixDoesNotMatch() {
         var optPrefix = new Expression.OptPrefix(new Expression.Text("a prefix and "), new Expression.Text("my text"));
         assertThat(optPrefix).matching("something and my text")
-                .isNoMatch()
-                .hasNoBoundVariables();
+                .isEmpty();
     }
 
     @Test
@@ -34,6 +30,7 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
     void noMatchIfMainEmpty() {
         var optPrefix = new Expression.OptPrefix(new Expression.Text("a prefix and "), new Expression.Text(""));
         assertThat(optPrefix).matching("something else and ")
+                .singleElement()
                 .isNotFullMatch()
                 .hasNoBoundVariables()
                 .hasMatchRepresentation("{[[something else and ]]}");
@@ -44,10 +41,12 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
     void emptyMatchIfMainEmptyAndPrefixMatches() {
         var optPrefix = new Expression.OptPrefix(new Expression.Text("a prefix and "), new Expression.Text(""));
         assertThat(optPrefix).matching("a prefix and ")
+                .singleElement()
                 .isNotFullMatch()
                 .hasNoBoundVariables()
                 .hasMatchRepresentation("{[[a prefix and ]]}")
-                .hasOnlyBindingsMatchingOrEmpty(optPrefix);
+                .bindings()
+                .allFullyMatchExpressionOrEmpty();
     }
 
 
@@ -56,10 +55,12 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
     void matchIfPrefixAndMainMatch() {
         var optPrefix = new Expression.OptPrefix(new Expression.Text("a prefix and "), new Expression.Text("my text"));
         assertThat(optPrefix).matching("a prefix and my text")
+                .singleElement()
                 .isFullMatch()
                 .hasNoBoundVariables()
                 .hasMatchRepresentation("{[]a prefix and my text[]}")
-                .hasOnlyBindingsMatching(optPrefix);
+                .bindings()
+                .allFullyMatchExpression();
     }
 
     @Test
@@ -67,23 +68,19 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
     void matchMainVariable() {
         var optPrefix = new Expression.OptPrefix(new Expression.Text("a prefix and "), new Expression.Identifier("var1"));
         assertThat(optPrefix).matching("a prefix and my text")
-                .isFullMatch()
-                .hasBoundVariables()
-                .hasMatchRepresentation("{[[a prefix and my text]]}")
-                .hasBindings(Map.of("var1", "my text"),
-                             Map.of("var1", "")
+                .assertExactlyInAnyOrder(
+                        match -> match.isFullMatch()
+                                .hasMatchRepresentation("{[]a prefix and [my text]}")
+                                .hasBindings(Map.of("var1", "my text")),
+                        match -> match.isNotFullMatch()
+                                .hasMatchRepresentation("{[[a prefix and my text]]}", "0<0")
+                                .hasBindings(Map.of("var1", ""))
                 )
-                .hasOnlyBindingsMatchingOrEmpty(optPrefix)
-                .isChoiceOfSatisfying(choices -> assertThat(choices)
-                        .satisfiesExactlyInAnyOrder(
-                                matchWithVar -> assertThat(matchWithVar)
-                                        .hasMatchRepresentation("{[]a prefix and [my text]}")
-                                        .hasBindings(Map.of("var1", "my text")),
-                                emptyMatch -> assertThat(emptyMatch)
-                                        .hasMatchRepresentation("{[[a prefix and my text]]}", "0<0")
-                                        .hasBindings(Map.of("var1", ""))
-                        )
-                );
+                .bindings()
+                .containValues(Map.of("var1", "my text"),
+                               Map.of("var1", "")
+                )
+                .allFullyMatchExpressionOrEmpty();
     }
 
     @Test
@@ -91,11 +88,13 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
     void matchPrefixVariable() {
         var optPrefix = new Expression.OptPrefix(new Expression.Identifier("var1"), new Expression.Text("my text"));
         assertThat(optPrefix).matching("a prefix and my text")
+                .singleElement()
                 .isFullMatch()
                 .hasBoundVariables()
                 .hasMatchRepresentation("{[a prefix and ]my text[]}")
-                .hasBindings(Map.of("var1", "a prefix and "))
-                .hasOnlyBindingsMatching(optPrefix);
+                .bindings()
+                .containValues(Map.of("var1", "a prefix and "))
+                .allFullyMatchExpression();
     }
 
 
@@ -104,22 +103,16 @@ public class EELExpressionAnalyzerOptPrefixExpressionTest {
     void matchMainVariableAndPrefixVariable() {
         var optPrefix = new Expression.OptPrefix(new Expression.Identifier("var2"), new Expression.OptPrefix(new Expression.Text(" and "), new Expression.Identifier("var1")));
         assertThat(optPrefix).matching("a prefix and my text")
-                .isFullMatch()
-                .hasBoundVariables()
-//                .hasMatchRepresentation("{[[a prefix and my text]]}")
-                .hasBindings(Map.of("var1", "my text", "var2", "a prefix"),
-                             Map.of("var1", "")
+                .assertExactlyInAnyOrder(
+                        match -> match.hasMatchRepresentation("{[a prefix] and [my text]}")
+                                .hasBindings(Map.of("var1", "my text", "var2", "a prefix")),
+                        match -> match.hasMatchRepresentation("{[[a prefix and my text]]}", "0<0")
+                                .hasBindings(Map.of("var1", ""))
                 )
-                .hasOnlyBindingsMatchingOrEmpty(optPrefix)
-                .isChoiceOfSatisfying(choices -> assertThat(choices)
-                        .satisfiesExactlyInAnyOrder(
-                                matchWithVar -> assertThat(matchWithVar)
-                                        .hasMatchRepresentation("{[a prefix] and [my text]}")
-                                        .hasBindings(Map.of("var1", "my text", "var2", "a prefix")),
-                                emptyMatch -> assertThat(emptyMatch)
-                                        .hasMatchRepresentation("{[[a prefix and my text]]}", "0<0")
-                                        .hasBindings(Map.of("var1", ""))
-                        )
-                );
+                .bindings()
+                .containValues(Map.of("var1", "my text", "var2", "a prefix"),
+                               Map.of("var1", "")
+                )
+                .allFullyMatchExpressionOrEmpty();
     }
 }

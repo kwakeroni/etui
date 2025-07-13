@@ -1,10 +1,11 @@
 package com.quaxantis.etui.template.parser;
 
-import com.quaxantis.etui.template.parser.MatchAssert.MatchWithExpressionAssert;
 import com.quaxantis.support.ide.API;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import java.util.Map;
+
+import static java.util.function.Predicate.not;
 
 public class ExpressionAssert extends AbstractObjectAssert<ExpressionAssert, Expression> {
 
@@ -21,23 +22,23 @@ public class ExpressionAssert extends AbstractObjectAssert<ExpressionAssert, Exp
 
     @API
     public ExpressionAssert doesNotMatch(String string) {
-        matching(string).isNoMatch();
+        matching(string).allMatch(Match.NoMatch.class::isInstance);
         return myself;
     }
 
     @API
     public ExpressionAssert matches(String string) {
-        matching(string).isFullMatch();
+        matching(string).anyMatch(not(Match.NoMatch.class::isInstance));
         return myself;
     }
 
     @API
-    public MatchWithExpressionAssert matching(String string) {
+    public MatchingAssert matching(String string) {
         return matching(string, Map.of());
     }
 
     @API
-    public MatchWithExpressionAssert matching(String string, Map<String, String> bindings) {
-        return new MatchWithExpressionAssert(analyzer.match(actual, string, bindings), actual);
+    public MatchingAssert matching(String string, Map<String, String> bindings) {
+        return new MatchingAssert(actual, string, analyzer.match(actual, string, bindings).toList());
     }
 }
