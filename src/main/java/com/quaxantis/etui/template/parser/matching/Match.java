@@ -1,6 +1,5 @@
 package com.quaxantis.etui.template.parser.matching;
 
-import com.quaxantis.etui.template.parser.eel.Expression;
 import com.quaxantis.support.util.Result;
 
 import javax.annotation.Nonnull;
@@ -18,17 +17,17 @@ import static java.util.stream.Collectors.*;
 
 public sealed abstract class Match {
 
-    public static @Nonnull Match withGivenBindings(@Nonnull Expression expression, @Nonnull String fullString, @Nonnull Map<String, String> bindings) {
+    public static @Nonnull Match withGivenBindings(@Nonnull Object expression, @Nonnull String fullString, @Nonnull Map<String, String> bindings) {
         Map<String, RangeFlex.Applied> givenBindings = bindings.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> RangeFlex.Applied.ofCompleteFixed(entry.getValue())));
         return new RootMatch(fullString, expression, givenBindings);
     }
 
-    public static @Nonnull NoMatch noMatch(@Nonnull Expression expression, @Nonnull String fullString, Match... mismatches) {
+    public static @Nonnull NoMatch noMatch(@Nonnull Object expression, @Nonnull String fullString, Match... mismatches) {
         return noMatch(null, expression, fullString, mismatches);
     }
 
-    public static @Nonnull NoMatch noMatch(@Nullable String reason, @Nonnull Expression expression, @Nonnull String fullString, Match... mismatches) {
+    public static @Nonnull NoMatch noMatch(@Nullable String reason, @Nonnull Object expression, @Nonnull String fullString, Match... mismatches) {
         Objects.requireNonNull(expression, "expression");
         Objects.requireNonNull(fullString, "fullString");
         return new NoMatch(expression, fullString, reason, mismatches);
@@ -36,7 +35,7 @@ public sealed abstract class Match {
 
     abstract String fullString();
 
-    abstract Expression expression();
+    abstract Object expression();
 
     abstract List<Match> parentMatches();
 
@@ -63,7 +62,7 @@ public sealed abstract class Match {
         return matchRange().format(fullString());
     }
 
-    public abstract Match constrain(Constraint constraint, Expression causeExpression);
+    public abstract Match constrain(Constraint constraint, Object causeExpression);
 
     protected Match tryConstrain(Supplier<Match> supplier) {
         try {
@@ -88,12 +87,12 @@ public sealed abstract class Match {
     public abstract Score scoreObject();
 
     @Nonnull
-    public Match binding(@Nonnull Expression expression, @Nonnull String boundVariable) {
+    public Match binding(@Nonnull Object expression, @Nonnull String boundVariable) {
         return new BindingMatch(this, expression, boundVariable);
     }
 
     @Nonnull
-    public Match bindingAll(@Nonnull Expression causeExpression, @Nonnull List<Binding> bindings) {
+    public Match bindingAll(@Nonnull Object causeExpression, @Nonnull List<Binding> bindings) {
         Supplier<Stream<Map.Entry<String, RangeFlex.Applied>>> givenBindings = () ->
                 bindings.stream().flatMap(
                         binding -> binding.boundVariables()
@@ -113,7 +112,7 @@ public sealed abstract class Match {
     }
 
     @Nonnull
-    public Match concatenate(Match suffix, Expression expression, String fullString) {
+    public Match concatenate(Match suffix, Object expression, String fullString) {
         Objects.requireNonNull(expression, "expression");
         Objects.requireNonNull(fullString, "fullString");
         return ConcatMatch.concatenating(this, suffix, expression, fullString);
@@ -129,9 +128,9 @@ public sealed abstract class Match {
         @Nonnull
         protected final String fullString;
         @Nonnull
-        protected final Expression expression;
+        protected final Object expression;
 
-        public BindingLessMatch(@Nonnull String fullString, @Nonnull Expression expression) {
+        public BindingLessMatch(@Nonnull String fullString, @Nonnull Object expression) {
             this.fullString = fullString;
             this.expression = expression;
         }
@@ -144,7 +143,7 @@ public sealed abstract class Match {
 
         @Override
         @Nonnull
-        public Expression expression() {
+        public Object expression() {
             return expression;
         }
 
@@ -168,11 +167,11 @@ public sealed abstract class Match {
         private final String reason;
         private final Collection<Match> mismatches;
 
-        private NoMatch(@Nonnull Expression expression, @Nonnull String fullString, @Nullable String reason, Match... mismatches) {
+        private NoMatch(@Nonnull Object expression, @Nonnull String fullString, @Nullable String reason, Match... mismatches) {
             this(expression, fullString, reason, List.of(mismatches));
         }
 
-        private NoMatch(@Nonnull Expression expression, @Nonnull String fullString, @Nullable String reason, Collection<Match> mismatches) {
+        private NoMatch(@Nonnull Object expression, @Nonnull String fullString, @Nullable String reason, Collection<Match> mismatches) {
             super(fullString, expression);
             this.reason = reason;
             this.mismatches = mismatches;
@@ -191,7 +190,7 @@ public sealed abstract class Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint, Expression causeExpression) {
+        public Match constrain(Constraint constraint, Object causeExpression) {
             return this;
         }
 
@@ -216,7 +215,7 @@ public sealed abstract class Match {
         @Nonnull
         private final Map<String, RangeFlex.Applied> givenBindingsMap;
 
-        private RootMatch(@Nonnull String fullString, @Nonnull Expression expression,
+        private RootMatch(@Nonnull String fullString, @Nonnull Object expression,
                           @Nonnull Map<String, RangeFlex.Applied> givenBindingsMap) {
             super(fullString, expression);
             this.givenBindingsMap = givenBindingsMap;
@@ -233,7 +232,7 @@ public sealed abstract class Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint, Expression causeExpression) {
+        public Match constrain(Constraint constraint, Object causeExpression) {
             return tryConstrain(() -> new PartialMatch(this, causeExpression, matchRange().constrain(constraint)));
         }
 
@@ -255,11 +254,11 @@ public sealed abstract class Match {
 
     private sealed abstract static class MatchAdapter extends Match {
         @Nonnull
-        protected final Expression expression;
+        protected final Object expression;
         @Nonnull
         private final Match parent;
 
-        protected MatchAdapter(@Nonnull Match parent, @Nonnull Expression expression) {
+        protected MatchAdapter(@Nonnull Match parent, @Nonnull Object expression) {
             Objects.requireNonNull(parent, "parent");
             this.parent = parent;
             this.expression = expression;
@@ -272,7 +271,7 @@ public sealed abstract class Match {
 
         @Override
         @Nonnull
-        public Expression expression() {
+        public Object expression() {
             return expression;
         }
 
@@ -293,12 +292,12 @@ public sealed abstract class Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint, Expression causeExpression) {
+        public Match constrain(Constraint constraint, Object causeExpression) {
             return parent.constrain(constraint, causeExpression)
                     .andThen(newParent -> withNewParent(newParent, causeExpression));
         }
 
-        protected abstract Match withNewParent(Match newParent, Expression newExpression);
+        protected abstract Match withNewParent(Match newParent, Object newExpression);
 
         @Override
         public Stream<Map.Entry<String, RangeFlex.Applied>> givenBindings() {
@@ -326,7 +325,7 @@ public sealed abstract class Match {
         @Nonnull
         private final String boundVariable;
 
-        private BindingMatch(@Nonnull Match parent, @Nonnull Expression expression, @Nonnull String boundVariable) {
+        private BindingMatch(@Nonnull Match parent, @Nonnull Object expression, @Nonnull String boundVariable) {
             super(parent, expression);
             this.boundVariable = boundVariable;
             verifyNoConflictingBindings(parent, boundVariable);
@@ -345,7 +344,7 @@ public sealed abstract class Match {
         }
 
         @Override
-        protected BindingMatch withNewParent(Match newParent, Expression newExpression) {
+        protected BindingMatch withNewParent(Match newParent, Object newExpression) {
             return new BindingMatch(newParent, newExpression, boundVariable);
         }
 
@@ -398,14 +397,14 @@ public sealed abstract class Match {
         @Nonnull
         private final Supplier<Stream<Map.Entry<String, RangeFlex.Applied>>> addedGivenBindings;
 
-        private AddGivenBindings(@Nonnull Match parent, @Nonnull Expression expression,
+        private AddGivenBindings(@Nonnull Match parent, @Nonnull Object expression,
                                  @Nonnull Supplier<Stream<Map.Entry<String, RangeFlex.Applied>>> addedGivenBindings) {
             super(parent, expression);
             this.addedGivenBindings = addedGivenBindings;
         }
 
         @Override
-        protected AddGivenBindings withNewParent(Match newParent, Expression newExpression) {
+        protected AddGivenBindings withNewParent(Match newParent, Object newExpression) {
             return new AddGivenBindings(newParent, newExpression, addedGivenBindings);
         }
 
@@ -424,7 +423,7 @@ public sealed abstract class Match {
         @Nonnull
         private final RangeFlex range;
 
-        private PartialMatch(@Nonnull Match parent, @Nonnull Expression expression, @Nonnull RangeFlex range) {
+        private PartialMatch(@Nonnull Match parent, @Nonnull Object expression, @Nonnull RangeFlex range) {
             super(parent, expression);
             Objects.requireNonNull(parent, "parent");
             Objects.requireNonNull(range, "range");
@@ -437,12 +436,12 @@ public sealed abstract class Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint, Expression causeExpression) {
+        public Match constrain(Constraint constraint, Object causeExpression) {
             return tryConstrain(() -> new PartialMatch(this, causeExpression, range.constrain(constraint)));
         }
 
         @Override
-        protected PartialMatch withNewParent(Match newParent, Expression newExpression) {
+        protected PartialMatch withNewParent(Match newParent, Object newExpression) {
             return new PartialMatch(newParent, newExpression, range);
         }
 
@@ -456,7 +455,7 @@ public sealed abstract class Match {
         @Nonnull
         private final String fullString;
         @Nonnull
-        private final Expression expression;
+        private final Object expression;
         @Nonnull
         private final Match left;
         @Nonnull
@@ -464,7 +463,7 @@ public sealed abstract class Match {
         @Nonnull
         private final RangeFlex matchRange;
 
-        private ConcatMatch(@Nonnull Expression expression, @Nonnull String fullString, @Nonnull Match left, @Nonnull Match right, @Nonnull RangeFlex matchRange) {
+        private ConcatMatch(@Nonnull Object expression, @Nonnull String fullString, @Nonnull Match left, @Nonnull Match right, @Nonnull RangeFlex matchRange) {
             Objects.requireNonNull(fullString, "fullString");
             Objects.requireNonNull(left, "left");
             Objects.requireNonNull(right, "right");
@@ -479,7 +478,7 @@ public sealed abstract class Match {
             this.matchRange = matchRange;
         }
 
-        private static Match concatenating(Match leftMatch, Match rightMatch, Expression expression, String fullString) {
+        private static Match concatenating(Match leftMatch, Match rightMatch, Object expression, String fullString) {
             if (leftMatch instanceof NoMatch || rightMatch instanceof NoMatch) {
                 return new NoMatch(expression, fullString, null, leftMatch, rightMatch);
             } else {
@@ -502,7 +501,7 @@ public sealed abstract class Match {
 
         @Override
         @Nonnull
-        public Expression expression() {
+        public Object expression() {
             return expression;
         }
 
@@ -531,7 +530,7 @@ public sealed abstract class Match {
         }
 
         @Override
-        public Match constrain(Constraint constraint, Expression causeExpression) {
+        public Match constrain(Constraint constraint, Object causeExpression) {
             return tryConstrain(() -> (constraint instanceof Constraint.MinLength minLength)
                     // minimum length does not apply to each side individually
                     ? new ConcatMatch(expression, fullString, left, right, matchRange.constrain(minLength))
