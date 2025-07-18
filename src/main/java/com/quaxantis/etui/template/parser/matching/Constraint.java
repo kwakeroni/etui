@@ -1,9 +1,9 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-sealed interface Constraint {
+public sealed interface Constraint {
 
     static RangeLimit toRange(RangeFlex range) {
         return new RangeLimit(range);

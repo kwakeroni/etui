@@ -1,6 +1,7 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.eel;
 
-import com.quaxantis.etui.template.parser.Match.NoMatch;
+import com.quaxantis.etui.template.parser.matching.*;
+import com.quaxantis.etui.template.parser.matching.Match.NoMatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,7 +9,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static com.quaxantis.etui.template.parser.Constraint.*;
+import static com.quaxantis.etui.template.parser.matching.Constraint.*;
 import static java.util.function.Predicate.not;
 
 public class EELExpressionAnalyzer {

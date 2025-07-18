@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.quaxantis.etui.template.parser.RangeFlexAssert.assertThat;
+import static com.quaxantis.etui.template.parser.matching.RangeFlexAssert.assertThat;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

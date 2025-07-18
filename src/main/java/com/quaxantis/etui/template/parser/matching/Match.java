@@ -1,5 +1,6 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
+import com.quaxantis.etui.template.parser.eel.Expression;
 import com.quaxantis.support.util.Result;
 
 import javax.annotation.Nonnull;
@@ -12,10 +13,10 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.quaxantis.etui.template.parser.Constraint.toRange;
+import static com.quaxantis.etui.template.parser.matching.Constraint.toRange;
 import static java.util.stream.Collectors.*;
 
-sealed abstract class Match {
+public sealed abstract class Match {
 
     public static @Nonnull Match withGivenBindings(@Nonnull Expression expression, @Nonnull String fullString, @Nonnull Map<String, String> bindings) {
         Map<String, RangeFlex.Applied> givenBindings = bindings.entrySet().stream()

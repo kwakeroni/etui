@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

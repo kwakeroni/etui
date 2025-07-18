@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.eel;
 
 import com.quaxantis.support.util.ANSI;
 
@@ -15,7 +15,7 @@ public sealed interface Expression {
         return ANSI.YELLOW_BRIGHT + string + ANSI.DEFAULT_COLOR;
     }
 
-    final record Concat(List<Expression> parts) implements Expression {
+    record Concat(List<Expression> parts) implements Expression {
 
         Concat(Expression... expressions) {
             this(List.of(expressions));
@@ -33,7 +33,7 @@ public sealed interface Expression {
 
     }
 
-    final record Text(String literal) implements Expression {
+    record Text(String literal) implements Expression {
         @Override
         public String representationString() {
             return "'" + literal + "'";
@@ -45,7 +45,7 @@ public sealed interface Expression {
         }
     }
 
-    final record Identifier(String name) implements Expression {
+    record Identifier(String name) implements Expression {
         @Override
         public String representationString() {
             return "${" + name + "}";
@@ -57,7 +57,7 @@ public sealed interface Expression {
         }
     }
 
-    final record Elvis(Expression expression, Expression orElse) implements Expression {
+    record Elvis(Expression expression, Expression orElse) implements Expression {
         @Override
         public String representationString() {
             return "(" + expression.representationString() + ")?:(" + orElse.representationString() + ")";
@@ -69,7 +69,7 @@ public sealed interface Expression {
         }
     }
 
-    final record OptSuffix(Expression expression, Expression suffix) implements Expression {
+    record OptSuffix(Expression expression, Expression suffix) implements Expression {
         @Override
         public String representationString() {
             return "(" + expression.representationString() + ")?+(" + suffix.representationString() + ")";
@@ -81,7 +81,7 @@ public sealed interface Expression {
         }
     }
 
-    final record OptPrefix(Expression prefix, Expression expression) implements Expression {
+    record OptPrefix(Expression prefix, Expression expression) implements Expression {
         @Override
         public String representationString() {
             return "(" + prefix.representationString() + ")+?(" + expression.representationString() + ")";
@@ -93,7 +93,7 @@ public sealed interface Expression {
         }
     }
 
-    final record Delegate(Expression delegate) implements Expression {
+    record Delegate(Expression delegate) implements Expression {
         @Override
         public String representationString() {
             return delegate.representationString();

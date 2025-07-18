@@ -2,7 +2,7 @@ package com.quaxantis.etui.template;
 
 import com.quaxantis.etui.Template;
 import com.quaxantis.etui.TemplateValues;
-import com.quaxantis.etui.template.parser.Binding;
+import com.quaxantis.etui.template.parser.matching.Binding;
 
 import java.util.Collection;
 import java.util.Map;

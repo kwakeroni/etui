@@ -1,11 +1,11 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.eel;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
+import static com.quaxantis.etui.template.parser.eel.ExpressionAssert.assertThat;
 
 @DisplayName("EELExpressionAnalyzer analyzes an OptPrefix expression")
 public class EELExpressionAnalyzerOptPrefixExpressionTest {

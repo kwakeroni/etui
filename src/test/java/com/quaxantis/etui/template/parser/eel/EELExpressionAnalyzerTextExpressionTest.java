@@ -1,9 +1,9 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.eel;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
+import static com.quaxantis.etui.template.parser.eel.ExpressionAssert.assertThat;
 
 @DisplayName("EELExpressionAnalyzer analyzes a text expression")
 class EELExpressionAnalyzerTextExpressionTest {

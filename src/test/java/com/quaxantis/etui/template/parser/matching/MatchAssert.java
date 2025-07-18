@@ -1,5 +1,6 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
+import com.quaxantis.etui.template.parser.eel.Expression;
 import com.quaxantis.support.ide.API;
 import com.quaxantis.support.util.ANSI;
 import org.assertj.core.api.AbstractObjectAssert;

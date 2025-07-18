@@ -2,14 +2,14 @@ package com.quaxantis.etui.template.parser;
 
 import javax.annotation.Nonnull;
 
-interface ParserState {
+interface ParserState<Expression> {
     @Nonnull
-    default ParserAction offer(@Nonnull Token token) {
+    default ParserAction<Expression> offer(@Nonnull Token<Expression> token) {
         throw new UnsupportedOperationException("Current state cannot accept a token: " + this);
     }
 
     @Nonnull
-    default ParserAction offer(@Nonnull Expression expression) {
+    default ParserAction<Expression> offer(@Nonnull Expression expression) {
         throw new UnsupportedOperationException("Current state cannot accept an expression: " + this);
     }
 }

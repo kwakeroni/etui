@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -103,43 +103,6 @@ public interface Binding {
 
     static Binding empty(Match parent) {
         return new Empty(parent);
-    }
-
-    @Deprecated
-    static Binding of(Match.RootMatch rootMatch, Map<String, String> values) {
-        var valueMap = Map.copyOf(values);
-        class OfMap implements Binding {
-            @Override
-            public Match match() {
-                return rootMatch;
-            }
-
-            @Override
-            public Stream<Binding> parentBindings() {
-                return Stream.empty();
-            }
-
-            @Override
-            public boolean hasBoundVariables() {
-                return !valueMap.isEmpty();
-            }
-
-            @Override
-            public Stream<String> boundVariables() {
-                return valueMap.keySet().stream();
-            }
-
-            @Override
-            public Optional<String> valueOf(String variable) {
-                return Optional.ofNullable(valueMap.get(variable));
-            }
-
-            @Override
-            public Optional<RangeFlex.Applied> valueRangeOf(String variable) {
-                return valueOf(variable).map(RangeFlex.Applied::ofCompleteFixed);
-            }
-        }
-        return new OfMap();
     }
 
     static Binding combine(@Nonnull Match match, @Nonnull RangeFlex matchRange, @Nonnull Binding one, @Nonnull Binding two) {

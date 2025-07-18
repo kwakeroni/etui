@@ -5,7 +5,7 @@ import com.quaxantis.etui.TagValue;
 import com.quaxantis.etui.Template;
 import com.quaxantis.etui.Template.Variable;
 import com.quaxantis.etui.TemplateValues;
-import com.quaxantis.etui.template.parser.Binding;
+import com.quaxantis.etui.template.parser.matching.Binding;
 
 import java.util.*;
 import java.util.stream.Collectors;

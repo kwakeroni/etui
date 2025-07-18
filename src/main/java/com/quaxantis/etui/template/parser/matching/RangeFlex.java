@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
 import com.quaxantis.support.ide.API;
 import com.quaxantis.support.util.Result;
@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-sealed interface RangeFlex {
+public sealed interface RangeFlex {
 
     static RangeFlex empty() {
         return ofFixed(0, -1);

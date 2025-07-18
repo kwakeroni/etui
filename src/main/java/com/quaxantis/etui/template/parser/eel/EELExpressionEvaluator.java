@@ -1,7 +1,9 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.eel;
 
 import com.quaxantis.etui.TemplateValues;
 import com.quaxantis.etui.template.ExpressionEvaluator;
+import com.quaxantis.etui.template.parser.SimpleParser;
+import com.quaxantis.etui.template.parser.matching.Binding;
 
 import java.util.Collection;
 import java.util.Map;
@@ -9,7 +11,7 @@ import java.util.Optional;
 
 public class EELExpressionEvaluator implements ExpressionEvaluator {
     private final Context context;
-    private final SimpleParser parser = new SimpleParser();
+    private final SimpleParser<Expression> parser = parser();
     private final EELExpressionAnalyzer analyzer = new EELExpressionAnalyzer();
 
     public EELExpressionEvaluator(Context context) {
@@ -18,7 +20,7 @@ public class EELExpressionEvaluator implements ExpressionEvaluator {
 
     @Override
     public String evaluate(String expression, TemplateValues values) {
-        ExpressionResolver resolver = new ExpressionResolver(
+        EELExpressionResolver resolver = new EELExpressionResolver(
                 varName -> resolveVariable(values, varName).orElse(null));
         return resolver.resolve(parser.parse(expression));
     }
@@ -33,5 +35,9 @@ public class EELExpressionEvaluator implements ExpressionEvaluator {
         var variable = context.resolveVariable(varName)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown variable: " + varName));
         return values.getValue(variable);
+    }
+
+    static SimpleParser<Expression> parser() {
+        return new SimpleParser<>(new EELLanguage());
     }
 }

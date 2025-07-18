@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

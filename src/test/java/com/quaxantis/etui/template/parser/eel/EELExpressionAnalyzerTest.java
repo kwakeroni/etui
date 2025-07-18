@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.eel;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.quaxantis.etui.template.parser.ExpressionAssert.assertThat;
+import static com.quaxantis.etui.template.parser.eel.ExpressionAssert.assertThat;
 import static java.util.Map.entry;
 
 @DisplayName("EELExpressionAnalyzer analyzes complex expressions")
@@ -138,7 +138,7 @@ class EELExpressionAnalyzerTest {
     @Test
     @DisplayName("does not run out of memory when evaluating a realistic expression")
     void noOutOfMemory() {
-        var expression = new SimpleParser().parse("${name}${' jg. '+?volume}${' nr. '+?number}.${' '+?(coverDisplayDate?:coverDate)?+'.'}${' '+?creatorName?+'.'}${' '+?publisher?+'.'}");
+        var expression = EELExpressionEvaluator.parser().parse("${name}${' jg. '+?volume}${' nr. '+?number}.${' '+?(coverDisplayDate?:coverDate)?+'.'}${' '+?creatorName?+'.'}${' '+?publisher?+'.'}");
         var variables = Map.ofEntries(
                 entry("date", "1988:06:03"),
                 entry("creator", "https://www.tue.nl/"),

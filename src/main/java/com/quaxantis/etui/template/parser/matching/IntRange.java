@@ -1,8 +1,8 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
 import java.util.function.BiFunction;
 
-record IntRange(int from, int exclusiveTo) {
+public record IntRange(int from, int exclusiveTo) {
 
     public static IntRange of(int from, int exclusiveTo) {
         return new IntRange(from, exclusiveTo);
@@ -12,7 +12,7 @@ record IntRange(int from, int exclusiveTo) {
         return new IntRange(from, inclusiveTo + 1);
     }
 
-    IntRange {
+    public IntRange {
         if (from > exclusiveTo) {
             throw new IllegalArgumentException("Cannot create range where from=%d is larger than to=%d".formatted(from, exclusiveTo));
         }

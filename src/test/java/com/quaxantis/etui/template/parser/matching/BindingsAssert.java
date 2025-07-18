@@ -1,5 +1,8 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
+import com.quaxantis.etui.template.parser.GenericTreeModel;
+import com.quaxantis.etui.template.parser.eel.EELExpressionResolver;
+import com.quaxantis.etui.template.parser.eel.Expression;
 import com.quaxantis.support.ide.API;
 import com.quaxantis.support.util.ANSI;
 import org.assertj.core.api.AbstractCollectionAssert;
@@ -53,7 +56,7 @@ public class BindingsAssert extends AbstractCollectionAssert<BindingsAssert, Col
 
     public BindingsAssert allFullyMatchExpression() {
         assertThat(actual.stream()
-                           .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
+                           .map(binding -> new EELExpressionResolver(var -> binding.valueOf(var).orElse("")))
                            .map(resolver -> resolver.resolve(expression))
                            .distinct())
                 .containsExactlyInAnyOrder(fullString);
@@ -62,7 +65,7 @@ public class BindingsAssert extends AbstractCollectionAssert<BindingsAssert, Col
 
     public BindingsAssert allFullyMatchExpressionOrEmpty() {
         assertThat(actual.stream()
-                           .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
+                           .map(binding -> new EELExpressionResolver(var -> binding.valueOf(var).orElse("")))
                            .map(resolver -> resolver.resolve(expression))
                            .distinct())
                 .containsAnyOf(fullString, "");
@@ -72,7 +75,7 @@ public class BindingsAssert extends AbstractCollectionAssert<BindingsAssert, Col
     @API
     public BindingsAssert allPartiallyMatchExpression() {
         assertThat(actual.stream()
-                           .map(binding -> new ExpressionResolver(var -> binding.valueOf(var).orElse("")))
+                           .map(binding -> new EELExpressionResolver(var -> binding.valueOf(var).orElse("")))
                            .map(resolver -> resolver.resolve(expression))
                            .distinct())
                 .allMatch(fullString::contains, "is part of \"" + fullString + '"');

@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.parser.matching;
 
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
