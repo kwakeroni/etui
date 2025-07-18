@@ -37,7 +37,9 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
     @API
     public SELF isNoMatch() {
         if (!(actual instanceof Match.NoMatch)) {
-            failWithActualExpectedAndMessage(actual, new Match.NoMatch(actual.expression(), actual.fullString(), null), "Expected actual not to be a match, but it was");
+            failWithActualExpectedAndMessage(
+                    actual, Match.noMatch(actual.expression(), actual.fullString()),
+                    "Expected actual not to be a match, but it was");
         }
         return myself;
 
@@ -54,7 +56,7 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
     @API
     public SELF isFullMatch() {
         if (!actual.isFullMatch()) {
-            failWithActualExpectedAndMessage(actual, new Match.RootMatch(actual.expression(), actual.fullString(), Map.of()), "Expected actual to be a full match");
+            failWithActualExpectedAndMessage(actual, Match.withGivenBindings(actual.expression(), actual.fullString(), Map.of()), "Expected actual to be a full match");
         }
         return myself;
     }
@@ -103,7 +105,11 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
 
     @API
     public BindingsAssert bindings() {
-        return new BindingsAssert(actual.expression(), actual.fullString(), actual.bindings().toList());
+        return bindings(actual.expression());
+    }
+
+    BindingsAssert bindings(Expression expression) {
+        return new BindingsAssert(expression, actual.fullString(), actual.bindings().map(Binding::withNormalizedScore).toList());
     }
 
     @API
@@ -174,7 +180,7 @@ public class MatchAssert<SELF extends MatchAssert<SELF>> extends AbstractObjectA
         }
 
         public BindingsAssert bindings() {
-            return new BindingsAssert(expression, actual.fullString(), actual.bindings().toList());
+            return bindings(expression);
         }
     }
 }

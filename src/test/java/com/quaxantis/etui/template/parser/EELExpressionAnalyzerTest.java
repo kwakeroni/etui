@@ -83,8 +83,9 @@ class EELExpressionAnalyzerTest {
     void combinedBinding() {
         var optSuffix = new Expression.OptSuffix(new Expression.Identifier("var1"), new Expression.Text(" there"));
 
-        assertThat(optSuffix).matching("Hello there", Map.of("var2", "value"))
-                .normalizedBindings()
+        assertThat(optSuffix)
+                .matching("Hello there", Map.of("var2", "value"))
+                .bindings()
                 .filteredOnScore(1.0)
                 .allFullyMatchExpression()
                 .containValues(Map.of("var1", "Hello"))
@@ -120,6 +121,21 @@ class EELExpressionAnalyzerTest {
     }
 
     @Test
+    @DisplayName("using an earlier binding as a given binding in a succeeding expression")
+    void matchWithEarlierBindingAsGiven() {
+        var optSuffix = new Expression.OptSuffix(new Expression.Identifier("var"),
+                                                 new Expression.OptPrefix(new Expression.Text(", "), new Expression.Identifier("var")));
+
+        // TODO Could be improved with "delegated binding" to keep track
+        assertThat(optSuffix)
+                .matching("New York, New York")
+                .bindings()
+                .filteredOnScore(0.9)
+                .containValues(Map.of("var", "New York"));
+
+    }
+
+    @Test
     @DisplayName("does not run out of memory when evaluating a realistic expression")
     void noOutOfMemory() {
         var expression = new SimpleParser().parse("${name}${' jg. '+?volume}${' nr. '+?number}.${' '+?(coverDisplayDate?:coverDate)?+'.'}${' '+?creatorName?+'.'}${' '+?publisher?+'.'}");
@@ -148,8 +164,9 @@ class EELExpressionAnalyzerTest {
         Map<String, String> commonBindings = Map.of("name", "Cursor", "volume", "30", "number", "37", "coverDisplayDate", "03.06.88");
 
         long start = System.currentTimeMillis();
-        assertThat(expression).matching(string, variables)
-                .normalizedBindings()
+        assertThat(expression)
+                .matching(string, variables)
+                .bindings()
                 .filteredOnScore(0.5)
                 .containValues(combine(commonBindings, Map.of("creatorName", "Technische Universiteit Eindhoven", "publisher", "")),
                                combine(commonBindings, Map.of("creatorName", "", "publisher", "Technische Universiteit Eindhoven")));

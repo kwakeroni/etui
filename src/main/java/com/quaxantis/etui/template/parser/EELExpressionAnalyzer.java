@@ -1,7 +1,6 @@
 package com.quaxantis.etui.template.parser;
 
 import com.quaxantis.etui.template.parser.Match.NoMatch;
-import com.quaxantis.support.util.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,7 @@ public class EELExpressionAnalyzer {
 
     Stream<Match> match(Expression expression, String string, Map<String, String> bindings) {
         var fullExpr = new Expression.Delegate(expression);
-        Collection<Match> matches = doMatch(fullExpr, string, Match.of(fullExpr, string, bindings));
+        Collection<Match> matches = doMatch(fullExpr, string, Match.withGivenBindings(fullExpr, string, bindings));
         return matches.stream();
     }
 
@@ -91,7 +90,7 @@ public class EELExpressionAnalyzer {
             }
 
             if (matches.isEmpty()) {
-                return Stream.of(new NoMatch(expression, fullString, "literal expression not found: " + literal));
+                return Stream.of(Match.noMatch("literal expression not found: " + literal, expression, fullString));
             } else {
                 return matches.stream();
             }
@@ -119,15 +118,8 @@ public class EELExpressionAnalyzer {
         } else {
             Collection<Match> fallbackMatches = doMatch(elvis.orElse(), string, parent.bindingAll(elvis, emptyMainMatch.bindings().toList()), matchFilter);
             return Stream.concat(Stream.of(mainMatch),
-                                 fallbackMatches.stream().map(fallbackMatch -> elvisMatchFallback(elvis, string, emptyMainMatch, fallbackMatch)));
+                                 fallbackMatches.stream().map(fallbackMatch -> emptyMainMatch.concatenate(fallbackMatch, elvis, string)));
         }
-    }
-
-    private static Match elvisMatchFallback(Expression.Elvis elvis, String string, Match emptyMainMatch, Match fallbackMatch) {
-        RangeFlex.ConcatResult concatRange = RangeFlex.concat(emptyMainMatch.matchRange(), fallbackMatch.matchRange());
-        Match constrainedEmptyMatch = emptyMainMatch.constrain(toRange(concatRange.left()), elvis);
-        Match constrainedFallbackMatch = fallbackMatch.constrain(toRange(concatRange.right()), elvis);
-        return constrainedFallbackMatch.andThen(cfm -> new Match.ConcatMatch(elvis, string, constrainedEmptyMatch, cfm, concatRange.combined()));
     }
 
     private List<Match> matchOptPrefix(Expression.OptPrefix optPrefix, String string, Match parent, Predicate<Match> matchFilter) {
@@ -142,28 +134,28 @@ public class EELExpressionAnalyzer {
 
     private Stream<Match> optPrefixMatch(Expression.OptPrefix optPrefix, String string, Match exprMatch, Match parent, Predicate<Match> matchFilter) {
         if (exprMatch instanceof NoMatch) {
-            return Stream.of(new NoMatch(optPrefix, string, null, exprMatch));
+            return Stream.of(Match.noMatch(optPrefix, string, exprMatch));
         }
 
         Match mainMatch = exprMatch.constrain(toMinLength(1), optPrefix);
         Match emptyMainMatch = exprMatch.constrain(toMaxLength(0), optPrefix);
         Collection<Match> prefixMatches = doMatch(optPrefix.prefix(), string, parent.bindingAll(optPrefix, mainMatch.bindings().toList()), matchFilter);
         return Stream.concat(
-                prefixMatches.stream().map(prefixMatch -> concatMatches(optPrefix, string, prefixMatch, mainMatch)),
+                prefixMatches.stream().map(prefixMatch -> prefixMatch.concatenate(mainMatch, optPrefix, string)),
                 Stream.of(emptyMainMatch));
     }
 
     private Stream<Match> optSuffixMatch(Expression.OptSuffix optSuffix, String string, Match exprMatch, Match parent, Predicate<Match> matchFilter) {
 
         if (exprMatch instanceof NoMatch) {
-            return Stream.of(new NoMatch(optSuffix, string, null, exprMatch));
+            return Stream.of(Match.noMatch(optSuffix, string, exprMatch));
         }
 
         Match mainMatch = exprMatch.constrain(toMinLength(1), optSuffix);
         Match emptymainMatch = exprMatch.constrain(toMaxLength(0), optSuffix);
         Collection<Match> suffixMatches = doMatch(optSuffix.suffix(), string, parent.bindingAll(optSuffix, mainMatch.bindings().toList()), matchFilter);
         return Stream.concat(
-                suffixMatches.stream().map(suffixMatch -> concatMatches(optSuffix, string, mainMatch, suffixMatch)),
+                suffixMatches.stream().map(suffixMatch -> mainMatch.concatenate(suffixMatch, optSuffix, string)),
                 Stream.of(emptymainMatch));
     }
 
@@ -189,29 +181,6 @@ public class EELExpressionAnalyzer {
     }
 
     private Stream<Match> concatMatch(Expression expression, String string, Match match, Collection<Match> nextMatches) {
-        return nextMatches.stream().map(nextMatch -> concatMatches(expression, string, match, nextMatch));
-    }
-
-    private static Match concatMatches(Expression expression, String string, Match leftMatch, Match rightMatch) {
-        if (leftMatch instanceof NoMatch || rightMatch instanceof NoMatch) {
-            return new NoMatch(expression, string, null, leftMatch, rightMatch);
-        } else {
-
-            var leftFlex = leftMatch.matchRange();
-            var rightFlex = rightMatch.matchRange();
-
-            return switch (RangeFlex.tryConcat(leftFlex, rightFlex)) {
-                case Result.Success(RangeFlex.ConcatResult(var left, var right, var combined)) -> {
-                    var constrainedLeftMatch = leftMatch.constrain(toRange(left), expression);
-                    var constrainedRightMatch = rightMatch.constrain(toRange(right), expression);
-                    if (constrainedLeftMatch instanceof NoMatch || constrainedRightMatch instanceof NoMatch) {
-                        yield new NoMatch(expression, string, null, constrainedLeftMatch, constrainedRightMatch);
-                    }
-                    yield new Match.ConcatMatch(expression, string, constrainedLeftMatch, constrainedRightMatch, combined);
-                }
-                case Result.Failure(var exc) ->
-                        new NoMatch(expression, string, exc + " at " + exc.getStackTrace()[0], leftMatch, rightMatch);
-            };
-        }
+        return nextMatches.stream().map(nextMatch -> match.concatenate(nextMatch, expression, string));
     }
 }

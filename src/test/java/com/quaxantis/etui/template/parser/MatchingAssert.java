@@ -56,11 +56,7 @@ public class MatchingAssert extends AbstractCollectionAssert<MatchingAssert, Col
     }
 
     private Stream<Binding> actualBindings() {
-        return actual.stream().flatMap(Match::bindings);
-    }
-
-    public BindingsAssert normalizedBindings() {
-        return new BindingsAssert(expression, fullString, actualBindings().map(Binding::withNormalizedScore).toList());
+        return actual.stream().flatMap(Match::bindings).map(Binding::withNormalizedScore);
     }
 
     public BindingsAssert bindings() {
