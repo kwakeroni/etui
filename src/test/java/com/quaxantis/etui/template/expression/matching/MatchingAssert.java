@@ -17,7 +17,7 @@ public class MatchingAssert extends AbstractCollectionAssert<MatchingAssert, Col
     private final ResolvableExpression<?> expression;
     private final String fullString;
 
-    public <E> MatchingAssert(E expression, BiFunction<E, Binding, String> resolver, String fullString, Collection<? extends Match> matches) {
+    public <E> MatchingAssert(E expression, BiFunction<E, com.quaxantis.etui.template.expression.Binding, String> resolver, String fullString, Collection<? extends Match> matches) {
         this(new ResolvableExpression<>(expression, resolver), fullString, matches);
     }
 

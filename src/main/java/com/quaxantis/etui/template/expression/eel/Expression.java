@@ -5,7 +5,7 @@ import com.quaxantis.support.util.ANSI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public sealed interface Expression {
+sealed interface Expression {
 
     String representationString();
 

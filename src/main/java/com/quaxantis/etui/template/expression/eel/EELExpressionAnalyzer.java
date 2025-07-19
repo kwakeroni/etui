@@ -1,7 +1,10 @@
 package com.quaxantis.etui.template.expression.eel;
 
-import com.quaxantis.etui.template.expression.matching.*;
+import com.quaxantis.etui.template.expression.Binding;
+import com.quaxantis.etui.template.expression.matching.IntRange;
+import com.quaxantis.etui.template.expression.matching.Match;
 import com.quaxantis.etui.template.expression.matching.Match.NoMatch;
+import com.quaxantis.etui.template.expression.matching.RangeFlex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +15,7 @@ import java.util.stream.Stream;
 import static com.quaxantis.etui.template.expression.matching.Constraint.*;
 import static java.util.function.Predicate.not;
 
-public class EELExpressionAnalyzer {
+class EELExpressionAnalyzer {
 
     private static final Logger log = LoggerFactory.getLogger(EELExpressionAnalyzer.class);
 
@@ -79,7 +82,7 @@ public class EELExpressionAnalyzer {
             int matchLength = end + 1;
             return Stream.of(literalMatch(parent, matchRange, matchLength, expression));
         } else if (literal.isEmpty()) {
-            return Stream.of(parent.constrain(Constraint.toMaxLength(0), expression));
+            return Stream.of(parent.constrain(toMaxLength(0), expression));
         } else {
             List<Match> matches = new ArrayList<>();
             int index = -1;

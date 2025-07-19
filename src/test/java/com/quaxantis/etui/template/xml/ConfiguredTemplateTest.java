@@ -10,7 +10,7 @@ import com.quaxantis.etui.TemplateValues;
 import com.quaxantis.etui.tag.TagDescriptorBuilder;
 import com.quaxantis.etui.tag.TagRepository;
 import com.quaxantis.etui.template.AbstractTemplateTest;
-import com.quaxantis.etui.template.ExpressionEvaluator;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

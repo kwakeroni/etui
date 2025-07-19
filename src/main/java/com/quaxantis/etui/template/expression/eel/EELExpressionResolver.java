@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
 
-public class EELExpressionResolver {
+class EELExpressionResolver {
     private final Function<String, String> identifierResolver;
 
     public EELExpressionResolver(Function<String, String> identifierResolver) {

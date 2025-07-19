@@ -166,7 +166,7 @@ class EELExpressionAnalyzerTest {
         long start = System.currentTimeMillis();
         assertThat(expression)
                 .matching(string, variables)
-                .bindings().debug()
+                .bindings()
                 .filteredOnScore(0.5)
                 .containValues(combine(commonBindings, Map.of("creatorName", "Technische Universiteit Eindhoven", "publisher", "")),
                                combine(commonBindings, Map.of("creatorName", "", "publisher", "Technische Universiteit Eindhoven")));

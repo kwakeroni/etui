@@ -4,10 +4,10 @@ import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.TagDescriptor;
 import com.quaxantis.etui.Template;
 import com.quaxantis.etui.tag.TagRepository;
-import com.quaxantis.etui.template.ExpressionEvaluator;
-import com.quaxantis.etui.template.ExpressionEvaluatorFactory;
 import com.quaxantis.etui.template.TagMapping;
 import com.quaxantis.etui.template.VariableSupport;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
+import com.quaxantis.etui.template.expression.ExpressionEvaluatorFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;

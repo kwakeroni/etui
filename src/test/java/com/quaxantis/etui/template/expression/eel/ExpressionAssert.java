@@ -1,6 +1,6 @@
 package com.quaxantis.etui.template.expression.eel;
 
-import com.quaxantis.etui.template.expression.matching.Binding;
+import com.quaxantis.etui.template.expression.Binding;
 import com.quaxantis.etui.template.expression.matching.Match;
 import com.quaxantis.etui.template.expression.matching.MatchingAssert;
 import com.quaxantis.support.ide.API;

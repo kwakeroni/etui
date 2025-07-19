@@ -1,8 +1,7 @@
-package com.quaxantis.etui.template;
+package com.quaxantis.etui.template.expression;
 
 import com.quaxantis.etui.Template;
 import com.quaxantis.etui.TemplateValues;
-import com.quaxantis.etui.template.expression.matching.Binding;
 
 import java.util.Collection;
 import java.util.Map;
@@ -16,7 +15,6 @@ public interface ExpressionEvaluator {
     String evaluate(String expression, TemplateValues values);
 
     default Collection<Binding> deinterpolate(String expression, Map<String, String> boundVariables, String evaluatedExpression) {
-        // TODO make Binding EEL-independent
         return Set.of();
     }
 

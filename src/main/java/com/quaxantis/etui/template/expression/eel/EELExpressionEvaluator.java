@@ -1,8 +1,8 @@
 package com.quaxantis.etui.template.expression.eel;
 
 import com.quaxantis.etui.TemplateValues;
-import com.quaxantis.etui.template.ExpressionEvaluator;
-import com.quaxantis.etui.template.expression.matching.Binding;
+import com.quaxantis.etui.template.expression.Binding;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
 import com.quaxantis.etui.template.expression.parser.SimpleParser;
 
 import java.util.Collection;

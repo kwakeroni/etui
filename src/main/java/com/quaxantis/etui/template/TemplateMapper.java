@@ -5,7 +5,8 @@ import com.quaxantis.etui.TagValue;
 import com.quaxantis.etui.Template;
 import com.quaxantis.etui.Template.Variable;
 import com.quaxantis.etui.TemplateValues;
-import com.quaxantis.etui.template.expression.matching.Binding;
+import com.quaxantis.etui.template.expression.Binding;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
 
 import java.util.*;
 import java.util.stream.Collectors;

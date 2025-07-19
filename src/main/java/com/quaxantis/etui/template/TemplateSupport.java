@@ -4,6 +4,7 @@ import com.quaxantis.etui.HasDescription;
 import com.quaxantis.etui.HasLabel;
 import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.Template;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
 
 import java.util.ArrayList;
 import java.util.Collection;
