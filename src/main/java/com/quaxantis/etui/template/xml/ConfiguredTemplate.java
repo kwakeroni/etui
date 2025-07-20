@@ -4,7 +4,10 @@ import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.TagDescriptor;
 import com.quaxantis.etui.Template;
 import com.quaxantis.etui.tag.TagRepository;
-import com.quaxantis.etui.template.*;
+import com.quaxantis.etui.template.TagMapping;
+import com.quaxantis.etui.template.VariableSupport;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
+import com.quaxantis.etui.template.expression.ExpressionEvaluatorFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -17,16 +20,23 @@ import java.util.stream.Stream;
 public class ConfiguredTemplate implements Template {
 
     private final String name;
+    private final String source;
     private final List<Variable> variables;
     private final List<TagMapping> tagMappings;
     private final ExpressionEvaluator expressionEvaluator;
 
 
-    private ConfiguredTemplate(String name, List<Variable> variables, List<TagMapping> tagMappings, ExpressionEvaluator expressionEvaluator) {
+    private ConfiguredTemplate(String name, String source, List<Variable> variables, List<TagMapping> tagMappings, ExpressionEvaluator expressionEvaluator) {
         this.name = name;
+        this.source = source;
         this.variables = variables;
         this.tagMappings = tagMappings;
         this.expressionEvaluator = expressionEvaluator;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{name=" + this.name + ", source=" + this.source + "}";
     }
 
     @Override
@@ -56,12 +66,12 @@ public class ConfiguredTemplate implements Template {
         return this.expressionEvaluator;
     }
 
-    public static ConfiguredTemplate of(XMLTemplate template, TagRepository tagRepository) {
+    public static ConfiguredTemplate of(String source, XMLTemplate template, TagRepository tagRepository) {
         var variables = template.variables().stream().map(var -> enrich(var, tagRepository)).toList();
         var variablesByName = Stream.ofNullable(variables).flatMap(Collection::stream).collect(Collectors.toMap(Variable::name, Function.identity()));
         var tagMappings = tagMappings(template, variablesByName);
         var expressionEvaluator = createEvaluator(template, ExpressionEvaluator::of, ExpressionEvaluator.Context.of(variables));
-        return new ConfiguredTemplate(template.name(), variables, tagMappings, expressionEvaluator);
+        return new ConfiguredTemplate(template.name(), source, variables, tagMappings, expressionEvaluator);
     }
 
     private static Variable enrich(XMLTemplateVariable xmlVariable, TagRepository tagRepository) {

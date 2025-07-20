@@ -1,22 +1,23 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.expression.parser;
 
-import com.quaxantis.etui.template.parser.Operators.InfixOp;
+import com.quaxantis.etui.template.expression.parser.SimpleParser.Language;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.quaxantis.etui.template.parser.Operators.GroupOp;
-import static com.quaxantis.etui.template.parser.ParserAction.*;
+import static com.quaxantis.etui.template.expression.parser.ParserAction.*;
 
-final class ParserStates {
-    private ParserStates() {
-        throw new UnsupportedOperationException();
+final class ParserStates<E> {
+    private final Language<E> language;
+
+    private ParserStates(Language<E> language) {
+        this.language = language;
     }
 
-    static ParserState root() {
-        return new Root();
+    static <E> ParserState<E> root(Language<E> language) {
+        return new ParserStates<>(language).new Root();
     }
 
     // Whitespace = <whitespace character>+
@@ -31,20 +32,20 @@ final class ParserStates {
     //       GroupEnd = [Whitespace] <group end operator>
     // Root = Text EOF
 
-    static IllegalStateException unexpectedToken(Token token, Object expected) {
+    static IllegalStateException unexpectedToken(Token<?> token, Object expected) {
         return new IllegalStateException("Expected %s but encountered %s".formatted(expected, token));
     }
 
     // Text = <any character>+ | Group(expression)
-    private abstract static class Text implements ParserState {
-
-        private final List<Expression> expressions = new ArrayList<>();
+    private abstract class Text implements ParserState<E> {
+        private final List<E> expressions = new ArrayList<>();
 
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Token token) {
+        public ParserAction<E> offer(@Nonnull Token<E> token) {
             return switch (token) {
-                case Token.Operator(GroupOp.Start op, _) when op.matches(GroupOp.EXPRESSION) -> push(new Group(op));
+                case Token.Operator(Language.GroupStart op, _) when op.matchesAny(language.expressionGroups()) ->
+                        push(new Group(op));
                 case Token.Operator(_, var delimiter) -> proceed(addText(delimiter));
                 case Token.AlphaNumeric(var text) -> proceed(addText(text));
                 case Token.Whitespace(var whitespace) -> proceed(addText(whitespace));
@@ -55,25 +56,25 @@ final class ParserStates {
 
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Expression expression) {
+        public ParserAction<E> offer(@Nonnull E expression) {
             return proceed(add(expression));
         }
 
-        protected Void add(@Nonnull Expression expression) {
+        protected Void add(@Nonnull E expression) {
             expressions.add(expression);
             return null;
         }
 
         protected Void addText(@Nonnull java.lang.String text) {
-            return add(new Expression.Text(text));
+            return add(language.createLiteral(text));
         }
 
         @Nonnull
-        protected Expression concat() {
+        protected E concat() {
             if (this.expressions.size() == 1) {
-                return this.expressions.get(0);
+                return this.expressions.getFirst();
             } else {
-                return new Expression.Concat(this.expressions);
+                return language.concatenate(this.expressions);
             }
         }
 
@@ -84,20 +85,20 @@ final class ParserStates {
     }
 
     // Expr = Expr [Whitespace] [<infix operator> Expr]
-    private static class ExtensibleExpr implements ParserState {
+    private class ExtensibleExpr implements ParserState<E> {
 
-        private final Expression expression;
+        private final E expression;
 
-        private ExtensibleExpr(Expression expression) {
+        private ExtensibleExpr(E expression) {
             this.expression = expression;
         }
 
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Token token) {
+        public ParserAction<E> offer(@Nonnull Token<E> token) {
             return switch (token) {
                 case Token.Whitespace(_) -> proceed();
-                case Token.Operator(InfixOp infix, _) -> replaceWith(new Infix(expression, infix));
+                case Token.Operator<E>(Language.Infix<E> infix, _) -> replaceWith(new Infix(expression, infix));
                 default -> yieldExpression(expression, false);
             };
         }
@@ -106,49 +107,44 @@ final class ParserStates {
         public java.lang.String toString() {
             return getClass().getSimpleName();
         }
-
-        static ExtensibleExpr identifier(java.lang.String identifier) {
-            return new ExtensibleExpr(new Expression.Identifier(identifier));
-        }
     }
 
     // Expr = [Whitespace] (Identifier | String) [Whitespace]
-    private abstract static class Expr implements ParserState {
-
+    private abstract class Expr implements ParserState<E> {
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Token token) {
+        public ParserAction<E> offer(@Nonnull Token<E> token) {
             return switch (token) {
                 case Token.Whitespace(_) -> proceed();
-                case Token.AlphaNumeric(var identifier) -> push(ExtensibleExpr.identifier(identifier));
-                case Token.Operator(GroupOp.Start op, _)
-                        when op.matches(GroupOp.STRING_DOUBLE) || op.matches(GroupOp.STRING_SINGLE) ->
+                case Token.AlphaNumeric(var identifier) ->
+                        push(new ExtensibleExpr(language.createIdentifier(identifier)));
+                case Token.Operator(Language.GroupStart op, _) when op.matchesAny(language.literalGroups()) ->
                         push(new String(op));
-                case Token.Operator(GroupOp.Start op, _)
-                        when op.matches(GroupOp.PARENTHESES) -> push(new Group(op));
+                case Token.Operator(Language.GroupStart op, _) when op.matchesAny(language.subExpressions()) ->
+                        push(new Group(op));
                 case Token.Operator(_, _), Token.Other(_), Token.EOF() -> throw unexpectedToken(token, "expression");
             };
         }
 
         @Nonnull
         @Override
-        public abstract ParserAction offer(@Nonnull Expression expression);
+        public abstract ParserAction<E> offer(@Nonnull E expression);
 
     }
 
     // String = '"' Text '"'
-    private static class String extends Text {
+    private class String extends Text {
 
-        private final GroupOp.Start startOperator;
+        private final Language.GroupStart startOperator;
 
-        String(GroupOp.Start startOperator) {
+        String(Language.GroupStart startOperator) {
             this.startOperator = startOperator;
         }
 
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Token token) {
-            if (token instanceof Token.Operator(GroupOp.End op, _) && op.matches(startOperator)) {
+        public ParserAction<E> offer(@Nonnull Token<E> token) {
+            if (token instanceof Token.Operator(Language.GroupEnd op, _) && op.matches(startOperator)) {
                 return replaceWith(new ExtensibleExpr(concat()));
             } else {
                 return super.offer(token);
@@ -159,17 +155,17 @@ final class ParserStates {
     }
 
     // Group = GroupStart Expr GroupEnd
-    private static class Group extends Expr {
-        private final GroupOp.Start startOperator;
+    private class Group extends Expr {
+        private final Language.GroupStart startOperator;
 
-        private Group(GroupOp.Start startOperator) {
+        private Group(Language.GroupStart startOperator) {
             this.startOperator = startOperator;
         }
 
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Token token) {
-            if (token instanceof Token.Operator(GroupOp.End op, _) && op.matches(startOperator)) {
+        public ParserAction<E> offer(@Nonnull Token<E> token) {
+            if (token instanceof Token.Operator(Language.GroupEnd op, _) && op.matches(startOperator)) {
                 return finish();
             } else {
                 return super.offer(token);
@@ -178,7 +174,7 @@ final class ParserStates {
 
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Expression expression) {
+        public ParserAction<E> offer(@Nonnull E expression) {
             return replaceWith(new EndGroupState(startOperator, expression));
         }
 
@@ -189,21 +185,21 @@ final class ParserStates {
     }
 
     //     GroupEnd = [Whitespace] <group end operator>
-    private static class EndGroupState implements ParserState {
-        private final GroupOp.Start startOperator;
-        private final Expression expression;
+    private class EndGroupState implements ParserState<E> {
+        private final Language.GroupStart startOperator;
+        private final E expression;
 
-        private EndGroupState(GroupOp.Start startOperator, Expression expression) {
+        private EndGroupState(Language.GroupStart startOperator, E expression) {
             this.startOperator = startOperator;
             this.expression = expression;
         }
 
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Token token) {
+        public ParserAction<E> offer(@Nonnull Token<E> token) {
             return switch (token) {
                 case Token.Whitespace(_) -> proceed();
-                case Token.Operator(GroupOp.End op, _) when op.matches(startOperator) ->
+                case Token.Operator(Language.GroupEnd op, _) when op.matches(startOperator) ->
                         (startOperator.group().isExtensible()) ?
                                 replaceWith(new ExtensibleExpr(expression))
                                 : yieldExpression(expression, true);
@@ -218,31 +214,30 @@ final class ParserStates {
     }
 
     //   Infix = [<infix operator> Expr]
-    private static class Infix extends Expr {
+    private class Infix extends Expr {
 
-        private final Expression leftExpression;
-        private final InfixOp operator;
+        private final E leftExpression;
+        private final Language.Infix<E> operator;
 
-        public Infix(Expression leftExpression, InfixOp operator) {
+        public Infix(E leftExpression, Language.Infix<E> operator) {
             this.leftExpression = leftExpression;
             this.operator = operator;
         }
 
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Expression rightExpression) {
-            Expression combined = operator.combine(leftExpression, rightExpression);
+        public ParserAction<E> offer(@Nonnull E rightExpression) {
+            E combined = operator.combine(leftExpression, rightExpression);
             return replaceWith(new ExtensibleExpr(combined));
         }
 
     }
 
     // Root = Text EOF
-    private static class Root extends Text {
-
+    private class Root extends Text {
         @Nonnull
         @Override
-        public ParserAction offer(@Nonnull Token token) {
+        public ParserAction<E> offer(@Nonnull Token<E> token) {
             // RootText = Text | EOF
             if (Objects.requireNonNull(token) instanceof Token.EOF()) {
                 return yieldExpression(concat(), true);

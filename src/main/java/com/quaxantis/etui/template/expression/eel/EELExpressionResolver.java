@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.expression.eel;
 
 import java.util.List;
 import java.util.Objects;
@@ -8,10 +8,10 @@ import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
 
-public class ExpressionResolver {
+class EELExpressionResolver {
     private final Function<String, String> identifierResolver;
 
-    public ExpressionResolver(Function<String, String> identifierResolver) {
+    public EELExpressionResolver(Function<String, String> identifierResolver) {
         this.identifierResolver = identifierResolver;
     }
 
@@ -23,6 +23,7 @@ public class ExpressionResolver {
             case Expression.Elvis(var main, var orElse) -> resolveElvis(main, orElse);
             case Expression.OptPrefix(var prefix, var main) -> resolveOptPrefix(prefix, main);
             case Expression.OptSuffix(var main, var suffix) -> resolveOptSuffix(main, suffix);
+            case Expression.Delegate(var delegate) -> resolve(delegate);
         };
     }
 
@@ -38,7 +39,7 @@ public class ExpressionResolver {
             return mainValue;
         } else {
             String suffixValue = resolve(suffix);
-            return (suffixValue == null)? mainValue : mainValue + suffixValue;
+            return (suffixValue == null) ? mainValue : mainValue + suffixValue;
         }
     }
 
@@ -48,7 +49,7 @@ public class ExpressionResolver {
             return mainValue;
         } else {
             String prefixValue = resolve(prefix);
-            return (prefixValue == null)? mainValue : prefixValue + mainValue;
+            return (prefixValue == null) ? mainValue : prefixValue + mainValue;
         }
     }
 

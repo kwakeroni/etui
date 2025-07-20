@@ -10,7 +10,7 @@ import com.quaxantis.etui.TemplateValues;
 import com.quaxantis.etui.tag.TagDescriptorBuilder;
 import com.quaxantis.etui.tag.TagRepository;
 import com.quaxantis.etui.template.AbstractTemplateTest;
-import com.quaxantis.etui.template.ExpressionEvaluator;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -194,7 +194,7 @@ class ConfiguredTemplateTest extends AbstractTemplateTest {
                 validator.validate(new StreamSource(new StringReader("<template-collection xmlns=\"https://quaxantis.com/etui/templates\">" + xml + "</template-collection>")));
             }
             XMLTemplate xmlTemplate = objectMapper.readValue(xml, XMLTemplate.class);
-            return ConfiguredTemplate.of(xmlTemplate, tagRepository);
+            return ConfiguredTemplate.of("test", xmlTemplate, tagRepository);
         } catch (Exception e) {
             throw new RuntimeException("Error processing XML\n" + xml, e);
         }

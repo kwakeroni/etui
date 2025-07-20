@@ -1,4 +1,6 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.expression.parser;
+
+import com.quaxantis.etui.template.expression.parser.SimpleParser.Language.Op;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,16 +8,20 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.IntPredicate;
 
-class Tokenizer {
+class Tokenizer<E> {
 
-    private final Map<String, Object> operators;
+    private final Map<String, Op<E>> operators;
 
-    Tokenizer(Map<String, Object> operators) {
+    Tokenizer(SimpleParser.Language<E> language) {
+        this(language.delimiterToOperatorMap());
+    }
+
+    Tokenizer(Map<String, Op<E>> operators) {
         this.operators = operators;
     }
 
-    public Iterator<Token> tokenize(String string) {
-        var list = new ArrayList<Token>();
+    public Iterator<Token<E>> tokenize(String string) {
+        var list = new ArrayList<Token<E>>();
         CharType currentCharType = null;
         int pos = 0;
         for (int i = 0; i < string.length(); i++) {
@@ -32,23 +38,23 @@ class Tokenizer {
                 if (!operators.containsKey(string.substring(pos, i + 1))
                     && operators.containsKey(string.substring(pos, i))) {
                     String token = string.substring(pos, i);
-                    list.add(new Token.Operator(operators.get(token), token));
+                    list.add(new Token.Operator<E>(operators.get(token), token));
                     pos = i;
                 } else {
                     // If we end with an operator
-                    int opl = (i > 1 && operators.containsKey(string.substring(i-2, i))) ? 2
-                                : (operators.containsKey(string.substring(i-1, i))) ? 1
+                    int opl = (i > 1 && operators.containsKey(string.substring(i - 2, i))) ? 2
+                            : (operators.containsKey(string.substring(i - 1, i))) ? 1
                             : 0;
                     if (opl > 0) {
-                        String other = string.substring(pos, i-opl);
-                        list.add(new Token.Other(other));
-                        String op = string.substring(i-opl, i);
-                        list.add(new Token.Operator(operators.get(op), op));
+                        String other = string.substring(pos, i - opl);
+                        list.add(new Token.Other(other).anyCast());
+                        String op = string.substring(i - opl, i);
+                        list.add(new Token.Operator<>(operators.get(op), op));
                         pos = i;
-                    } else if (pos < i-1 && operators.containsKey(string.substring(i-1, i+1))) {
-                        String other = string.substring(pos, i-1);
-                        list.add(new Token.Other(other));
-                        pos = i-1;
+                    } else if (pos < i - 1 && operators.containsKey(string.substring(i - 1, i + 1))) {
+                        String other = string.substring(pos, i - 1);
+                        list.add(new Token.Other(other).anyCast());
+                        pos = i - 1;
                     }
                 }
             }
@@ -59,9 +65,9 @@ class Tokenizer {
         return list.iterator();
     }
 
-    private Token createToken(CharType charType, String tokenString) {
+    private Token<E> createToken(CharType charType, String tokenString) {
         if (charType == CharType.OTHER && operators.containsKey(tokenString)) {
-            return new Token.Operator(operators.get(tokenString), tokenString);
+            return new Token.Operator<>(operators.get(tokenString), tokenString);
         } else {
             return charType.asToken(tokenString);
         }
@@ -73,15 +79,15 @@ class Tokenizer {
         OTHER(ignored -> true, Token.Other::new);
 
         private final IntPredicate predicate;
-        private final Function<String, Token> tokenCreator;
+        private final Function<String, Token<Object>> tokenCreator;
 
-        CharType(IntPredicate predicate, Function<String, Token> tokenCreator) {
+        CharType(IntPredicate predicate, Function<String, Token<Object>> tokenCreator) {
             this.predicate = predicate;
             this.tokenCreator = tokenCreator;
         }
 
-        Token asToken(String token) {
-            return tokenCreator.apply(token);
+        <E> Token<E> asToken(String token) {
+            return tokenCreator.apply(token).anyCast();
         }
 
         public static CharType of(char c) {

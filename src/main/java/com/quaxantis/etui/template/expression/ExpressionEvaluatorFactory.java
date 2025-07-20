@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template;
+package com.quaxantis.etui.template.expression;
 
 public interface ExpressionEvaluatorFactory {
 

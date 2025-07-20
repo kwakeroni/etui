@@ -1,4 +1,4 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.expression.eel;
 
 import org.assertj.core.api.AbstractStringAssert;
 import org.junit.jupiter.api.DisplayName;
@@ -16,11 +16,11 @@ import static org.mockito.Mockito.*;
 
 @DisplayName("ExpressionResolver")
 @ExtendWith(MockitoExtension.class)
-class ExpressionResolverTest {
+class EELExpressionResolverTest {
     @Mock
     private Function<String, String> identifierResolver;
     @InjectMocks
-    private ExpressionResolver resolver;
+    private EELExpressionResolver resolver;
 
     @Test
     @DisplayName("resolves an Identifier expression by looking up the identifier")

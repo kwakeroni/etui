@@ -1,6 +1,7 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.expression.eel;
 
-import com.quaxantis.etui.template.parser.Expression.*;
+import com.quaxantis.etui.template.expression.eel.Expression.*;
+import com.quaxantis.etui.template.expression.parser.SimpleParser;
 import org.junit.jupiter.api.Test;
 import org.slf4j.simple.SimpleLogger;
 
@@ -8,14 +9,14 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SimpleParserTest {
+class SimpleEELParserTest {
 
     static {
         System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
         System.setProperty(SimpleLogger.LOG_KEY_PREFIX + SimpleParser.class.getName() + ".Token", "info");
     }
 
-    SimpleParser parser = new SimpleParser();
+    SimpleParser parser = EELExpressionEvaluator.parser();
 
     @Test
     void parsesEmptyExpression() {

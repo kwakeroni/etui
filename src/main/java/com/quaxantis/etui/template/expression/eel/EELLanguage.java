@@ -1,7 +1,8 @@
-package com.quaxantis.etui.template.parser;
+package com.quaxantis.etui.template.expression.eel;
 
-import java.util.Arrays;
-import java.util.Map;
+import com.quaxantis.etui.template.expression.parser.SimpleParser.Language;
+
+import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -10,17 +11,48 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.teeing;
 
-final class Operators {
-    static Map<String, Object> BY_DELIMITER = Stream.<Supplier<Stream<? extends Map.Entry<String, ?>>>>
-                    of(InfixOp::operators, GroupOp::operators)
-            .flatMap(Supplier::get)
-            .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+final class EELLanguage implements Language<Expression> {
+    private static final Map<String, Op<Expression>> BY_DELIMITERS =
+            Stream.<Supplier<Stream<? extends Map.Entry<String, ? extends Op<Expression>>>>>
+                            of(InfixOp::operators, GroupOp::operators)
+                    .flatMap(Supplier::get)
+                    .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    private Operators() {
-        throw new UnsupportedOperationException();
+    @Override
+    public Map<String, Op<Expression>> delimiterToOperatorMap() {
+        return BY_DELIMITERS;
     }
 
-    enum InfixOp {
+    @Override
+    public Collection<GroupOp> expressionGroups() {
+        return Set.of(GroupOp.EXPRESSION);
+    }
+
+    @Override
+    public Collection<GroupOp> literalGroups() {
+        return Set.of(GroupOp.STRING_DOUBLE, GroupOp.STRING_SINGLE);
+    }
+
+    public Collection<GroupOp> subExpressions() {
+        return Set.of(GroupOp.PARENTHESES);
+    }
+
+    @Override
+    public Expression createLiteral(String text) {
+        return new Expression.Text(text);
+    }
+
+    @Override
+    public Expression createIdentifier(String name) {
+        return new Expression.Identifier(name);
+    }
+
+    @Override
+    public Expression concatenate(List<Expression> expressions) {
+        return new Expression.Concat(expressions);
+    }
+
+    enum InfixOp implements Language.Infix<Expression> {
         ELVIS("?:", Expression.Elvis::new),
         OPT_SUFFIX("?+", Expression.OptSuffix::new),
         OPT_PREFIX("+?", Expression.OptPrefix::new),
@@ -34,7 +66,8 @@ final class Operators {
             this.combiner = combiner;
         }
 
-        Expression combine(Expression left, Expression right) {
+        @Override
+        public Expression combine(Expression left, Expression right) {
             return this.combiner.apply(left, right);
         }
 
@@ -46,7 +79,7 @@ final class Operators {
         }
     }
 
-    enum GroupOp {
+    enum GroupOp implements Language.Group<Expression> {
         // ${} is not extensible with an infix as it is only used in a Text which does not support any operators but the expression group.
         EXPRESSION("${", "}", false),
         PARENTHESES("(", ")", true),
@@ -102,7 +135,7 @@ final class Operators {
             return this.startDelimiter + name() + this.endDelimiter;
         }
 
-        private static Stream<Map.Entry<String, ?>> operators() {
+        private static Stream<Map.Entry<String, ? extends Op<Expression>>> operators() {
             return Arrays.stream(GroupOp.values())
                     .collect(teeing(
                             mapping((GroupOp op) -> Map.entry(op.startDelimiter(), op.startOp()), Collectors.toList()),
@@ -112,9 +145,7 @@ final class Operators {
         }
 
 
-        interface Start {
-            GroupOp group();
-
+        interface Start extends Language.GroupStart<Expression> {
             default boolean matches(GroupOp group) {
                 return group().equals(group);
             }
@@ -134,12 +165,7 @@ final class Operators {
             }
         }
 
-        interface End {
-            GroupOp group();
-
-            default boolean matches(Start start) {
-                return group().startOp().equals(start);
-            }
+        interface End extends Language.GroupEnd<Expression> {
 
             static End of(GroupOp group) {
                 return new End() {

@@ -4,7 +4,9 @@ import com.quaxantis.etui.TagValue;
 import com.quaxantis.etui.TemplateValues;
 import com.quaxantis.support.util.MoreCollectors;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -15,7 +17,7 @@ class TemplateValuesSupport implements TemplateValues {
         this.values = new HashMap<>(map);
     }
 
-    static Collector<TagValue, ?, Entry> toTemplateValue() {
+    static Collector<TagValue, ?, Optional<Entry>> toTemplateValue() {
         return Collectors.teeing(
                 Collectors.mapping(
                         TagValue::value,
@@ -23,7 +25,7 @@ class TemplateValuesSupport implements TemplateValues {
                 Collectors.mapping(
                         tagValue -> Source.of(tagValue.tag().qualifiedName(), tagValue.value()),
                         Collectors.toList()),
-                Entry::of
+                (value, sources) -> (value == null && sources.isEmpty()) ? Optional.empty() : Optional.of(Entry.of(value, sources))
         );
     }
 

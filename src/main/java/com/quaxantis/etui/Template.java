@@ -1,12 +1,8 @@
 package com.quaxantis.etui;
 
-import com.quaxantis.etui.template.ExpressionEvaluator;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
 
 import java.util.*;
-import java.util.function.Function;
-
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
 
 public interface Template {
 

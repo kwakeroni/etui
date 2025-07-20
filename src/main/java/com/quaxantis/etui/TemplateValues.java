@@ -19,6 +19,8 @@ public interface TemplateValues {
 
         Optional<String> value();
 
+        Optional<String> info();
+
         Collection<Source> sources();
 
         default Map<String, String> sourceValues() {
@@ -34,6 +36,10 @@ public interface TemplateValues {
         }
 
         static Entry of(String value, Collection<Source> originalSources) {
+            return of(value, originalSources, null);
+        }
+
+        static Entry of(String value, Collection<Source> originalSources, String info) {
             List<Source> sources = List.copyOf(originalSources);
 
             return new Entry() {
@@ -41,6 +47,11 @@ public interface TemplateValues {
                 @Override
                 public Optional<String> value() {
                     return Optional.ofNullable(value);
+                }
+
+                @Override
+                public Optional<String> info() {
+                    return Optional.ofNullable(info);
                 }
 
                 @Override

@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
@@ -70,7 +71,7 @@ public class TemplateRepository {
                 .stream()
                 .map(StreamEntry::of)
                 .flatMap(StreamEntry.flatMapping(List::stream))
-                .map(StreamEntry.mapping(family -> ofTags(family.label(), family.tags())))
+                .map(StreamEntry.mapping(family -> ofTags(family.label(), "Tag Family " + family.label(), family.tags())))
                 .flatMap(StreamEntry.flatMapping(Optional::stream))
                 .map(StreamEntry.mappingKey(key -> "Tags / " + key));
     }
@@ -94,12 +95,15 @@ public class TemplateRepository {
                 .map(StreamEntry::of)
                 .map(StreamEntry.mapping(this::readCollection))
                 .filter(StreamEntry::isNonNullValue)
-                .map(StreamEntry.mappingKey((path, collection) -> (collection.group() != null) ?
-                        collection.group() : path.getFileName().toString()))
-                .map(StreamEntry.mapping(XMLTemplateCollection::templates))
-                .filter(StreamEntry::isNonNullValue)
-                .flatMap(entry -> entry.flatMap(List::stream))
-                .map(StreamEntry.mapping(xmlTemplate -> ConfiguredTemplate.of(xmlTemplate, this.tagRepository)));
+                .flatMap((StreamEntry<Path, XMLTemplateCollection> entry) -> {
+                    String source = entry.getKey().toString();
+                    return entry.mapKey((path, collection) -> (collection.group() != null) ? collection.group() : path.getFileName().toString())
+                            .map(XMLTemplateCollection::templates)
+                            .filter(Objects::nonNull)
+                            .stream()
+                            .flatMap(e -> e.flatMap(List::stream))
+                            .map(StreamEntry.mapping(xmlTemplate -> ConfiguredTemplate.of(source, xmlTemplate, this.tagRepository)));
+                });
     }
 
     Stream<Path> walk(Path path) {
@@ -110,10 +114,10 @@ public class TemplateRepository {
         }
     }
 
-    private static Optional<Template> ofTags(String name, Collection<? extends Tag> tags) {
+    private static Optional<Template> ofTags(String name, String source, Collection<? extends Tag> tags) {
         return tags.stream()
                 .filter(tag -> !TagDescriptor.of(tag).isReadOnly())
-                .collect(Collector.of(() -> TemplateSupport.builder(name),
+                .collect(Collector.of(() -> TemplateSupport.builder(name).withSource(source),
                                       (builder, tag) -> builder.addVariable(new VariableSupport(tag), tag),
                                       (_, _) -> {
                                           throw new UnsupportedOperationException();

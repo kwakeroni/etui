@@ -11,7 +11,8 @@ import java.util.Properties;
 
 import static com.quaxantis.etui.application.config.ConfigurationImpl.escapeStringArray;
 import static com.quaxantis.etui.application.config.ConfigurationImpl.unescapeStringArray;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Configuration")
 class ConfigurationImplTest {
@@ -190,7 +191,9 @@ class ConfigurationImplTest {
 
             var configuration = ConfigurationImpl.of(properties, Path.of("."));
 
-            assertThat(configuration.getTemplatePaths()).containsExactly(
+            assertThat(configuration.getTemplatePaths())
+                    .extracting(path -> path.replace('\\', '/'))
+                    .containsExactly(
                     "./templates",
                     "file2.png",
                     "file1.png");

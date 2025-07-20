@@ -1,6 +1,6 @@
 package com.quaxantis.etui;
 
-import com.quaxantis.etui.template.ExpressionEvaluator;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
 
 import java.util.*;
 import java.util.function.Function;

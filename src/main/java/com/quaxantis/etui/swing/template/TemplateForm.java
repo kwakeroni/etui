@@ -8,9 +8,9 @@ import com.quaxantis.etui.TemplateValues;
 import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.application.config.Configuration;
 import com.quaxantis.etui.tag.TagRepository;
-import com.quaxantis.etui.template.ExpressionEvaluator;
 import com.quaxantis.etui.template.TemplateMapper;
 import com.quaxantis.etui.template.TemplateRepository;
+import com.quaxantis.etui.template.expression.ExpressionEvaluator;
 import com.quaxantis.support.swing.form.AbstractForm;
 import com.quaxantis.support.swing.form.FormField;
 import com.quaxantis.support.swing.form.FormFieldInput;
@@ -33,6 +33,7 @@ import static java.util.stream.Collectors.toMap;
 public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
     private final Logger log = LoggerFactory.getLogger(TemplateForm.class);
 
+    private final Template template;
     private final ExpressionEvaluator expressionEvaluator;
     private final TemplateMapper mapper;
     private final SequencedMap<Variable, FormField<TemplateValues, TemplateValues.Entry>> fields;
@@ -51,6 +52,7 @@ public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
 
         // this::evaluateExpression requires this.expressionEvaluator to be set
         this.fields = initFields(template, this::evaluateExpression);
+        this.template = template;
 
         addFormListener(new FormListener.Adapter<>() {
             @Override
@@ -91,7 +93,7 @@ public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
                         String newValue = expressionEvaluator.evaluate(var.expression(), values);
                         values.set(var, newValue);
                     } catch (Exception exc) {
-                        log.error("Error while evaluating variable {}", var.name(), exc);
+                        log.error("Error while evaluating variable {} in template {}", var.name(), this.template, exc);
                     }
                 });
 
@@ -104,7 +106,7 @@ public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
                     .map(Variable::expression)
                     .map(expression -> expressionEvaluator.evaluate(expression, getData()));
         } catch (Exception exc) {
-            log.error("Error while evaluating variable {}", var.name(), exc);
+            log.error("Error while evaluating variable {} in template {}", var.name(), this.template, exc);
             return Optional.empty();
         }
     }
