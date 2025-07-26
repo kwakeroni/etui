@@ -1,9 +1,10 @@
 package com.quaxantis.etui.swing.taginfo;
 
-import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.HasDescription;
 import com.quaxantis.etui.HasLabel;
+import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.TagDescriptor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +14,8 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -265,7 +268,16 @@ public class TagInfoPanel extends JEditorPane {
     private static String exampleLink(TagDescriptor.Example example) {
         if (example.pattern() != null) {
             if (example.value() != null) {
-                return "<a href='pattern:%1$s'>%2$s</a> : %3$s".formatted(example.pattern(), example.value(), example.text());
+                if ("now".equals(example.value())) {
+                    String value = DateTimeFormatter.ofPattern(example.pattern()).format(OffsetDateTime.now());
+                    if (StringUtils.isEmpty(example.text())) {
+                        return "<a href='pattern:%1$s'>%1$s</a>".formatted(value);
+                    } else {
+                        return "<a href='pattern:%1$s'>%1$s</a> : %2$s".formatted(value, example.text());
+                    }
+                } else {
+                    return "<a href='pattern:%1$s'>%2$s</a> : %3$s".formatted(example.pattern(), example.value(), example.text());
+                }
             } else {
                 return "<a href='pattern:%1$s'>%2$s</a>".formatted(example.pattern(), example.text());
             }

@@ -36,6 +36,7 @@ public class TagRepository {
             "dublin-core.xml",
             "creative-commons.xml",
             "prism.xml",
+            "xmp.xml",
             "formats.xml",
             "system.xml"
     );
