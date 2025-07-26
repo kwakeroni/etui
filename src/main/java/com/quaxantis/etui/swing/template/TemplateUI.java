@@ -1,6 +1,8 @@
 package com.quaxantis.etui.swing.template;
 
+import com.quaxantis.etui.Tag;
 import com.quaxantis.etui.TagSet;
+import com.quaxantis.etui.Template;
 import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.swing.taginfo.TagInfoPanel;
 import com.quaxantis.etui.tag.TagRepository;
@@ -16,8 +18,10 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
+import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class TemplateUI {
 
@@ -91,7 +95,21 @@ public class TemplateUI {
     }
 
     private static TagInfoPanel createTagInfoPanel(TemplatePanel templatePanel) {
+        TagInfoPanel.InfoItem targetTagsItem = element -> {
+            if (element instanceof Template.Variable variable
+                && templatePanel.getCurrentTemplate() instanceof Template template
+                && template.tags(variable) instanceof Collection<Tag> tags
+                && (!tags.isEmpty())) {
+                return tags.stream().map(Tag::qualifiedName)
+                        .collect(Collectors.joining(
+                                "<br />",
+                                "<div style='margin: 2px;text-align: right; color: gray;'>",
+                                "</div>"));
+            }
+            return "";
+        };
         var tagInfoPanel = new TagInfoPanel(
+                targetTagsItem,
                 TagInfoPanel.StandardInfoItem.LABEL,
                 TagInfoPanel.StandardInfoItem.DESCRIPTION,
                 TagInfoPanel.StandardInfoItem.FORMAT_DESCRIPTION.wrapped("<p><strong>format</strong>", "</p>"),

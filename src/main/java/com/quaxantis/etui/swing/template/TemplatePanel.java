@@ -9,9 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.JPanel;
 import java.awt.Component;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -56,6 +60,11 @@ class TemplatePanel extends JPanel {
             this.actionButton.setEnabled(false);
         }
         resetLayout();
+    }
+
+    @Nullable
+    Template getCurrentTemplate() {
+        return this.currentTemplate;
     }
 
     private String format(Template template, TemplateValues values) {
