@@ -282,7 +282,11 @@ public class TagInfoPanel extends JEditorPane {
                 return "<a href='pattern:%1$s'>%2$s</a>".formatted(example.pattern(), example.text());
             }
         } else if (example.value() != null) {
-            return "<a href='pattern:%1$s'>%1$s</a> : %2$s".formatted(example.value(), example.text());
+            if (example.text() == null) {
+                return "<a href='pattern:%1$s'>%1$s</a>".formatted(example.value());
+            } else {
+                return "<a href='pattern:%1$s'>%1$s</a> : %2$s".formatted(example.value(), example.text());
+            }
         } else {
             return example.text();
         }

@@ -100,6 +100,36 @@
             <tag name="MIMEType" readonly="true" />
         </tags>
     </family>
+    <family name="jpeg" group="JFIF">
+        <label>JPEG</label>
+        <reference>https://www.w3.org/Graphics/JPEG/jfif3.pdf</reference>
+        <description>
+            Tags extracted from JPEG images.
+        </description>
+        <tags>
+            <tag name="JFIFVersion" readonly="true">
+                <description>The most significant byte is used for major revisions, the least significant byte for minor
+                    revisions
+                </description>
+            </tag>
+            <tag name="ResolutionUnit">
+                <description>Units for the X and Y densities.</description>
+                <format>
+                    <examples>
+                        <example value="0">no units, X and Y specify the pixel aspect ratio</example>
+                        <example value="1">X and Y are dots per inch</example>
+                        <example value="2">X and Y are dots per cm</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="XResolution"/>
+            <tag name="YResolution"/>
+            <tag name="ThumbnailWidth" readonly="true"/>
+            <tag name="ThumbnailHeight" readonly="true"/>
+            <tag name="ThumbnailTIFF" readonly="true"/>
+            <tag name="ThumbnailImage" readonly="true"/>
+        </tags>
+    </family>
     <family name="webp" group="RIFF" readonly="true">
         <label>WEBP</label>
         <tags>

@@ -20,9 +20,26 @@
                 <format>
                     <description>
                         The license URL.
+
+                        Aspects:
+
+                        BY: credit must be given to the creator.
+
+                        SA: Adaptations must be shared under the same terms.
+
+                        NC: Only noncommercial uses of the work are permitted.
+
+                        ND: No derivatives or adaptations of the work are permitted.
+
+                        CC0: Public Domain
                     </description>
                     <examples>
-                        <example>http://creativecommons.org/licenses/by-sa/2.0/</example>
+                        <example value="https://creativecommons.org/licenses/by/4.0/"/>
+                        <example value="https://creativecommons.org/licenses/by-sa/4.0/"/>
+                        <example value="https://creativecommons.org/licenses/by-nc/4.0/"/>
+                        <example value="https://creativecommons.org/licenses/by-nc-sa/4.0/"/>
+                        <example value="https://creativecommons.org/licenses/by-nc-nd/4.0/"/>
+                        <example value="https://creativecommons.org/publicdomain/zero/1.0/"/>
                     </examples>
                 </format>
             </tag>

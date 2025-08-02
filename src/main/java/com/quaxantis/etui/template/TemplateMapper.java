@@ -75,6 +75,7 @@ public class TemplateMapper {
                 .sorted(Comparator.comparing(Binding::score).reversed())
                 .flatMap(binding -> binding.valueOf(variable.name()).stream())
                 .findFirst()
+                .filter(not(String::isEmpty))
                 .map(value -> TemplateValues.Entry.of(value, List.of(), "Variable value was reconstituted from other expressions in the template."));
     }
 

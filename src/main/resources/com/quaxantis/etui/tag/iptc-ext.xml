@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag-collection xmlns="https://quaxantis.com/etui/tags" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="https://quaxantis.com/etui/tags tag-collection.xsd">
+    <collection>Standards</collection>
+    <family name="iptcExt" group="XMP">
+        <label>IPTC Extension</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-extension-schema-1-8-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos, because of its
+            universal acceptance
+            among news agencies, photographers, photo agencies, libraries, museums, and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard)as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+
+            This list provides a subset of the IPTC Extension metadata specification.
+        </description>
+        <tags>
+            <tag name="PersonInImage">
+                <label>Person shown</label>
+                <description>Name of a person shown in the image.</description>
+                <format>
+                    <description>Data type: Text / Cardinality: 0..unbounded</description>
+                </format>
+            </tag>
+            <tag name="PersonInImageName">
+                <label>Person shown (Name)</label>
+                <description>Name of the person shown in the image.</description>
+                <format>
+                    <description>Data type: Text / Cardinality: 0..1</description>
+                </format>
+            </tag>
+            <tag name="PersonInImageId">
+                <label>Person shown (ID)</label>
+                <description>Globally Unique Identifier of the person shown in the image, such as those from WikiData or
+                    Freebase
+                </description>
+                <format>
+                    <description>
+                        This should be an identifier as it is used with semantic web technology.
+                        Data type: URI / Cardinality: 0..unbounded
+                    </description>
+                </format>
+            </tag>
+        </tags>
+    </family>
+</tag-collection>
