@@ -1,5 +1,6 @@
 package com.quaxantis.etui.swing;
 
+import com.pivovarit.function.ThrowingSupplier;
 import com.quaxantis.etui.TagSet;
 import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.application.config.Configuration;
@@ -16,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageReaderSpi;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -142,11 +146,13 @@ class TagSetUI extends JPanel {
     private static Container createPreviewPane0(Path file) throws IOException {
         var flowLayout = new FlowLayout();
         int padding = Math.max(flowLayout.getHgap(), flowLayout.getVgap());
-        BufferedImage image = ImageIO.read(file.toFile());
-        if (image == null) {
+        Optional<BufferedImage> optImage = readImage(file);
+
+        if (!(optImage.orElse(null) instanceof BufferedImage image)) {
             log.info("Unable to preview image {}", file);
             return null;
         }
+
         var imageLabel = new ImageZoomLabel(image);
         var previewContainer = new JPanel(flowLayout);
         var scrollPane = new JScrollPane(previewContainer);
@@ -166,6 +172,31 @@ class TagSetUI extends JPanel {
         });
 
         return scrollPane;
+    }
+
+    private static Optional<BufferedImage> readImage(Path file) throws IOException {
+        IIORegistry.getDefaultInstance()
+                .getServiceProviders(ImageReaderSpi.class, false)
+                .forEachRemaining(System.out::println);
+
+        return tryReadFile(file)
+                .or(ThrowingSupplier.sneaky(() -> Optional.ofNullable(ImageIO.read(file.toFile()))));
+    }
+
+    private static Optional<BufferedImage> tryReadFile(Path file) throws IOException {
+        for (ImageReader reader : (Iterable<ImageReader>) () -> ImageIO.getImageReaders(file)) {
+            try {
+                reader.setInput(file);
+                BufferedImage image = reader.read(0);
+                if (image != null) {
+                    return Optional.of(image);
+                }
+            } finally {
+                reader.setInput(null);
+                reader.dispose();
+            }
+        }
+        return Optional.empty();
     }
 
 }
