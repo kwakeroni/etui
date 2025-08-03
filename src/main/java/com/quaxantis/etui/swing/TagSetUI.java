@@ -1,6 +1,5 @@
 package com.quaxantis.etui.swing;
 
-import com.pivovarit.function.ThrowingSupplier;
 import com.quaxantis.etui.TagSet;
 import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.application.config.Configuration;
@@ -9,27 +8,15 @@ import com.quaxantis.etui.swing.table.TagTableUI;
 import com.quaxantis.etui.swing.template.TemplateUI;
 import com.quaxantis.etui.tag.TagRepository;
 import com.quaxantis.etui.template.TemplateRepository;
-import com.quaxantis.support.swing.Dimensions;
-import com.quaxantis.support.swing.image.ImageZoomLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.spi.IIORegistry;
-import javax.imageio.spi.ImageReaderSpi;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import java.awt.Container;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
@@ -81,7 +68,7 @@ class TagSetUI extends JPanel {
     private static TagTableUI createTagTableUI(TagSet tagSet, FileStateMachine fileStateMachine, TagRepository tagRepository, Configuration configuration) {
         var tagTableUi = new TagTableUI(tagSet, tagRepository, configuration);
 
-        tagTableUi.addChangeListener(e -> {
+        tagTableUi.addChangeListener(_ -> {
             boolean hasChanges = tagTableUi.getChanges().stream().findAny().isPresent();
             if (hasChanges) {
                 fileStateMachine.onChanged();
@@ -93,7 +80,10 @@ class TagSetUI extends JPanel {
         return tagTableUi;
     }
 
-    private static JTabbedPane createTabs(TemplateRepository templateRepository, ConfigOperations configOperations, TagTableUI tagTableUi, Path file) {
+    private static JTabbedPane createTabs(TemplateRepository templateRepository,
+                                          ConfigOperations configOperations,
+                                          TagTableUI tagTableUi,
+                                          Path file) {
         var tabbedPane = new JTabbedPane() {
             @Override
             public void setSelectedIndex(int index) {
@@ -107,7 +97,7 @@ class TagSetUI extends JPanel {
             }
         };
 
-        var templateUi = createTemplateUI(templateRepository, configOperations, tagTableUi, tabbedPane, 0);
+        var templateUi = createTemplateUI(templateRepository, configOperations, tagTableUi, tabbedPane);
         Container templateContainer = templateUi.getUIContainer();
         tabbedPane.addTabListener((JTabbedPane pane, int index) -> {
             if (index == pane.indexOfComponent(templateContainer)) {
@@ -124,79 +114,15 @@ class TagSetUI extends JPanel {
         return tabbedPane;
     }
 
-    private static TemplateUI createTemplateUI(TemplateRepository templateRepository, ConfigOperations configOperations, TagTableUI tagTable, JTabbedPane tabbedPane, int index) {
-        return new TemplateUI(templateRepository, configOperations, "Apply", tagSetSupplier -> e -> {
+    private static TemplateUI createTemplateUI(TemplateRepository templateRepository, ConfigOperations configOperations, TagTableUI tagTable, JTabbedPane tabbedPane) {
+        return new TemplateUI(templateRepository, configOperations, "Apply", tagSetSupplier -> _ -> {
             tagTable.mergeTags(tagSetSupplier.get());
-            tabbedPane.setSelectedIndex(index);
+            tabbedPane.setSelectedIndex(0);
         });
     }
 
-    private static Optional<Container> createPreviewPane(Path file) {
-        if (file != null) {
-            try {
-                return Optional.ofNullable(createPreviewPane0(file));
-            } catch (Exception exc) {
-                log.error("Unable to preview image {}", file, exc);
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Nullable
-    private static Container createPreviewPane0(Path file) throws IOException {
-        var flowLayout = new FlowLayout();
-        int padding = Math.max(flowLayout.getHgap(), flowLayout.getVgap());
-        Optional<BufferedImage> optImage = readImage(file);
-
-        if (!(optImage.orElse(null) instanceof BufferedImage image)) {
-            log.info("Unable to preview image {}", file);
-            return null;
-        }
-
-        var imageLabel = new ImageZoomLabel(image);
-        var previewContainer = new JPanel(flowLayout);
-        var scrollPane = new JScrollPane(previewContainer);
-        int inc = 20;
-        scrollPane.getVerticalScrollBar().setUnitIncrement(inc);
-        scrollPane.getVerticalScrollBar().setBlockIncrement(inc);
-        scrollPane.getHorizontalScrollBar().setUnitIncrement(inc);
-        scrollPane.getHorizontalScrollBar().setBlockIncrement(inc);
-
-        previewContainer.add(imageLabel);
-
-        previewContainer.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                imageLabel.setViewSize(Dimensions.minus(scrollPane.getViewport().getSize(), 2 * padding));
-            }
-        });
-
-        return scrollPane;
-    }
-
-    private static Optional<BufferedImage> readImage(Path file) throws IOException {
-        IIORegistry.getDefaultInstance()
-                .getServiceProviders(ImageReaderSpi.class, false)
-                .forEachRemaining(System.out::println);
-
-        return tryReadFile(file)
-                .or(ThrowingSupplier.sneaky(() -> Optional.ofNullable(ImageIO.read(file.toFile()))));
-    }
-
-    private static Optional<BufferedImage> tryReadFile(Path file) throws IOException {
-        for (ImageReader reader : (Iterable<ImageReader>) () -> ImageIO.getImageReaders(file)) {
-            try {
-                reader.setInput(file);
-                BufferedImage image = reader.read(0);
-                if (image != null) {
-                    return Optional.of(image);
-                }
-            } finally {
-                reader.setInput(null);
-                reader.dispose();
-            }
-        }
-        return Optional.empty();
+    private static Optional<? extends Container> createPreviewPane(Path file) {
+        return Optional.of(file).flatMap(PreviewPane::of);
     }
 
 }
