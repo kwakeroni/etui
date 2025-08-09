@@ -51,7 +51,7 @@ class TagSetUI extends JPanel {
     void setTagSet(@Nonnull TagSet tagSet, @Nullable Path file) {
         replaceUI(() -> {
             var tagTableUi = createTagTableUI(tagSet, fileStateMachine, tagRepository, configOperations.getConfiguration());
-            var tabbedPane = createTabs(templateRepository, configOperations, tagTableUi, file);
+            var tabbedPane = createTabs(templateRepository, configOperations, tagTableUi, fileStateMachine, file);
             this.add(tabbedPane);
             return tagTableUi;
         });
@@ -80,10 +80,11 @@ class TagSetUI extends JPanel {
         return tagTableUi;
     }
 
-    private static JTabbedPane createTabs(TemplateRepository templateRepository,
-                                          ConfigOperations configOperations,
-                                          TagTableUI tagTableUi,
-                                          Path file) {
+    private static JTabbedPane createTabs(@Nonnull TemplateRepository templateRepository,
+                                          @Nonnull ConfigOperations configOperations,
+                                          @Nonnull TagTableUI tagTableUi,
+                                          @Nonnull FileStateMachine fileStateMachine,
+                                          @Nullable Path file) {
         var tabbedPane = new JTabbedPane() {
             @Override
             public void setSelectedIndex(int index) {
@@ -108,8 +109,9 @@ class TagSetUI extends JPanel {
 
         tabbedPane.addTab("Tags", tagTableUi.getUIContainer());
         tabbedPane.addTab("Template", templateContainer);
-        createPreviewPane(file).ifPresent(
-                previewPane -> tabbedPane.addTab("Preview", previewPane));
+        createPreviewPane(file, fileStateMachine).ifPresentOrElse(
+                previewPane -> tabbedPane.addTab("Preview", previewPane),
+                () -> log.debug("Unable to preview image {}", file));
 
         return tabbedPane;
     }
@@ -121,8 +123,8 @@ class TagSetUI extends JPanel {
         });
     }
 
-    private static Optional<? extends Container> createPreviewPane(Path file) {
-        return Optional.of(file).flatMap(PreviewPane::of);
+    private static Optional<? extends Container> createPreviewPane(@Nullable Path file, @Nonnull FileStateMachine fileStateMachine) {
+        return Optional.of(file).flatMap((Path f) -> PreviewPane.of(f, fileStateMachine));
     }
 
 }

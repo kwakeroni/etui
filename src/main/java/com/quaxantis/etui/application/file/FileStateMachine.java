@@ -5,12 +5,16 @@ import com.quaxantis.etui.application.StateChangeListener;
 import com.quaxantis.etui.tag.TagRepository;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class FileStateMachine {
     private final FileOperations fileOperations;
     private final State<FileState> state = new State<>(FileState.noFile());
+    // TODO replace with 'before' StateChangeListener
+    private final Set<Runnable> closeFileHandles = new HashSet<>();
 
     public FileStateMachine(TagSetHandler handler, TagRepository tagRepository) {
         this.fileOperations = new FileOperations(handler, tagRepository);
@@ -31,6 +35,7 @@ public class FileStateMachine {
     }
 
     public void save(Predicate<String> confirmAction) {
+        this.closeFileHandles.forEach(Runnable::run);
         this.state.transition(fileState -> fileState.save(fileOperations, confirmAction));
     }
 
@@ -68,5 +73,13 @@ public class FileStateMachine {
 
     public void unregisterListener(StateChangeListener<? super FileState> listener) {
         state.unregisterListener(listener);
+    }
+
+    public void registerCloseFileHandle(Runnable runnable) {
+        this.closeFileHandles.add(runnable);
+    }
+
+    public void unRegisterCloseFileHandle(Runnable runnable) {
+        this.closeFileHandles.remove(runnable);
     }
 }

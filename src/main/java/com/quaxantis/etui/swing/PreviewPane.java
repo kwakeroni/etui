@@ -1,5 +1,8 @@
 package com.quaxantis.etui.swing;
 
+import com.pivovarit.function.ThrowingRunnable;
+import com.pivovarit.function.ThrowingSupplier;
+import com.quaxantis.etui.application.file.FileStateMachine;
 import com.quaxantis.support.swing.Dimensions;
 import com.quaxantis.support.swing.image.ImageZoomLabel;
 import com.quaxantis.support.swing.layout.SpringLayoutOrganizer;
@@ -36,10 +39,10 @@ public class PreviewPane extends JPanel implements Closeable {
         initializeUI(this, imageLabel, navigationBar);
     }
 
-    public static Optional<PreviewPane> of(Path file) {
+    public static Optional<PreviewPane> of(@Nonnull Path file, @Nonnull FileStateMachine fileStateMachine) {
         try {
             var imageLabel = new ImageZoomLabel();
-            return createNavigationBar(file, imageLabel)
+            return createNavigationBar(file, imageLabel, fileStateMachine)
                     .map(navigationBar -> new PreviewPane(imageLabel, navigationBar));
         } catch (Exception exc) {
             log.warn("Unable to preview image {}", file, exc);
@@ -47,22 +50,12 @@ public class PreviewPane extends JPanel implements Closeable {
         }
     }
 
-    private static Optional<NavigationBar> createNavigationBar(Path file, ImageZoomLabel imageLabel) throws IOException {
-        for (ImageReader reader : (Iterable<ImageReader>) () -> ImageIO.getImageReaders(file)) {
-            reader.setInput(file);
-            return Optional.of(new NavigationBar(null, reader, imageLabel::setImage));
-        }
+    private static Optional<NavigationBar> createNavigationBar(@Nonnull Path file, @Nonnull ImageZoomLabel imageLabel, @Nonnull FileStateMachine fileStateMachine) throws IOException {
 
-        var imageInputStream = ImageIO.createImageInputStream(file.toFile());
-        if (imageInputStream != null) {
-            for (ImageReader reader : (Iterable<ImageReader>) () -> ImageIO.getImageReaders(imageInputStream)) {
-                reader.setInput(imageInputStream);
-                return Optional.of(new NavigationBar(imageInputStream, reader, imageLabel::setImage));
-            }
-        }
+        ThrowingSupplier<Optional<ImageResource>, IOException> supplier = () -> ImageResource.imageResourceOf(file);
 
-        log.debug("Unable to preview image {}", file);
-        return Optional.empty();
+        return supplier.get()
+                .map(resource -> new NavigationBar(supplier, resource, fileStateMachine, imageLabel::setImage));
     }
 
     private static void initializeUI(Container container, ImageZoomLabel imageLabel, NavigationBar navigationBar) {
@@ -120,33 +113,91 @@ public class PreviewPane extends JPanel implements Closeable {
         }
     }
 
+    private static class ImageResource implements Closeable {
+        @Nullable
+        private final ImageInputStream imageInputStream;
+        @Nonnull
+        private final ImageReader imageReader;
+        private final int imageCount;
+
+        private ImageResource(@Nullable ImageInputStream imageInputStream, @Nonnull ImageReader imageReader) throws IOException {
+            this.imageInputStream = imageInputStream;
+            this.imageReader = Objects.requireNonNull(imageReader, "imageReader");
+            this.imageCount = this.imageReader.getNumImages(true);
+        }
+
+        static @Nonnull Optional<ImageResource> imageResourceOf(@Nonnull Path file) throws IOException {
+            for (ImageReader reader : (Iterable<ImageReader>) () -> ImageIO.getImageReaders(file)) {
+                reader.setInput(file);
+                return Optional.of(new ImageResource(null, reader));
+            }
+
+            var imageInputStream = ImageIO.createImageInputStream(file.toFile());
+            if (imageInputStream != null) {
+                for (ImageReader reader : (Iterable<ImageReader>) () -> ImageIO.getImageReaders(imageInputStream)) {
+                    reader.setInput(imageInputStream);
+                    return Optional.of(new ImageResource(imageInputStream, reader));
+                }
+            }
+
+            return Optional.empty();
+        }
+
+        @Override
+        public void close() throws IOException {
+            try (this.imageInputStream) {
+                this.imageReader.setInput(null);
+                this.imageReader.dispose();
+            }
+        }
+    }
+
     private static class NavigationBar extends JPanel implements Closeable {
         private static final int PAD = 5;
-        @Nullable
-        private ImageInputStream imageInputStream;
-        private ImageReader imageReader;
         @Nonnull
         private final Consumer<BufferedImage> onSelectedImage;
-        private int current;
-        @Nullable
-        private BufferedImage currentImage;
         private final int imageCount;
         private final JButton previous;
         private final JButton next;
         private final PageNumberField currentDisplay;
+        private final FileStateMachine fileStateMachine;
+        private final Runnable closeFileHandle = ThrowingRunnable.unchecked(this::close);
+        private final ThrowingSupplier<Optional<ImageResource>, IOException> imageResourceSupplier;
+        private ImageResource resource;
+        private int current;
+        @Nullable
+        private BufferedImage currentImage;
 
-        public NavigationBar(@Nullable ImageInputStream imageInputStream, @Nonnull ImageReader imageReader, @Nonnull Consumer<BufferedImage> onSelectedImage) throws IOException {
+        public NavigationBar(@Nonnull ThrowingSupplier<Optional<ImageResource>, IOException> imageResourceSupplier, @Nonnull ImageResource initialResource, @Nonnull FileStateMachine fileStateMachine, @Nonnull Consumer<BufferedImage> onSelectedImage) {
             super(new FlowLayout(FlowLayout.CENTER, PAD, PAD));
-            this.imageInputStream = imageInputStream;
-            this.imageReader = Objects.requireNonNull(imageReader, "imageReader");
+            this.fileStateMachine = fileStateMachine;
+            fileStateMachine.registerCloseFileHandle(this.closeFileHandle);
             this.onSelectedImage = Objects.requireNonNull(onSelectedImage, "onSelectedImage");
             this.current = 0;
-            this.imageCount = imageReader.getNumImages(true);
             this.previous = new JButton("◀");
             this.next = new JButton("▶");
+            this.imageResourceSupplier = imageResourceSupplier;
+            this.resource = initialResource;
+            this.imageCount = initialResource.imageCount;
             this.currentDisplay = new PageNumberField(0, this.imageCount);
             this.initUI();
             this.showImage(0);
+
+            if (this.imageCount == 1) {
+                try {
+                    this.close();
+                } catch (IOException ioe) {
+                    log.warn("Unable to discard PreviewPane resources", ioe);
+                }
+            }
+        }
+
+        private ImageReader imageReader() throws IOException {
+            if (this.resource == null) {
+                this.resource = imageResourceSupplier.get()
+                        .orElseThrow(() -> new IOException("Could not obtain ImageReader"));
+            }
+            return resource.imageReader;
         }
 
         private void initUI() {
@@ -182,7 +233,7 @@ public class PreviewPane extends JPanel implements Closeable {
             next.setEnabled(current < imageCount - 1);
             this.currentDisplay.setValue(this.current);
             try {
-                this.currentImage = this.imageReader.read(current);
+                this.currentImage = imageReader().read(current);
             } catch (IOException ioe) {
                 log.error("Unable to display image #{}", this.current + 1, ioe);
                 this.currentImage = null;
@@ -192,21 +243,13 @@ public class PreviewPane extends JPanel implements Closeable {
 
         @Override
         public void close() throws IOException {
-            var reader = this.imageReader;
-            var stream = this.imageInputStream;
-
             this.currentImage = null;
-            this.imageReader = null;
-            this.imageInputStream = null;
-
-            try (stream) {
-                if (reader != null) {
-                    reader.setInput(null);
-                    reader.dispose();
-                }
+            if (this.resource != null) {
+                this.resource.close();
+                this.resource = null;
             }
+            this.fileStateMachine.unRegisterCloseFileHandle(this.closeFileHandle);
         }
-
     }
 
     private static class PageNumberField extends JFormattedTextField {
