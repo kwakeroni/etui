@@ -15,6 +15,8 @@ public interface TemplateValues {
 
     void set(Template.Variable var, String value);
 
+    void set(Template.Variable var, Entry entry);
+
     interface Entry {
 
         Optional<String> value();

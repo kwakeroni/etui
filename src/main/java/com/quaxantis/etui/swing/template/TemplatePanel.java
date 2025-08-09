@@ -95,6 +95,10 @@ class TemplatePanel extends JPanel {
         this.trackedValuesMap.remove(this.currentTemplate);
     }
 
+    void analyzeUnspecifiedVariables() {
+        this.form.analyzeUnspecifiedVariables();
+    }
+
     private void updateTrackedChanges(Template template, UnaryOperator<TrackedValues> operator, Supplier<TrackedValues> supplier) {
         this.trackedValuesMap.compute(template, (_, trackedValues) -> {
             if (trackedValues == null) {

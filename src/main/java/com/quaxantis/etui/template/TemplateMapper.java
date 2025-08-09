@@ -7,6 +7,7 @@ import com.quaxantis.etui.Template.Variable;
 import com.quaxantis.etui.TemplateValues;
 import com.quaxantis.etui.template.expression.Binding;
 import com.quaxantis.etui.template.expression.ExpressionEvaluator;
+import com.quaxantis.support.util.StreamEntry;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,25 +29,35 @@ public class TemplateMapper {
     }
 
     public TemplateValues fromTags(TagSet tagSet) {
+        var specifiedValues = template.variables()
+                .stream()
+                .map(StreamEntry::of)
+                .map(StreamEntry.mappingKey(Variable::name))
+                .map(StreamEntry.mapping(
+                        (Variable variable) -> template.tags(variable)
+                                .stream()
+                                .map(tagSet::getTag)
+                                .flatMap(Optional::stream)
+                                .collect(TemplateValuesSupport.toTemplateValue())
+                                .orElse(null)))
+                .filter(StreamEntry::isNonNullValue)
+                .collect(Collectors.toMap(StreamEntry::getKey, StreamEntry::getValue));
+
+        return new TemplateValuesSupport(specifiedValues);
+    }
+
+    public Map<String, TemplateValues.Entry> analyzeUnspecifiedVariables(TemplateValues currentValues) {
         var specifiedValues = new HashMap<String, TemplateValues.Entry>();
         var unspecifiedVariables = new ArrayList<Variable>();
 
         for (Variable variable : template.variables()) {
-            Optional<TemplateValues.Entry> optEntry = template.tags(variable)
-                    .stream()
-                    .map(tagSet::getTag)
-                    .flatMap(Optional::stream)
-                    .collect(TemplateValuesSupport.toTemplateValue());
-            optEntry.ifPresentOrElse(entry -> specifiedValues.put(variable.name(), entry),
+            currentValues.get(variable)
+                    .filter(entry -> entry.value().map(s -> !s.isEmpty()).orElse(false))
+                    .ifPresentOrElse(entry -> specifiedValues.put(variable.name(), entry),
                                      () -> unspecifiedVariables.add(variable));
         }
 
-        var unspecifiedValues = analyzeUnspecifiedVariables(unspecifiedVariables, specifiedValues);
-        var result = new HashMap<String, TemplateValues.Entry>();
-        result.putAll(unspecifiedValues);
-        result.putAll(specifiedValues);
-
-        return new TemplateValuesSupport(result);
+        return analyzeUnspecifiedVariables(unspecifiedVariables, specifiedValues);
     }
 
     private Map<String, TemplateValues.Entry> analyzeUnspecifiedVariables(Collection<Variable> variables, Map<String, TemplateValues.Entry> specifiedVariables) {
@@ -66,7 +77,7 @@ public class TemplateMapper {
                 .map(variable -> Map.entry(variable.name(),
                                            analyzeUnspecifiedVariable(variable, bindings)
                                                    .orElseGet(() -> TemplateValues.Entry.of(""))))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private Optional<TemplateValues.Entry> analyzeUnspecifiedVariable(Variable variable, Collection<Binding> bindings) {

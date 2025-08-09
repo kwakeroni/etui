@@ -126,7 +126,7 @@ public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
         return template.variables().stream().collect(
                 collectingAndThen(
                         toMap(identity(),
-                              var -> field(var, expressionEvaluator),
+                              var -> field(template, var, expressionEvaluator),
                               uniqueKeysMerger(),
                               LinkedHashMap::new),
                         Collections::unmodifiableSequencedMap
@@ -134,31 +134,41 @@ public class TemplateForm extends AbstractForm<TemplateValues, TemplateForm> {
 
     }
 
-    private static FormField<TemplateValues, TemplateValues.Entry> field(Variable variable, Function<Variable, Optional<String>> expressionEvaluator) {
-        Function<TemplateValues, TemplateValues.Entry> getter = values -> values.get(variable).orElse(null);
+    private static FormField<TemplateValues, TemplateValues.Entry> field(Template template, Variable variable, Function<Variable, Optional<String>> expressionEvaluator) {
+        Function<TemplateValues, TemplateValues.Entry> getter = values -> values.get(variable).orElse(TemplateValues.Entry.EMPTY);
         BiConsumer<TemplateValues, TemplateValues.Entry> setter = (values, entry) -> values.set(variable, entry.value().orElse(null));
         Supplier<Optional<String>> expressionValue = () -> expressionEvaluator.apply(variable);
 
         String label = HasLabel.labelOf(variable, () -> StringUtils.capitalize(variable.name())) + (variable.hasExpression()? "°" : "");
-        return field(variable.name(), getter, setter, expressionValue)
+        return field(template, variable, getter, setter, expressionValue)
                 .withSource(variable)
                 .withLabel(label)
                 .build();
     }
 
     private static <T> FormField.Builder<T, TemplateValues.Entry> field(
-            String variableName,
+            Template template,
+            Variable variable,
             Function<T, TemplateValues.Entry> getter,
             BiConsumer<T, TemplateValues.Entry> setter,
             Supplier<Optional<String>> expressionValue) {
         return FormField.builder()
-                .withComponentBinding(fieldInput(variableName, expressionValue), getter, setter);
+                .withComponentBinding(fieldInput(template, variable, expressionValue), getter, setter);
     }
 
-    private static FormFieldInput<?, TemplateValues.Entry> fieldInput(String variableName, Supplier<Optional<String>> expressionValue) {
-        return new TemplateFormFieldInput(variableName, expressionValue, FormFieldInput.ofTextField());
+    private static FormFieldInput<?, TemplateValues.Entry> fieldInput(Template template, Variable variable, Supplier<Optional<String>> expressionValue) {
+        return new TemplateFormFieldInput(template, variable, expressionValue, FormFieldInput.ofTextField());
     }
 
+    // ANALYZE
+    public void analyzeUnspecifiedVariables() {
+        TemplateValues values = getData();
+        this.mapper.analyzeUnspecifiedVariables(values)
+                .forEach((variable, entry) -> values.set(template.variableByName(variable).orElseThrow(), entry));
+        setData(values);
+    }
+
+    // TRY
 
     public static void main() {
         QuickJFrame.of(repositoryForm())

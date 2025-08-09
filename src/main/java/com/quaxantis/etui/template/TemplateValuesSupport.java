@@ -1,6 +1,7 @@
 package com.quaxantis.etui.template;
 
 import com.quaxantis.etui.TagValue;
+import com.quaxantis.etui.Template.Variable;
 import com.quaxantis.etui.TemplateValues;
 import com.quaxantis.support.util.MoreCollectors;
 
@@ -31,17 +32,18 @@ class TemplateValuesSupport implements TemplateValues {
 
 
     @Override
-    public void set(com.quaxantis.etui.Template.Variable var, String value) {
+    public void set(Variable var, String value) {
         Entry valueObj = get(var).orElse(Entry.EMPTY);
         set(var, valueObj.withValue(value));
     }
 
-    public void set(com.quaxantis.etui.Template.Variable var, Entry value) {
+    @Override
+    public void set(Variable var, Entry value) {
         values.put(var.name(), value);
     }
 
     @Override
-    public Optional<Entry> get(com.quaxantis.etui.Template.Variable var) {
+    public Optional<Entry> get(Variable var) {
         return Optional.ofNullable(values.get(var.name()));
     }
 

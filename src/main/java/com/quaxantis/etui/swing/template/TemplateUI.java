@@ -158,6 +158,8 @@ public class TemplateUI {
         reset.addActionListener(_ -> templatePanel.resetForm());
         JButton clear = new JButton("Clear");
         clear.addActionListener(_ -> templatePanel.clearForm());
+        JButton analyze = new JButton("Analyze missing variables");
+        analyze.addActionListener(_ -> templatePanel.analyzeUnspecifiedVariables());
 
         JPanel panel = new JPanel();
         var organizer = SpringLayoutOrganizer.organize(panel).setDefaultPadding(PAD);
@@ -168,6 +170,7 @@ public class TemplateUI {
 
         organizer.add(reset).atSameTopAs(actionButton).atLeftSide();
         organizer.add(clear).atSameTopAs(actionButton).rightOf(reset);
+        organizer.add(analyze).atSameTopAs(actionButton).rightOf(clear);
 
         panel.setMaximumSize(panel.getPreferredSize());
         return panel;

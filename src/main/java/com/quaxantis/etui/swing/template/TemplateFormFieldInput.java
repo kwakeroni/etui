@@ -1,11 +1,13 @@
 package com.quaxantis.etui.swing.template;
 
+import com.quaxantis.etui.Template;
 import com.quaxantis.etui.TemplateValues;
 import com.quaxantis.support.swing.Dimensions;
 import com.quaxantis.support.swing.form.FormFieldInput;
 import com.quaxantis.support.swing.form.InfoMarker;
 import com.quaxantis.support.swing.form.WrappedFormFieldInput;
 import com.quaxantis.support.swing.layout.SpringLayoutOrganizer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,12 +27,14 @@ class TemplateFormFieldInput extends WrappedFormFieldInput<JComponent, com.quaxa
     private final Logger log = LoggerFactory.getLogger(TemplateFormFieldInput.class);
 
     private final InfoMarker marker;
-    private final String variableName;
+    private final Template template;
+    private final Template.Variable variable;
     private final Supplier<Optional<String>> expression;
     private boolean isDirty;
 
-    public TemplateFormFieldInput(String variableName, Supplier<Optional<String>> expression, FormFieldInput<?, String> inputDelegate) {
-        this(variableName,
+    public TemplateFormFieldInput(Template template, Template.Variable variable, Supplier<Optional<String>> expression, FormFieldInput<?, String> inputDelegate) {
+        this(template,
+             variable,
              expression,
              inputDelegate,
              new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0)),
@@ -38,9 +42,10 @@ class TemplateFormFieldInput extends WrappedFormFieldInput<JComponent, com.quaxa
         );
     }
 
-    private TemplateFormFieldInput(String variableName, Supplier<Optional<String>> expression, FormFieldInput<?, String> inputDelegate, JPanel panel, InfoMarker marker) {
-        super(panel, entry -> entry.value().orElse(""), inputDelegate, (entry1, newValue) -> entryWithValue(entry1, newValue));
-        this.variableName = variableName;
+    private TemplateFormFieldInput(Template template, Template.Variable variable, Supplier<Optional<String>> expression, FormFieldInput<?, String> inputDelegate, JPanel panel, InfoMarker marker) {
+        super(panel, entry -> entry.value().orElse(""), inputDelegate, TemplateFormFieldInput::entryWithValue);
+        this.template = template;
+        this.variable = variable;
         this.marker = marker;
         this.expression = expression;
 
@@ -75,26 +80,40 @@ class TemplateFormFieldInput extends WrappedFormFieldInput<JComponent, com.quaxa
                 .distinct()
                 .count();
 
+        String entryValue = entry.value().orElse(null);
+
         if (sourceValues > 1) {
-            String message = entry.sources().stream()
-                    .map(v -> "%s : %s".formatted(v.name(), v.value()))
-                    .collect(Collectors.joining(
-                            "</li><li>",
-                            "Source is inconsistent with template. Multiple values for variable '%s':<ul><li>".formatted(variableName),
-                            "</li></ul>"));
-            showMarker(message, WARNING);
-            isDirty = true;
+            showMarkerForMultipleSourceValues(variable.name(), entry);
         } else {
-            String expressionValue = expression.get().orElse(null);
-            if (expressionValue == null || entry.value().filter(expressionValue::equals).isPresent()) {
-                entry.info().ifPresentOrElse(message -> showMarker(message, INFO), () -> hideMarker());
+            if (expression.get().orElse(null) instanceof String expressionValue
+                && (!expressionValue.equals(entryValue))) {
+                showMarkerForInconsistentExpressionValue(expressionValue);
+            } else if (entry.info().orElse(null) instanceof String entryInfo) {
+                showMarker(entryInfo, INFO);
+            } else if (StringUtils.isEmpty(entryValue) && template.tags(variable).isEmpty()) {
+                showMarker("Variable has no source tags. Analyze to find possible values", WARNING);
             } else {
-                String message = "Source is inconsistent with expression for variable '%s'. Expected: '%s'"
-                        .formatted(variableName, expressionValue);
-                showMarker(message, WARNING);
-                isDirty = true;
+                hideMarker();
             }
         }
+    }
+
+    private void showMarkerForMultipleSourceValues(String variableName, TemplateValues.Entry entry) {
+        String message = entry.sources().stream()
+                .map(v -> "%s : %s".formatted(v.name(), v.value()))
+                .collect(Collectors.joining(
+                        "</li><li>",
+                        "Source is inconsistent with template. Multiple values for variable '%s':<ul><li>".formatted(variableName),
+                        "</li></ul>"));
+        showMarker(message, WARNING);
+        isDirty = true;
+    }
+
+    private void showMarkerForInconsistentExpressionValue(String expressionValue) {
+        String message = "Source is inconsistent with expression for variable '%s'. Expected: '%s'"
+                .formatted(variable.name(), expressionValue);
+        showMarker(message, WARNING);
+        isDirty = true;
     }
 
     private void showMarker(String message, InfoMarker.Type type) {
@@ -105,6 +124,7 @@ class TemplateFormFieldInput extends WrappedFormFieldInput<JComponent, com.quaxa
         marker.setType(type);
         marker.setPreferredSize(null);
         marker.setToolTipAsHtml(message);
+        marker.repaint();
         marker.setVisible(true);
         log.warn(message);
     }
