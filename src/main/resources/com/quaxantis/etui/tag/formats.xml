@@ -86,8 +86,6 @@
             <tag name="CreateDate" />
             <tag name="ModDate" />
             <tag name="Parameters" />
-
-
             <tag name="FileName" readonly="true" />
             <tag name="Directory" readonly="true" />
             <tag name="FileSize" readonly="true" />
@@ -98,6 +96,16 @@
             <tag name="FileType" readonly="true" />
             <tag name="FileTypeExtension" readonly="true" />
             <tag name="MIMEType" readonly="true" />
+            <tag name="Palette" readonly="true"/>
+            <tag name="BackgroundColor" readonly="true"/>
+            <tag name="WhitePointX" readonly="true"/>
+            <tag name="WhitePointY" readonly="true"/>
+            <tag name="RedX" readonly="true"/>
+            <tag name="RedY" readonly="true"/>
+            <tag name="GreenX" readonly="true"/>
+            <tag name="GreenY" readonly="true"/>
+            <tag name="BlueX" readonly="true"/>
+            <tag name="BlueY" readonly="true"/>
         </tags>
     </family>
     <family name="jpeg" group="JFIF">
