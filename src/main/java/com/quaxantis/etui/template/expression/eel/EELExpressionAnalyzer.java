@@ -40,7 +40,9 @@ class EELExpressionAnalyzer {
 
         // Try again with lesser strict filter if no results are found
         for (int i = 0; matches.isEmpty() && i < FILTERS.size(); i++) {
+            log.info("Expression analyzer iteration " + i);
             matches = doMatch(fullExpr, string, rootMatch, FILTERS.get(i));
+            System.gc();
         }
 
         return matches;

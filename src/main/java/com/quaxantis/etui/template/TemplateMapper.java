@@ -73,11 +73,15 @@ public class TemplateMapper {
                 .flatMap(Collection::stream)
                 .toList();
 
-        return variables.stream()
+        Map<String, TemplateValues.Entry> result = variables.stream()
                 .map(variable -> Map.entry(variable.name(),
                                            analyzeUnspecifiedVariable(variable, bindings)
                                                    .orElseGet(() -> TemplateValues.Entry.of(""))))
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        System.gc();
+
+        return result;
     }
 
     private Optional<TemplateValues.Entry> analyzeUnspecifiedVariable(Variable variable, Collection<Binding> bindings) {

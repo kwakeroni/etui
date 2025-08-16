@@ -4,9 +4,9 @@ import com.quaxantis.etui.TagSet;
 import com.quaxantis.etui.application.ExiftoolUI;
 import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.application.file.FileStateMachine;
+import com.quaxantis.etui.swing.actions.FileActions;
 import com.quaxantis.etui.swing.actions.ViewActions;
 import com.quaxantis.etui.swing.menu.ExiftoolMenu;
-import com.quaxantis.etui.swing.actions.FileActions;
 import com.quaxantis.etui.swing.table.TagTableUI;
 import com.quaxantis.etui.tag.TagRepository;
 import com.quaxantis.etui.template.TemplateRepository;
@@ -62,12 +62,14 @@ public class ExiftoolSwingUI implements ExiftoolUI {
     public void loadTagSet(Path path, TagSet tagSet) {
         setFrameTitleFile(path);
         this.tagSetUI.setTagSet(tagSet, path);
+        System.gc();
     }
 
     @Override
     public void closeCurrentTagSet() {
         setFrameTitleFile(null);
         this.tagSetUI.clear();
+        System.gc();
     }
 
     @Override
