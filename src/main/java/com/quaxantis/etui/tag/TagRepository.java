@@ -35,6 +35,7 @@ public class TagRepository {
     private static final List<String> STANDARD_COLLECTIONS = List.of(
             "dublin-core.xml",
             "creative-commons.xml",
+            "iptc.xml",
             "prism.xml",
             "xmp.xml",
             "formats.xml",

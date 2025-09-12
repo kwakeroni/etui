@@ -1,0 +1,2687 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag-collection xmlns="https://quaxantis.com/etui/tags" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="https://quaxantis.com/etui/tags tag-collection.xsd">
+    <collection>Standards / IPTC</collection>
+    <family name="IptcCore" group="XMP">
+        <label>IPTC Core Schema</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-core-schema-1-5-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos,
+            because of its universal acceptance among news agencies, photographers, photo agencies, libraries, museums,
+            and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard) as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+        </description>
+        <tags>
+            <tag name="AltTextAccessibility">
+                <!-- qualified-id : Iptc4xmpCore:AltTextAccessibility -->
+                <label>Alt Text (Accessibility)</label>
+                <description>
+                    Enter text describing the appearance of the image from a visual perspective,
+                    focusing on details that are relevant to the purpose and meaning of the image
+
+                    This property should not be confused with the IPTC property Headline,
+                    which is a brief synopsis or summary of the contents of the image.
+                    This property is required for conformance with the W3C Web Content Accessibility Guidelines (WCAG).
+                </description>
+            </tag>
+            <tag name="City">
+                <!-- qualified-id : photoshop:City -->
+                <label>City (Deprecated)</label>
+                <description>
+                    Enter the name of the city pictured in this image.
+
+                    This is a detail of a location with blurred semantics as it does not clearly indicate
+                    whether it is the location in the image or the location the photo was taken - which can be
+                    different.
+                    Two more concise properties are available in IPTC Extension
+                    with &quot;Location Created&quot; and &quot;Location Shown in the Image&quot;.
+                </description>
+            </tag>
+            <tag name="rights">
+                <!-- qualified-id : dc:rights -->
+                <label>Copyright Notice</label>
+                <description>
+                    Enter a Notice on the current owner of the Copyright for this image, such as ©2008 Jane Doe.
+
+                    Copyright ownership can be expressed in a more controlled way using the PLUS fields
+                    &quot;Copyright Owner&quot;, &quot;Copyright Owner ID&quot;, &quot;Copyright Owner Name&quot; of the
+                    IPTC Extension.
+                    It is the user&apos;s responsibility to keep the values of the four fields in sync.
+
+                    &lt;strong&gt;Dublin Core description&lt;/strong&gt;
+
+                    Information about rights held in and over the resource.
+                    Typically, rights information includes a statement about various property rights associated with the
+                    resource,
+                    including intellectual property rights.
+
+                    Recommended practice is to refer to a rights statement with a URI.
+                    If this is not possible or feasible, a literal entry (name, label, or short text) may be provided.
+                </description>
+            </tag>
+            <tag name="Country">
+                <!-- qualified-id : photoshop:Country -->
+                <label>Country (Deprecated)</label>
+                <description>
+                    Enter the name of the country pictured in this image.
+
+                    This is a detail of a location with blurred semantics as it does not clearly indicate
+                    whether it is the location in the image or the location the photo was taken - which can be
+                    different.
+                    Two more concise properties are available in IPTC Extension
+                    with &quot;Location Created&quot; and &quot;Location Shown in the Image&quot;.
+                </description>
+            </tag>
+            <tag name="CountryCode">
+                <!-- qualified-id : Iptc4xmpCore:CountryCode -->
+                <label>ISO Country Code (Deprecated)</label>
+                <description>
+                    Enter the 2 or 3 letter ISO 3166 Country Code of the Country pictured in this image.
+
+                    This is a detail of a location with blurred semantics as it does not clearly indicate
+                    whether it is the location in the image or the location the photo was taken - which can be
+                    different.
+                    Two more concise properties are available in IPTC Extension with Location Created and Location Shown
+                    in the Image.
+                </description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="creator">
+                <!-- qualified-id : dc:creator -->
+                <label>Creator</label>
+                <description>
+                    Enter the name of the person that created this image.
+
+                    The creator can be expressed in a more controlled way using the &quot;Image Creator&quot; of PLUS in
+                    the IPTC Extension additionally.
+                    It is the user&apos;s responsibility to keep the values of the IPTC Core and the PLUS fields in
+                    sync.
+
+                    &lt;strong&gt;Dublin Core description&lt;/strong&gt;
+
+                    An entity responsible for making the resource.
+
+                    Recommended practice is to identify the creator with a URI.
+                    If this is not possible or feasible, a literal entry that identifies the creator may be provided.
+                </description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="CreatorAddress">
+                <!-- qualified-id : Iptc4xmpCore:CreatorContactInfo.Iptc4xmpCore:CiAdrExtadr -->
+                <label>Contact Info Address</label>
+                <description>
+                    Enter Address for the person that created this image.
+
+                    The IPTC Extension Licensor fields should be used
+                    instead of these Creator&apos;s Contact Info fields if you are using IPTC Extension fields.
+                    If the creator is also the licensor his or her contact information should be provided in the
+                    Licensor fields.
+                </description>
+            </tag>
+            <tag name="CreatorCity">
+                <!-- qualified-id : Iptc4xmpCore:CreatorContactInfo.Iptc4xmpCore:CiAdrCity -->
+                <label>Contact Info City</label>
+                <description>
+                    Enter the City for the address of the person that created this image.
+
+                    The IPTC Extension Licensor fields should be used
+                    instead of these Creator&apos;s Contact Info fields if you are using IPTC Extension fields.
+                    If the creator is also the licensor his or her contact information should be provided in the
+                    Licensor fields.
+                </description>
+            </tag>
+            <tag name="CreatorCountry">
+                <!-- qualified-id : Iptc4xmpCore:CreatorContactInfo.Iptc4xmpCore:CiAdrCtry -->
+                <label>Contact Info Country</label>
+                <description>
+                    Enter the Country name for the address of the person that created this image
+
+                    The IPTC Extension Licensor fields should be used
+                    instead of these Creator&apos;s Contact Info fields if you are using IPTC Extension fields.
+                    If the creator is also the licensor his or her contact information should be provided in the
+                    Licensor fields.
+                </description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="CreatorWorkEmail">
+                <!-- qualified-id : Iptc4xmpCore:CreatorContactInfo.Iptc4xmpCore:CiEmailWork -->
+                <label>Contact Info Email(s)</label>
+                <description>
+                    Enter the work Email address(es) for the person that created this image, such as name@domain.com.
+
+                    The IPTC Extension Licensor fields should be used
+                    instead of these Creator&apos;s Contact Info fields if you are using IPTC Extension fields.
+                    If the creator is also the licensor his or her contact information should be provided in the
+                    Licensor fields.
+
+                    Multiple email addresses can be given. May have to be separated by a comma in the user interface.
+                </description>
+            </tag>
+            <tag name="CreatorWorkTelephone">
+                <!-- qualified-id : Iptc4xmpCore:CreatorContactInfo.Iptc4xmpCore:CiTelWork -->
+                <label>Contact Info Phone(s)</label>
+                <description>
+                    Enter the work Phone number(s) for the person that created this image, using the international
+                    format, such as +1 (123) 456789
+
+                    The IPTC Extension Licensor fields should be used
+                    instead of these Creator&apos;s Contact Info fields if you are using IPTC Extension fields.
+                    If the creator is also the licensor his or her contact information should be provided in the
+                    Licensor fields.
+
+                    Multiple numbers can be given. May have to be separated by a comma in the user interface.
+                </description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="CreatorPostalCode">
+                <!-- qualified-id : Iptc4xmpCore:CreatorContactInfo.Iptc4xmpCore:CiAdrPcode -->
+                <label>Contact Info Postal Code</label>
+                <description>
+                    Enter the Postal Code for the address of the person that created this image.
+
+                    The IPTC Extension Licensor fields should be used
+                    instead of these Creator&apos;s Contact Info fields if you are using IPTC Extension fields.
+                    If the creator is also the licensor his or her contact information should be provided in the
+                    Licensor fields.
+                </description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="CreatorRegion">
+                <!-- qualified-id : Iptc4xmpCore:CreatorContactInfo.Iptc4xmpCore:CiAdrRegion -->
+                <label>Contact Info State/Province</label>
+                <description>
+                    Enter the State for the address of the person that created this image
+
+                    The IPTC Extension Licensor fields should be used
+                    instead of these Creator&apos;s Contact Info fields if you are using IPTC Extension fields.
+                    If the creator is also the licensor his or her contact information should be provided in the
+                    Licensor fields.
+                </description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="CreatorWorkURL">
+                <!-- qualified-id : Iptc4xmpCore:CreatorContactInfo.Iptc4xmpCore:CiUrlWork -->
+                <label>Contact Info Web URL(s)</label>
+                <description>
+                    Enter the work Web URL(s) for the person that created this image, such as http://www.domain.com/
+
+                    The IPTC Extension Licensor fields should be used
+                    instead of these Creator&apos;s Contact Info fields if you are using IPTC Extension fields.
+                    If the creator is also the licensor his or her contact information should be provided in the
+                    Licensor fields.
+
+                    Multiple URL can be given. May have to be separated by a comma in the user interface.
+                </description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="AuthorsPosition">
+                <!-- qualified-id : photoshop:AuthorsPosition -->
+                <label>Creator&apos;s Jobtitle</label>
+                <description>Enter the Job Title of the person listed in the Creator field</description>
+            </tag>
+            <tag name="Credit">
+                <!-- qualified-id : photoshop:Credit -->
+                <label>Credit Line</label>
+                <description>
+                    Enter who should be credited when this image is published.
+
+                    Note 1: For more formal identifications of the creator or the owner of the copyrights
+                    of this image other rights properties may be used.
+
+
+                    Note 2: This property was named &quot;Credit&quot; by the IIM metadata, then it was renamed to
+                    &quot;Provider&quot; in IPTC Core 1.0.
+                    In IPTC Core 1.1. it has been renamed to &quot;Credit Line&quot; as the field is used for this
+                    purpose by many users.
+                </description>
+            </tag>
+            <tag name="DateCreated">
+                <!-- qualified-id : photoshop:DateCreated -->
+                <label>Date Created</label>
+                <description>Enter the Date the image was taken</description>
+                <format>
+                    <description>Date</description>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-07-14</example><!-- date according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="description">
+                <!-- qualified-id : dc:description -->
+                <label>Caption/Description</label>
+                <description>
+                    Enter a &quot;caption&quot; describing the who, what, and why of what is happening in this image,
+                    this might include names of people, and/or their role in the action that is taking place within the
+                    image
+
+                    &lt;strong&gt;Dublin Core description&lt;/strong&gt;
+
+                    An account of the resource.
+                    Description may include but is not limited to:
+                    an abstract, a table of contents, a graphical representation, or a free-text account of the
+                    resource.
+                </description>
+            </tag>
+            <tag name="CaptionWriter">
+                <!-- qualified-id : photoshop:CaptionWriter -->
+                <label>Caption/Description writer</label>
+                <description>
+                    Enter the name of the person(s) involved in writing, editing or correcting the Description,
+                    Alt Text (Accessibility), or Extended Description (Accessibility) of the image, separated by commas
+
+                    Multiple description writers can be given. May have to be separated by a comma in the user
+                    interface.
+                </description>
+            </tag>
+            <tag name="ExtDescrAccessibility">
+                <!-- qualified-id : Iptc4xmpCore:ExtDescrAccessibility -->
+                <label>Extended Description (Accessibility)</label>
+                <description>
+                    Enter the text describing the appearance of an image from a visual perspective,
+                    focusing on relevant details that further describe the meaning and purpose of the image
+
+                    This property should not be confused with the IPTC property Description/Caption,
+                    which is the who, what, when, where, why, how of an image.
+                    This property can be combined with Alt Text (Accessibility)
+                    if and when a brief description is not sufficient to convey the purpose and meaning of an image.
+                    It should not repeat the information in the Alt Text (Accessibility) property.
+                    It is required for conformance with the W3C Web Content Accessibility Guidelines (WCAG).
+                </description>
+            </tag>
+            <tag name="Headline">
+                <!-- qualified-id : photoshop:Headline -->
+                <label>Headline</label>
+                <description>Enter a brief publishable synopsis or summary of the contents of the image</description>
+            </tag>
+            <tag name="Instructions">
+                <!-- qualified-id : photoshop:Instructions -->
+                <label>Instructions</label>
+                <description>
+                    Enter information about embargoes, or other restrictions not covered by the Rights Usage field
+
+                    The Instructions may include any of the following:
+                    &lt;ul&gt;
+                    &lt;li&gt;embargoes (NewsMagazines OUT) and other restrictions not covered by the &amp;quot;Rights
+                    Usage Terms&amp;quot; field;&lt;/li&gt;
+                    &lt;li&gt;information regarding the original means of capture (scanning notes, colourspace info)
+                    or other specific text information that the user may need for accurate reproduction;&lt;/li&gt;
+                    &lt;li&gt;additional permissions required when publishing;&lt;/li&gt;
+                    &lt;li&gt;credits for publishing if they exceed the IIM length of the credit field&lt;/li&gt;
+                    &lt;/ul&gt;
+                </description>
+            </tag>
+            <tag name="IntellectualGenre">
+                <!-- qualified-id : Iptc4xmpCore:IntellectualGenre -->
+                <label>Intellectual genre</label>
+                <description>
+                    Enter a term to describe the nature of the image in terms of its intellectual or journalistic
+                    characteristics.
+
+                    Note on &quot;legacy&quot;: the Intellectual Genre can be expressed in a more controlled way
+                    using the &quot;Genre&quot; property of the IPTC Extension, IPTC recommends using it.
+                </description>
+            </tag>
+            <tag name="TransmissionReference">
+                <!-- qualified-id : photoshop:TransmissionReference -->
+                <label>Job Identifier</label>
+                <description>Enter a number or identifier needed for workflow control or tracking</description>
+            </tag>
+            <tag name="subject">
+                <!-- qualified-id : dc:subject -->
+                <label>Keywords</label>
+                <description>
+                    Enter any number of keywords, terms or phrases to express the subject and other aspects of the
+                    content of the image.
+
+                    &lt;strong&gt;Dublin Core description&lt;/strong&gt;
+
+                    A topic of the resource.
+
+                    Recommended practice is to refer to the subject with a URI.
+                    If this is not possible or feasible, a literal entry that identifies the subject may be provided.
+                    Both should preferably refer to a subject in a controlled vocabulary.
+                </description>
+            </tag>
+            <tag name="State">
+                <!-- qualified-id : photoshop:State -->
+                <label>Province/State (Deprecated)</label>
+                <description>
+                    Enter the name of the province or state pictured in this image
+
+                    This is a detail of a location with blurred semantics as it does not clearly indicate
+                    whether it is the location in the image or the location the photo was taken - which can be
+                    different.
+                    Two more concise properties are available in IPTC Extension with
+                    &quot;Location Created&quot; and &quot;Location Shown in the Image&quot;.
+                </description>
+            </tag>
+            <tag name="UsageTerms">
+                <!-- qualified-id : xmpRights:UsageTerms -->
+                <label>Rights Usage Terms (XMPRights)</label>
+                <description>
+                    Enter instructions on how this image can legally be used
+
+                    Rights and licensing related properties of the IPTC Extension can be used in parallel to express the
+                    licensed usage in more controlled terms.
+                </description>
+            </tag>
+            <tag name="Scene">
+                <!-- qualified-id : Iptc4xmpCore:Scene -->
+                <label>IPTC Scene Code</label>
+                <description>
+                    Enter only the 6-digit codes from the IPTC Scene NewsCodes Controlled Vocabulary
+                    (see: &lt;a href=&quot;http://cv.iptc.org/newscodes/scene&quot;&gt;http://cv.iptc.org/newscodes/scene&lt;/a&gt;)
+                </description>
+                <format>
+                    <examples>
+                        <example value="010100">&lt;strong&gt;headshot : &lt;/strong&gt;A head only view of a person (or
+                            animal/s) or persons as in a montage.
+                        </example>
+                        <example value="010200">&lt;strong&gt;half-length : &lt;/strong&gt;A torso and head view of a
+                            person or persons.
+                        </example>
+                        <example value="010300">&lt;strong&gt;full-length : &lt;/strong&gt;A view from head to toe of a
+                            person or persons
+                        </example>
+                        <example value="010400">&lt;strong&gt;profile : &lt;/strong&gt;A view of a person from the
+                            side
+                        </example>
+                        <example value="010500">&lt;strong&gt;rear view : &lt;/strong&gt;A view of a person or persons
+                            from the rear.
+                        </example>
+                        <example value="010600">&lt;strong&gt;single : &lt;/strong&gt;A view of only one person, object
+                            or animal.
+                        </example>
+                        <example value="010700">&lt;strong&gt;couple : &lt;/strong&gt;A view of two people who are in a
+                            personal relationship, for example engaged, married or in a romantic partnership.
+                        </example>
+                        <example value="010800">&lt;strong&gt;two : &lt;/strong&gt;A view of two people</example>
+                        <example value="010900">&lt;strong&gt;group : &lt;/strong&gt;A view of more than two people
+                        </example>
+                        <example value="011000">&lt;strong&gt;general view : &lt;/strong&gt;An overall view of the
+                            subject and its surrounds
+                        </example>
+                        <example value="011100">&lt;strong&gt;panoramic view : &lt;/strong&gt;A panoramic or wide angle
+                            view of a subject and its surrounds
+                        </example>
+                        <example value="011200">&lt;strong&gt;aerial view : &lt;/strong&gt;A view taken from above
+                        </example>
+                        <example value="011300">&lt;strong&gt;under-water : &lt;/strong&gt;A photo taken under water
+                        </example>
+                        <example value="011400">&lt;strong&gt;night scene : &lt;/strong&gt;A photo taken during
+                            darkness
+                        </example>
+                        <example value="011500">&lt;strong&gt;satellite : &lt;/strong&gt;A photo taken from a satellite
+                            in orbit
+                        </example>
+                        <example value="011600">&lt;strong&gt;exterior view : &lt;/strong&gt;A photo that shows the
+                            exterior of a building or other object
+                        </example>
+                        <example value="011700">&lt;strong&gt;interior view : &lt;/strong&gt;A scene or view of the
+                            interior of a building or other object
+                        </example>
+                        <example value="011800">&lt;strong&gt;close-up : &lt;/strong&gt;A view of, or part of a
+                            person/object taken at close range in order to emphasize detail or accentuate mood. Macro
+                            photography.
+                        </example>
+                        <example value="011900">&lt;strong&gt;action : &lt;/strong&gt;Subject in motion such as children
+                            jumping, horse running
+                        </example>
+                        <example value="012000">&lt;strong&gt;performing : &lt;/strong&gt;Subject or subjects on a stage
+                            performing to an audience
+                        </example>
+                        <example value="012100">&lt;strong&gt;posing : &lt;/strong&gt;Subject or subjects posing such as
+                            a "victory" pose or other stance that symbolizes leadership.
+                        </example>
+                        <example value="012200">&lt;strong&gt;symbolic : &lt;/strong&gt;A posed picture symbolizing an
+                            event - two rings for marriage
+                        </example>
+                        <example value="012300">&lt;strong&gt;off-beat : &lt;/strong&gt;An attractive, perhaps fun
+                            picture of everyday events - dog with sunglasses, people cooling off in the fountain
+                        </example>
+                        <example value="012400">&lt;strong&gt;movie scene : &lt;/strong&gt;Photos taken during the
+                            shooting of a movie or TV production.
+                        </example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="Source">
+                <!-- qualified-id : photoshop:Source -->
+                <label>Source (Supply Chain)</label>
+                <description>
+                    Enter or edit the name of a person or party who has a role in the content supply chain,
+                    such as a person or entity from whom you received this image from
+                </description>
+            </tag>
+            <tag name="SubjectCode">
+                <!-- qualified-id : Iptc4xmpCore:SubjectCode -->
+                <label>IPTC Subject Code (Deprecated)</label>
+                <description>
+                    Enter only the 8-digit codes from the IPTC Subject NewsCode Controlled Vocabulary
+                    (see: &lt;a href=&quot;http://cv.iptc.org/newscodes/subjectcode&quot;&gt;http://cv.iptc.org/newscodes/subjectcode&lt;/a&gt;)
+
+                    Note on &quot;legacy&quot;: The Subject Codes were retired by IPTC before 2010.
+                    For the classification of images use the IPTC Media Topics vocabulary now,
+                    see: http://cv.iptc.org/newscodes/mediatopic For the Media Topics
+                    the CV Term About Image property must be used.
+                </description>
+                <format>
+                    <examples>
+
+                    </examples>
+                </format>
+            </tag>
+            <tag name="Location">
+                <!-- qualified-id : Iptc4xmpCore:Location -->
+                <label>Sublocation (Deprecated)</label>
+                <description>
+                    Enter the name of the Sublocation pictured in this image
+
+                    This is a detail of a location with blurred semantics as it does not clearly indicate
+                    whether it is the location in the image or the location the photo was taken - which can be
+                    different.
+                    Two more concise properties are available in IPTC Extension with
+                    &quot;Location Created&quot; and &quot;Location Shown in the Image&quot;.
+                </description>
+            </tag>
+            <tag name="title">
+                <!-- qualified-id : dc:title -->
+                <label>Title</label>
+                <description>
+                    Enter a short verbal and human readable name for the image, this may be the file name
+
+                    Many use the Title field to store the filename of the image, though the field may be used in many
+                    ways.
+                    Formal identifiers are provided by the Digital Image Id, or the Registry Entry property of the IPTC
+                    Extension.
+
+                    &lt;strong&gt;Dublin Core description&lt;/strong&gt;
+
+                    A name given to the resource.
+                </description>
+            </tag>
+        </tags>
+    </family>
+    <family name="IptcExt" group="XMP">
+        <label>IPTC Extension schema</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-extension-schema-1-8-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos,
+            because of its universal acceptance among news agencies, photographers, photo agencies, libraries, museums,
+            and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard) as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+        </description>
+        <tags>
+            <tag name="AdditionalModelInformation">
+                <!-- qualified-id : Iptc4xmpExt:AddlModelInfo -->
+                <label>Additional model info</label>
+                <description>
+                    Enter information like ethnicity or other details about the model(s) in this image
+
+                    Use the Model Age field for the age of model(s).
+                </description>
+            </tag>
+            <tag name="OrganisationInImageCode">
+                <!-- qualified-id : Iptc4xmpExt:OrganisationInImageCode -->
+                <label>Code of featured Organisation</label>
+                <description>
+                    Code from a controlled vocabulary for identifying the organisation or company which is featured in
+                    the image.
+
+                    For example a stock ticker symbol may be used.
+                </description>
+                <format>
+                    <description>
+                        Enter an identifier for the controlled vocabulary, then a colon,
+                        and finally the code from the vocabulary assigned to the organisation shown in this image
+                        (e.g. nasdaq:companyA)
+                    </description>
+                </format>
+            </tag>
+            <tag name="OtherConstraints">
+                <!-- qualified-id : plus:OtherConstraints -->
+                <label>Constraint</label>
+                <description>Constraints may limit the scope of usage allowed</description>
+            </tag>
+            <tag name="ContributorIdentifier">
+                <!-- qualified-id : Iptc4xmpExt:Contributor.xmp:Identifier -->
+                <label>Identifier</label>
+                <description>
+                    Enter person(s) or party/parties or organisation(s) having contributed to making the image.
+                    Enter globally unique identifier(s) of the entity or concept.
+
+                    A distinction between contributor and creator should follow rights laws, contracts or common
+                    business rules.
+                </description>
+            </tag>
+            <tag name="ContributorName">
+                <!-- qualified-id : Iptc4xmpExt:Contributor.Iptc4xmpExt:Name -->
+                <label>Contributor Name</label>
+                <description>
+                    Enter person(s) or party/parties or organisation(s) having contributed to making the image.
+                    Enter the name of the entity or concept.
+
+                    A distinction between contributor and creator should follow rights laws, contracts or common
+                    business rules.
+                </description>
+            </tag>
+            <tag name="ContributorRole">
+                <!-- qualified-id : Iptc4xmpExt:Contributor.Iptc4xmpExt:Role -->
+                <label>Role</label>
+                <description>
+                    Enter person(s) or party/parties or organisation(s) having contributed to making the image.
+                    An added role helps to refine the kind of contribution.
+                    Enter an identifier for the role the entity has regarding the contributor property.
+                </description>
+                <format>
+                    <description>
+                        A vocabulary of roles of persons contributing to an image should be based on industry wide
+                        practices such as
+                        &lt;a href=&quot;https://cv.iptc.org/newscodes/contentprodpartyrole/&quot;&gt;https://cv.iptc.org/newscodes/contentprodpartyrole/&lt;/a&gt;
+                    </description>
+                    <examples>
+                        <example value="author">&lt;strong&gt;Author : &lt;/strong&gt;A party (person, organisation or
+                            system) that created the content
+                        </example>
+                        <example value="cameraOperator">&lt;strong&gt;Camera Operator : &lt;/strong&gt;A party (person,
+                            organisation or system) who operates the camera that records the content of the item
+                        </example>
+                        <example value="contentEditor">&lt;strong&gt;Content Editor : &lt;/strong&gt;A party (person,
+                            organisation or system) that edited the content of the item
+                        </example>
+                        <example value="contentSource">&lt;strong&gt;Content Source : &lt;/strong&gt;A party (person,
+                            organisation or system) that contributed to the content of the item as a source
+                        </example>
+                        <example value="correspondent">&lt;strong&gt;Correspondent : &lt;/strong&gt;A party (person,
+                            organisation or system) that is reporting information that contributes to the content of the
+                            item
+                        </example>
+                        <example value="descrWriter">&lt;strong&gt;Description Writer : &lt;/strong&gt;A party (person,
+                            organisation or system) editing the description of content
+                        </example>
+                        <example value="distributor">&lt;strong&gt;Distributor : &lt;/strong&gt;A party (person,
+                            organisation or system)that distributed an item
+                        </example>
+                        <example value="editor">&lt;strong&gt;Editor : &lt;/strong&gt;A party (person, organisation or
+                            system) editing the content and/or metadata of the item
+                        </example>
+                        <example value="factChecker">&lt;strong&gt;Fact Checker : &lt;/strong&gt;Specifies the party
+                            (person, organisation or system) that fact-checked the news item to ensure its accuracy
+                        </example>
+                        <example value="genAIPromptWriter">&lt;strong&gt;Generative AI Prompt Writer : &lt;/strong&gt;A
+                            party (person, organisation, or system) that wrote or edited the prompt entered into a
+                            generative AI system
+                        </example>
+                        <example value="imgSupplier">&lt;strong&gt;Image Supplier : &lt;/strong&gt;A party (person,
+                            organisation or system) that supplied an image as content of the item
+                        </example>
+                        <example value="interviewee">&lt;strong&gt;Interviewee : &lt;/strong&gt;A person being
+                            interviewed for the item
+                        </example>
+                        <example value="mediaOffice">&lt;strong&gt;Media Office : &lt;/strong&gt;The media relationships
+                            office of a person, organisation or company
+                        </example>
+                        <example value="metadataEditor">&lt;strong&gt;Metadata Editor : &lt;/strong&gt;A party (person,
+                            organisation or system) that edited the metadata of the item
+                        </example>
+                        <example value="origcont">&lt;strong&gt;Content Originator : &lt;/strong&gt;A party which
+                            orginated the content of the item
+                        </example>
+                        <example value="originfo">&lt;strong&gt;Information Originator : &lt;/strong&gt;A party (person,
+                            organisation or systenm) which provided some information, such as metadata, used to create
+                            or enhance the content of the item
+                        </example>
+                        <example value="producer">&lt;strong&gt;Producer : &lt;/strong&gt;A party (person, organisation
+                            or system) that curates and manages the creation of content
+                        </example>
+                        <example value="spokesperson">&lt;strong&gt;Spokesperson : &lt;/strong&gt;The spokesperson of a
+                            person, organisation or company
+                        </example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="CopyrightOwnerID">
+                <!-- qualified-id : plus:CopyrightOwner.plus:CopyrightOwnerID -->
+                <description>
+                    Enter the owner or owners of the copyright in the licensed image
+
+                    Serves to identify the rights holder/s for the image.
+                    The Copyright Owner, Image Creator and Licensor may be the same or different entities.
+                </description>
+            </tag>
+            <tag name="CopyrightOwnerName">
+                <!-- qualified-id : plus:CopyrightOwner.plus:CopyrightOwnerName -->
+                <description>
+                    Enter the owner or owners of the copyright in the licensed image
+
+                    Serves to identify the rights holder/s for the image.
+                    The Copyright Owner, Image Creator and Licensor may be the same or different entities.
+                </description>
+            </tag>
+            <tag name="AboutCvTermCvId">
+                <!-- qualified-id : Iptc4xmpExt:AboutCvTerm.Iptc4xmpExt:CvId -->
+                <label>About Vocabulary ID</label>
+                <description>
+                    Enter one or more topics, themes or entities the image is about,
+                    each one expressed by a term from a Controlled Vocabulary.
+
+                    Enter the globally unique identifier of the Controlled Vocabulary which the term is from.
+                </description>
+                <format>
+                    <description>URI</description>
+                    <examples>
+                        <example pattern="http://cv.iptc.org/newscodes/mediatopic/" value="Media Topic">The Media Topic
+                            NewsCodes has been IPTC's primary subject taxonomy since 2010, with a focus on
+                            classification of text.
+                        </example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="AboutCvTermId">
+                <!-- qualified-id : Iptc4xmpExt:AboutCvTerm.Iptc4xmpExt:CvTermId -->
+                <label>About Vocabulary Term ID</label>
+                <description>
+                    Enter one or more topics, themes or entities the image is about,
+                    each one expressed by a term from a Controlled Vocabulary.
+                    Enter the globally unique identifier of the term from a Controlled Vocabulary.
+                </description>
+                <format>
+                    <description>
+                        URI
+
+                        For example: &lt;a href=&quot;http://cv.iptc.org/newscodes/mediatopic/&quot;&gt;IPTC Media Topic
+                        NewsCodes&lt;/a&gt;.
+                    </description>
+                    <examples>
+
+                    </examples>
+                </format>
+            </tag>
+            <tag name="AboutCvTermName">
+                <!-- qualified-id : Iptc4xmpExt:AboutCvTerm.Iptc4xmpExt:CvTermName -->
+                <label>About Vocabulary Term Name</label>
+                <description>
+                    Enter one or more topics, themes or entities the image is about,
+                    each one expressed by a term from a Controlled Vocabulary.
+
+                    Enter the name of the term from a Controlled Vocabulary as free-text.
+                </description>
+                <format>
+                    <description>For example: &lt;a href=&quot;http://cv.iptc.org/newscodes/mediatopic/&quot;&gt;IPTC
+                        Media Topic NewsCodes&lt;/a&gt;.
+                    </description>
+                </format>
+            </tag>
+            <tag name="AboutCvTermRefinedAbout">
+                <!-- qualified-id : Iptc4xmpExt:AboutCvTerm.Iptc4xmpExt:CvTermRefinedAbout -->
+                <label>About Refined Aboutness</label>
+                <description>
+                    Enter one or more topics, themes or entities the image is about,
+                    each one expressed by a term from a Controlled Vocabulary.
+                    Optionally enter a refinement of the &apos;about&apos; relationship of the term with the content of
+                    the image.
+                    This must be a globally unique identifier from a Controlled Vocabulary.
+
+                    May be used to refine the generic about relationship.
+                </description>
+            </tag>
+            <tag name="DataMining">
+                <!-- qualified-id : plus:DataMining -->
+                <label>Data Mining</label>
+                <description>
+                    Regional laws applying to an asset may prohibit, constrain, or allow data mining for certain
+                    purposes
+                    (such as search indexing or research), and may overrule the value selected for this property.
+                    Similarly, the absence of a prohibition does not indicate
+                    that the asset owner grants permission for data mining or any other use of an asset.
+
+                    The prohibition “Prohibited except for search engine indexing” only permits data mining
+                    by search engines available to the public to identify the URL for an asset and its associated data
+                    (for the purpose of assisting the public in navigating to the URL for the asset),
+                    and prohibits all other uses, such as AI/ML training.
+
+                    The PLUS &quot;Other Constraints&quot; property is human readable.
+                    The IPTC properties &quot;Embedded Encoded Rights Expression&quot;
+                    and &quot;Linked Encoded Rights Expression&quot; are machine readable.
+                </description>
+                <format>
+                    <examples>
+                        <example value="DMI-ALLOWED">Allowed</example>
+                        <example value="DMI-PROHIBITED">Prohibited</example>
+                        <example value="DMI-PROHIBITED-AIMLTRAINING">Prohibited for AI/ML training</example>
+                        <example value="DMI-PROHIBITED-EXCEPTSEARCHENGINEINDEXING">Prohibited except for search engine
+                            indexing
+                        </example>
+                        <example value="DMI-PROHIBITED-GENAIMLTRAINING">Prohibited for Generative AI/ML training
+                        </example>
+                        <example value="DMI-PROHIBITED-SEECONSTRAINT">Prohibited, see plus:OtherConstraints</example>
+                        <example value="DMI-PROHIBITED-SEEEMBEDDEDRIGHTSEXPR">Prohibited, see
+                            iptcExt:EmbdEncRightsExpr
+                        </example>
+                        <example value="DMI-PROHIBITED-SEELINKEDRIGHTSEXPR">Prohibited, see
+                            iptcExt:LinkedEncRightsExpr
+                        </example>
+                        <example value="DMI-UNSPECIFIED">Unspecified - no prohibition defined</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="DigitalImageGUID">
+                <!-- qualified-id : Iptc4xmpExt:DigImageGUID -->
+                <label>Digital Image Identifier</label>
+                <description>
+                    If an ID already exists, don't change - otherwise enter a globally unique identifier for this
+                    digital image.
+
+                    The identifier will probably be generated by the technical means of an imaging device or software
+                    and should be applied to the digital image file as early as possible in its life cycle.
+                    This identifier does not identify any pictured content,
+                    particularly in case of a scan of non-digital images, only this digital representation.
+                </description>
+            </tag>
+            <tag name="DigitalSourceType">
+                <!-- qualified-id : Iptc4xmpExt:DigitalSourceType -->
+                <label>Digital Source Type</label>
+                <description>
+                    The type of the source of this digital image.
+                </description>
+                <format>
+                    <description>
+                        Select one of the values for identifying the type of the source of the digital image from the
+                        controlled vocabulary.
+                    </description>
+                    <examples>
+                        <example value="digitalCapture">&lt;strong&gt;Digital capture sampled from real life : &lt;/strong&gt;The
+                            media was captured from a real-life source using a digital camera or digital recording
+                            device
+                        </example>
+                        <example value="computationalCapture">&lt;strong&gt;Multi-frame computational capture sampled
+                            from real life : &lt;/strong&gt;The media is the result of capturing multiple frames from a
+                            real-life source using a digital camera or digital recording device, then automatically
+                            merging them into a single frame using digital signal processing techniques and/or
+                            non-generative AI. Includes High Dynamic Range (HDR) processing common in smartphone camera
+                            apps.
+                        </example>
+                        <example value="negativeFilm">&lt;strong&gt;Digitised from a transparent negative : &lt;/strong&gt;The
+                            media was digitised from a negative on film or other transparent medium
+                        </example>
+                        <example value="positiveFilm">&lt;strong&gt;Digitised from a transparent positive : &lt;/strong&gt;The
+                            media was digitised from a positive on a transparency or other transparent medium
+                        </example>
+                        <example value="print">&lt;strong&gt;Digitised from a non-transparent medium : &lt;/strong&gt;The
+                            media was digitised from a non-transparent medium such as a photographic print
+                        </example>
+                        <example value="humanEdits">&lt;strong&gt;Human-edited media : &lt;/strong&gt;Augmentation,
+                            correction or enhancement by one or more humans using non-generative tools
+                        </example>
+                        <example value="compositeWithTrainedAlgorithmicMedia">&lt;strong&gt;Edited using Generative AI :
+                            &lt;/strong&gt;Augmentation, correction or enhancement using a Generative AI model, such as
+                            with inpainting or outpainting operations
+                        </example>
+                        <example value="algorithmicallyEnhanced">&lt;strong&gt;Algorithmically-altered media : &lt;/strong&gt;Modification
+                            or correction by algorithm without changing the main content of the media, initiated or
+                            configured by a human, such as sharpening or applying noise reduction
+                        </example>
+                        <example value="digitalCreation">&lt;strong&gt;Digital creation : &lt;/strong&gt;Media created
+                            by a human using non-generative tools
+                        </example>
+                        <example value="dataDrivenMedia">&lt;strong&gt;Data-driven media : &lt;/strong&gt;Digital media
+                            representation of data via human programming or creativity
+                        </example>
+                        <example value="trainedAlgorithmicMedia">&lt;strong&gt;Created using Generative AI : &lt;/strong&gt;Digital
+                            media created algorithmically using an Artificial Intelligence model trained on captured
+                            content
+                        </example>
+                        <example value="algorithmicMedia">&lt;strong&gt;Pure algorithmic media : &lt;/strong&gt;Media
+                            created purely by an algorithm not based on any sampled training data, e.g. an image created
+                            by software using a mathematical formula
+                        </example>
+                        <example value="screenCapture">&lt;strong&gt;Screen capture : &lt;/strong&gt;A capture of the
+                            contents of the screen of a computer or mobile device
+                        </example>
+                        <example value="virtualRecording">&lt;strong&gt;Virtual event recording : &lt;/strong&gt;Live
+                            recording of virtual event based on Generative AI and/or captured elements
+                        </example>
+                        <example value="composite">&lt;strong&gt;Composite of elements : &lt;/strong&gt;Mix or composite
+                            of several elements, any of which may or may not be generative AI
+                        </example>
+                        <example value="compositeCapture">&lt;strong&gt;Composite of captured elements : &lt;/strong&gt;Mix
+                            or composite of several elements that are all captures of real life
+                        </example>
+                        <example value="compositeSynthetic">&lt;strong&gt;Composite including generative AI elements :
+                            &lt;/strong&gt;Mix or composite of several elements, at least one of which is Generative AI
+                        </example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="EmbeddedEncodedRightsExpr">
+                <!-- qualified-id : Iptc4xmpExt:EmbdEncRightsExpr.Iptc4xmpExt:EncRightsExpr -->
+                <label>Embedded Encoded Rights expression</label>
+                <description>
+                    Shows an encoded rights expression. These values cannot be changed by metadata panels.
+                    Shows an embedded rights expression using a rights expression language which is encoded as a string.
+                </description>
+            </tag>
+            <tag name="EmbeddedEncodedRightsExprType">
+                <!-- qualified-id : Iptc4xmpExt:EmbdEncRightsExpr.Iptc4xmpExt:RightsExprEncType -->
+                <label>Embedded Encoded Rights expression Encoding type</label>
+                <description>
+                    Shows an encoded rights expression. These values cannot be changed by metadata panels.
+                    Shows the encoding type of the rights expression by an IANA Media Type.
+                </description>
+            </tag>
+            <tag name="EmbeddedEncodedRightsExprLangID">
+                <!-- qualified-id : Iptc4xmpExt:EmbdEncRightsExpr.Iptc4xmpExt:RightsExprLangId -->
+                <label>Embedded Encoded Rights Expression Language ID</label>
+                <description>
+                    Shows an encoded rights expression. These values cannot be changed by metadata panels.
+                    Shows the identifier of the used Rights Expression Language.
+                </description>
+            </tag>
+            <tag name="EventID">
+                <!-- qualified-id : Iptc4xmpExt:EventId -->
+                <label>Event ID</label>
+                <description>
+                    Enter one or more identifiers of the event where this image was taken
+
+                    The URL/URI of a persistent calendar showing this event can be used.
+                </description>
+            </tag>
+            <tag name="Event">
+                <!-- qualified-id : Iptc4xmpExt:Event -->
+                <label>Event Name</label>
+                <description>
+                    Enter the name or description of the event where this image was taken
+
+                    Examples are: a press conference, dedication ceremony, etc.
+                    If this is a sub-event of a larger event both can be provided by the field:
+                    e.g. &quot;XXXIII Olympic Summer Games (Paris): opening ceremony&quot;.
+                    Unplanned events could be named by this property too.
+                </description>
+            </tag>
+            <tag name="GenreCvId">
+                <!-- qualified-id : Iptc4xmpExt:Genre.Iptc4xmpExt:CvId -->
+                <label>Genre Vocabulary ID</label>
+                <description>Enter the globally unique identifier of the Controlled Vocabulary which the term is from
+                </description>
+            </tag>
+            <tag name="GenreCvTermId">
+                <!-- qualified-id : Iptc4xmpExt:Genre.Iptc4xmpExt:CvTermId -->
+                <label>Genre Vocabulary Term ID</label>
+                <description>Enter the globally unique identifier of the term from a Controlled Vocabulary</description>
+            </tag>
+            <tag name="GenreCvTermName">
+                <!-- qualified-id : Iptc4xmpExt:Genre.Iptc4xmpExt:CvTermName -->
+                <label>Genre Vocabulary Term Name</label>
+                <description>Enter the name of the term from a Controlled Vocabulary as free-text</description>
+            </tag>
+            <tag name="GenreCvTermRefinedAbout">
+                <!-- qualified-id : Iptc4xmpExt:Genre.Iptc4xmpExt:CvTermRefinedAbout -->
+                <label>Genre Refined Aboutness</label>
+                <description>
+                    Optionally enter a refinement of the &apos;about&apos; relationship of the term with the content of
+                    the image.
+                    This must be a globally unique identifier from a Controlled Vocabulary
+
+                    May be used to refine the generic about relationship.
+                </description>
+            </tag>
+            <tag name="ImageCreatorID">
+                <!-- qualified-id : plus:ImageCreator.plus:ImageCreatorID -->
+                <description>
+                    Enter details about the creator or creators of this image.
+
+                    The creator can be additionally expressed in free-text using the IPTC Core Creator field.
+                    In many countries, the Image Creator must be attributed in association with any use of the image.
+                    The Image Creator, Copyright Owner, Image Supplier and Licensor may be the same or different
+                    entities.
+                </description>
+            </tag>
+            <tag name="ImageCreatorName">
+                <!-- qualified-id : plus:ImageCreator.plus:ImageCreatorName -->
+                <description>
+                    Enter details about the creator or creators of this image
+
+                    The creator can be additionally expressed in free-text using the IPTC Core Creator field.
+                    In many countries, the Image Creator must be attributed in association with any use of the image.
+                    The Image Creator, Copyright Owner, Image Supplier and Licensor may be the same or different
+                    entities.
+                </description>
+            </tag>
+            <tag name="Rating">
+                <!-- qualified-id : xmp:Rating -->
+                <label>Rating</label>
+                <format>
+                    <description>real number; a value from 0 to 5, or -1 for &quot;rejected&quot;</description>
+                </format>
+            </tag>
+            <tag name="RegistryOrganisationID">
+                <!-- qualified-id : Iptc4xmpExt:RegistryId.Iptc4xmpExt:RegOrgId -->
+                <label>Registry Entry Organisation Identifier</label>
+                <description>
+                    An identifier for the registry which issued the corresponding Registry Image Id.
+
+                    Enter the identifier for the registry which issued the corresponding Registry Image ID.
+                </description>
+            </tag>
+            <tag name="RegistryItemID">
+                <!-- qualified-id : Iptc4xmpExt:RegistryId.Iptc4xmpExt:RegItemId -->
+                <label>Registry Entry Item Identifier</label>
+                <description>
+                    A unique identifier created by a registry and applied by the creator of the digital image.
+                    This value shall not be changed after being applied.
+                    This identifier is linked to a corresponding Registry Organisation Identifier.
+
+                    Enter IDs for this image and the registry issuing the image ID.
+                    Enter the unique identifier created by a registry and applied by the creator of the digital image.
+
+                    Typically an id from a registry is negotiated and applied after the creation of the digital image.
+                    This identifier may be globally unique by itself, but it must be unique for the issuing registry at
+                    least.
+                </description>
+            </tag>
+            <tag name="RegistryEntryRole">
+                <!-- qualified-id : Iptc4xmpExt:RegistryId.Iptc4xmpExt:RegEntryRole -->
+                <label>Registry Entry Role</label>
+                <description>
+                    An identifier of the reason and/or purpose for this Registry Entry.
+
+                    Enter an identifier of the role of this registry entry in the context of other entries.
+                </description>
+            </tag>
+            <tag name="ImageSupplierID">
+                <!-- qualified-id : plus:ImageSupplier.plus:ImageSupplierID -->
+                <label>Image Supplier ID</label>
+                <description>
+                    Identifies the most recent supplier of the image, who is not necessarily its owner or creator.
+
+                    For identifying the supplier either a well known and/or registered company name or a URL of the
+                    company&apos;s web site may be used.
+                    This property succeeds the Provider property of IPTC Core 1.0 by its semantics as that Provider was
+                    renamed to Credit Line.
+                </description>
+                <format>
+                    <description>
+                        Optional PLUS-ID identifying the Image Supplier.
+                        If the PLUS-ID being stored in this field is registered with the PLUS Coalition,
+                        it should be expressed as a URL. For example: https://plus-id.org/PLUS-ID.
+                    </description>
+                </format>
+            </tag>
+            <tag name="ImageSupplierName">
+                <!-- qualified-id : plus:ImageSupplier.plus:ImageSupplierName -->
+                <label>Image Supplier Name</label>
+                <description>
+                    Name of the most recent supplier of the image, who is not necessarily its owner or creator.
+
+                    This property succeeds the Provider property of IPTC Core 1.0 by its semantics as that Provider was
+                    renamed to Credit Line.
+                </description>
+            </tag>
+            <tag name="ImageSupplierImageID">
+                <!-- qualified-id : plus:ImageSupplierImageID -->
+                <label>Image Supplier Image Id</label>
+                <description>
+                    Identifier assigned by the Image Supplier to the image.
+                </description>
+            </tag>
+            <tag name="LinkedEncodedRightsExpr">
+                <!-- qualified-id : Iptc4xmpExt:LinkedEncRightsExpr.Iptc4xmpExt:LinkedRightsExpr -->
+                <label>Rights Expression Link</label>
+                <description>
+                    The link to a rights expression using a rights expression language.
+                    Enter the link to a web resource representing an encoded rights expression.
+                </description>
+                <format>
+                    <description>URL</description>
+                </format>
+            </tag>
+            <tag name="LinkedEncodedRightsExprType">
+                <!-- qualified-id : Iptc4xmpExt:LinkedEncRightsExpr.Iptc4xmpExt:RightsExprEncType -->
+                <label>Rights Expression Encoding type</label>
+                <description>
+                    The encoding type of the rights expression, identified by an
+                    &lt;a href=&quot;https://www.iana.org/assignments/media-types/media-types.xhtml&quot;&gt;IANA Media
+                    Type&lt;/a&gt;.
+                </description>
+            </tag>
+            <tag name="LinkedEncRightsExprRightsExprLangId">
+                <!-- qualified-id : Iptc4xmpExt:LinkedEncRightsExpr.Iptc4xmpExt:RightsExprLangId -->
+                <label>Rights Expression Language ID</label>
+                <description>
+                    The identifer of the rights expression language used by the rights expression.
+                </description>
+                <format>
+                    <description>URI</description>
+                </format>
+            </tag>
+            <tag name="MaxAvailHeight">
+                <!-- qualified-id : Iptc4xmpExt:MaxAvailHeight -->
+                <label>Maximum available height</label>
+                <description>The maximum available height in pixels of the original photo from which this photo has been
+                    derived by downsizing.
+                </description>
+                <format>
+                    <description>integer</description>
+                </format>
+            </tag>
+            <tag name="MaxAvailWidth">
+                <!-- qualified-id : Iptc4xmpExt:MaxAvailWidth -->
+                <label>Maximum available width</label>
+                <description>The maximum available width in pixels of the original photo from which this photo has been
+                    derived by downsizing.
+                </description>
+                <format>
+                    <description>integer</description>
+                </format>
+            </tag>
+            <tag name="MinorModelAgeDisclosure">
+                <!-- qualified-id : plus:MinorModelAgeDisclosure -->
+                <label>Minor Model Age Disclosure</label>
+                <description>
+                    Age of the youngest model pictured in the image, at the time that the image was made.
+
+                    This age should not be displayed to the public on open web portals and the like.
+                    But it may be used by image repositories in a B2B enviroment.
+                </description>
+                <format>
+                    <examples>
+                        <example value="AG-U14">Age 14 or Under</example>
+                        <example value="AG-A15">Age 15</example>
+                        <example value="AG-A16">Age 16</example>
+                        <example value="AG-A17">Age 17</example>
+                        <example value="AG-A18">Age 18</example>
+                        <example value="AG-A19">Age 19</example>
+                        <example value="AG-A20">Age 20</example>
+                        <example value="AG-A21">Age 21</example>
+                        <example value="AG-A22">Age 22</example>
+                        <example value="AG-A23">Age 23</example>
+                        <example value="AG-A24">Age 24</example>
+                        <example value="AG-A25">Age 25 or Over</example>
+                        <example value="AG-UNK">Age Unknown</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="ModelAge">
+                <!-- qualified-id : Iptc4xmpExt:ModelAge -->
+                <label>Model age</label>
+                <description>
+                    Age of the human model(s) at the time this image was taken in a model released image.
+
+                    The user should be aware of any legal implications of providing ages for young models.
+                    Ages below 18 years should not be included.
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="ModelReleaseID">
+                <!-- qualified-id : plus:ModelReleaseID -->
+                <label>Model Release Id</label>
+                <description>Identifier(s) of a Model Release document. Enter an identifier for each Model Release.
+                </description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="ModelReleaseStatus">
+                <!-- qualified-id : plus:ModelReleaseStatus -->
+                <label>Model Release Status</label>
+                <description>
+                    Summarises the availability and scope of model releases
+                    authorising usage of the likenesses of persons appearing in the photograph.
+
+                    It is recommended to apply the PLUS controlled value Unlimited Model Releases (MR-UMR) very
+                    carefully
+                    and to check the wording of the model release thoroughly before applying it.
+                </description>
+                <format>
+                    <examples>
+                        <example value="MR-NON">None</example>
+                        <example value="MR-NAP">Not Applicable</example>
+                        <example value="MR-UMR">Unlimited Model Releases</example>
+                        <example value="MR-LMR">Limited or Incomplete Model Releases</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="OrganisationInImageName">
+                <!-- qualified-id : Iptc4xmpExt:OrganisationInImageName -->
+                <label>Name of featured Organisation</label>
+                <description>
+                    Name of the organisation or company which is featured in the image.
+
+                    May be supplemented by values from a controlled vocabulary in the Organisation Code field.
+                </description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="PersonInImage">
+                <!-- qualified-id : Iptc4xmpExt:PersonInImage -->
+                <label>Person shown</label>
+                <description>Name of a person shown in the image.</description>
+                <format>
+                    <description>string</description>
+                </format>
+            </tag>
+            <tag name="PropertyReleaseID">
+                <!-- qualified-id : plus:PropertyReleaseID -->
+                <label>Property Release Id</label>
+                <description>Identifier(s) of a Property Release document.</description>
+                <format>
+                    <description>
+                        If the IDs being stored in this field are registered with the PLUS Coalition,
+                        they should be expressed as a URL. For example: https://plus-id.org/PLUS-ID.
+                    </description>
+                </format>
+            </tag>
+            <tag name="PropertyReleaseStatus">
+                <!-- qualified-id : plus:PropertyReleaseStatus -->
+                <label>Property Release Status</label>
+                <description>
+                    Summarizes the availability and scope of property releases authorizing usage of the properties
+                    appearing in the photograph.
+                    The rights of the Licensee or End User under the license may or may not be limited by the Property
+                    Release Status.
+                    It is recommended to apply the value PR-UPR very carefully and to check the wording of the property
+                    release thoroughly before applying it.
+                </description>
+                <format>
+                    <examples>
+                        <example value="PR-NON">None</example>
+                        <example value="PR-NAP">Not Applicable</example>
+                        <example value="PR-UPR">Unlimited Property Releases</example>
+                        <example value="PR-LPR">Limited or Incomplete Property Releases</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="WebStatement">
+                <!-- qualified-id : xmpRights:WebStatement -->
+                <label>Copyright Info URL</label>
+                <description>
+                    URL referencing a web resource providing a statement of the copyright ownership and usage rights of
+                    the image.
+                </description>
+                <format>
+                    <description>URI</description>
+                </format>
+            </tag>
+        </tags>
+    </family>
+    <family name="IptcExt-Artwork" group="XMP">
+        <label>IPTC Extension: Artwork</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-extension-schema-1-8-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos,
+            because of its universal acceptance among news agencies, photographers, photo agencies, libraries, museums,
+            and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard) as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+        </description>
+        <tags>
+            <tag name="ArtworkCircaDateCreated">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOCircaDateCreated -->
+                <label>Artwork Circa Date Created</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter the approximate date or range of dates associated with the creation and production
+                    of an artwork or object or its components.
+                </description>
+            </tag>
+            <tag name="ArtworkContentDescription">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOContentDescription -->
+                <label>Artwork Content Description</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Describe the content depicted in the artwork or object in free-text.
+                </description>
+            </tag>
+            <tag name="ArtworkContributionDescription">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOContributionDescription -->
+                <label>Artwork Contribution Description</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Describe any contributions made to the artwork or object as free-text.
+                    Include the type, date and location of contribution, and details about the contributor.
+
+                    Should include the type, date and location of contribution, and details about the contributor.
+                </description>
+            </tag>
+            <tag name="ArtworkCopyrightNotice">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOCopyrightNotice -->
+                <label>Artwork Copyright notice</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter any necessary copyright notice for claiming the intellectual property for artwork or an object
+                    in this image.
+                </description>
+            </tag>
+            <tag name="ArtworkCreator">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOCreator -->
+                <label>Artwork Creator</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter the name of the artist who has created artwork or an object in this image.
+                </description>
+            </tag>
+            <tag name="ArtworkCreatorID">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOCreatorId -->
+                <label>Artwork Creator ID</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter globally unique identifier(s) for the artist who has created artwork or an object e.g.
+                    issued by an online registry of persons or companies.
+                    Enter in the same sequence as the creator names.
+
+                    Add the IDs in the same sequence as the Creator names
+                </description>
+            </tag>
+            <tag name="ArtworkCopyrightOwnerID">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOCurrentCopyrightOwnerId -->
+                <label>Artwork Current Copyright Owner ID</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter a globally unique identifier for the current
+                    copyright owner e.g. issued by an online registry of persons or companies.
+                </description>
+            </tag>
+            <tag name="ArtworkCopyrightOwnerName">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOCurrentCopyrightOwnerName -->
+                <label>Artwork Current Copyright Owner Name</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter the name of the current owner of the copyright of the artwork or object.
+                </description>
+            </tag>
+            <tag name="ArtworkLicensorID">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOCurrentLicensorId -->
+                <label>Artwork Current Licensor ID</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter a globally unique identifier for the current licensor
+                    e.g. issued by an online registry of persons or companies.
+                </description>
+            </tag>
+            <tag name="ArtworkLicensorName">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOCurrentLicensorName -->
+                <label>Artwork Current Licensor Name</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter the name of the current licensor of the artwork or object.
+                </description>
+            </tag>
+            <tag name="ArtworkDateCreated">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AODateCreated -->
+                <label>Artwork Date created</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter the date and optionally the time when the artwork or object in this image was created.
+                </description>
+                <format>
+                    <examples>
+                        <example pattern="yyyy-mm-dd">1985-04-12</example><!-- date according to ISO 8601-1 -->
+                        <example pattern="yyyy-mm">1985-04</example><!-- month and year (YYYY-MM) -->
+                        <example pattern="yyyy">1985</example><!-- just year (YYYY) -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZ">1985-04-12T23:20:50.52Z
+                        </example><!-- date/time according to ISO 8601-1 -->
+                        <example pattern="yyyy-MM-ddThh:mm:ssZZZ">1985-04-12T23:20:50.52+00:02
+                        </example><!-- date/time according to ISO 8601-1 -->
+                    </examples>
+                </format>
+            </tag>
+            <tag name="ArtworkPhysicalDescription">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOPhysicalDescription -->
+                <label>Artwork Physical Description</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Describe the physical characteristics of the artwork or object as free-text,
+                    without referring to the subject depicted.
+
+                    Object type, materials-techniques and measurements may be described.
+                </description>
+            </tag>
+            <tag name="ArtworkSource">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOSource -->
+                <label>Artwork Source</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter the name of the organisation or body holding and registering the artwork or object
+                    in this image for inventory purposes.
+                </description>
+            </tag>
+            <tag name="ArtworkSourceInventoryNo">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOSourceInvNo -->
+                <label>Artwork Source Inventory number</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter the inventory number issued by the organisation or body
+                    holding and registering the artwork or object in this image.
+                </description>
+            </tag>
+            <tag name="ArtworkSourceInvURL">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOSourceInvURL -->
+                <label>Artwork Source Inventory URL</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter a reference URL for the metadata record of the inventory maintained by the Source.
+                </description>
+            </tag>
+            <tag name="ArtworkStylePeriod">
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOStylePeriod -->
+                <label>Artwork Style Period</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter the style, historical or artistic period, movement, group, or school
+                    whose characteristics are represented in the artwork or object.
+
+                    It is advised to take the terms from a Controlled Vocabulary.
+                </description>
+            </tag>
+            <tag name="ArtworkTitle">
+                <!-- sortOrder : tp120|s0217 -->
+                <!-- qualified-id : Iptc4xmpExt:ArtworkOrObject.Iptc4xmpExt:AOTitle -->
+                <label>Artwork Title</label>
+                <description>
+                    Enter details about artwork or objects shown in this image.
+                    Enter the verbal and human readable name of the artwork or object in this image.
+                </description>
+            </tag>
+        </tags>
+    </family>
+    <family name="IptcExt-ImageRegion" group="XMP">
+        <label>IPTC Extension: Image Region</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-extension-schema-1-8-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos,
+            because of its universal acceptance among news agencies, photographers, photo agencies, libraries, museums,
+            and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard) as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+        </description>
+        <tags>
+            <tag name="ImageRegionBoundaryShape">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:RegionBoundary.Iptc4xmpExt:rbShape -->
+                <label>Region Boundary Shape</label>
+                <description>
+                    The shape of the boundary of a region inside an image.
+                    The value MUST be taken from the enumeration rectangle, circle, polygon.
+                </description>
+                <format>
+                    <examples>
+                        <example value="rectangle">
+                            a rectangle as shape of the boundary, the shape of a square is included.&lt;br /&gt;
+                            Properties: the x- and y-axis coordinates of the upper left corner of the rectangle
+                            and the width and height of the rectangle relative to this upper left corner.
+                        </example>
+                        <example value="circle">
+                            a circle as the shape of the boundary &lt;br /&gt;
+                            Properties: the x- and y-axis coordinates of the centre of the circle
+                            and its radius measured along the x-axis.
+                        </example>
+                        <example value="polygon">
+                            any shape with edges, except a rectangle, including a single point (using 1 vertex) and a
+                            line (using 2 vertices).
+                            The edges between a vertex and the next one in the sequence set the shape,
+                            the last edge is the one from the last vertex in the sequence to the first vertex in the
+                            sequence.&lt;br /&gt;
+                            Properties: the x- and y-axis coordinates of the vertex/the vertices of the polygon.
+                        </example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="ImageRegionBoundaryUnit">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:RegionBoundary.Iptc4xmpExt:rbUnit -->
+                <label>Measuring Unit</label>
+                <description>
+                    Unit used for measuring dimensions of the boundary of a region. The value MUST be taken from the
+                    enumeration pixel, relative.
+                </description>
+                <format>
+                    <examples>
+                        <example value="pixel">
+                            A pixel of a digital image setting an absolute value.
+                            In case of rescaling the image the coordinate values and the radius of a circle must be
+                            rescaled too.
+                        </example>
+                        <example value="relative">
+                            Relative part of the size of an image along the x- or the y-axis.
+                            The range of the value is from 0 to 1 representing the proportion
+                            of the full size of an image along the x-axis or the y-axis.
+                        </example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="ImageRegionBoundaryX">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:RegionBoundary.Iptc4xmpExt:rbX -->
+                <label>Region Boundary X-Axis Coordinate</label>
+                <description>
+                    Distance along the x-axis of the coordinate system related to its Point Zero.
+                    Used only by the shapes rectangle and circle.
+
+                    The coordinates of points used as reference of a shape of the region boundary and values defining
+                    the size of the shape
+                    are expressed by scalar values along the x-axis or the y-axis of a rectangular coordinates system.
+                    The rules for this system are:
+                    &lt;ul&gt;
+                    &lt;li&gt;
+                    Point Zero of the coordinates follows the Image Data Arrangement of the pixels of a digital image as
+                    defined by Exif (CIPA DC-008-2019):
+                    &lt;ul&gt;
+                    &lt;li&gt;The top row of the pixels is the first row, the leftmost pixel of a row is the first
+                    pixel.&lt;/li&gt;
+                    &lt;li&gt;The counting of “top row” and “leftmost” applies to pixel data as set when the pixels
+                    were (re-)organized by the camera or by software.
+                    The orientation (rotation, flipping) of the image defined by a metadata value MUST NOT be applied.&lt;/li&gt;
+                    &lt;li&gt;Point Zero of the coordinates is the first, leftmost pixel in the top row.&lt;/li&gt;
+                    &lt;li&gt;The x-axis is from Point Zero along the top row of the image.
+                    The range of coordinate values is from 0 to any positive value not exceeding the size of the image.&lt;/li&gt;
+                    &lt;li&gt;The y-axis is from Point Zero along the first pixels of the rows in the image.
+                    The range of coordinate values is from 0 to any positive value not exceeding the size of the image.&lt;/li&gt;
+                    &lt;/ul&gt;
+                    &lt;/li&gt;
+                    &lt;li&gt;Coordinates of a point in the image MUST have an x-axis and a y-axis value.&lt;/li&gt;
+                    &lt;li&gt;Values defining the size of the shape are measured along the x-axis and the y-axis.&lt;/li&gt;
+                    &lt;li&gt;
+                    The unit of a value is defined by the Region Boundary Measuring Unit property,
+                    its value MUST be from the enumeration defined for the Boundary Measuring Unit property.
+                    &lt;/li&gt;
+                    &lt;/ul&gt;
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="ImageRegionBoundaryY">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:RegionBoundary.Iptc4xmpExt:rbY -->
+                <label>Region Boundary Y-Axis Coordinate</label>
+                <description>
+                    Distance along the y-axis of the coordinate system related to its Point Zero.
+                    Used only by the shapes rectangle and circle.
+
+                    The coordinates of points used as reference of a shape of the region boundary and values defining
+                    the size of the shape
+                    are expressed by scalar values along the x-axis or the y-axis of a rectangular coordinates system.
+                    The rules for this system are:
+                    &lt;ul&gt;
+                    &lt;li&gt;
+                    Point Zero of the coordinates follows the Image Data Arrangement of the pixels of a digital image as
+                    defined by Exif (CIPA DC-008-2019):
+                    &lt;ul&gt;
+                    &lt;li&gt;The top row of the pixels is the first row, the leftmost pixel of a row is the first
+                    pixel.&lt;/li&gt;
+                    &lt;li&gt;The counting of “top row” and “leftmost” applies to pixel data as set when the pixels
+                    were (re-)organized by the camera or by software.
+                    The orientation (rotation, flipping) of the image defined by a metadata value MUST NOT be applied.&lt;/li&gt;
+                    &lt;li&gt;Point Zero of the coordinates is the first, leftmost pixel in the top row.&lt;/li&gt;
+                    &lt;li&gt;The x-axis is from Point Zero along the top row of the image.
+                    The range of coordinate values is from 0 to any positive value not exceeding the size of the image.&lt;/li&gt;
+                    &lt;li&gt;The y-axis is from Point Zero along the first pixels of the rows in the image.
+                    The range of coordinate values is from 0 to any positive value not exceeding the size of the image.&lt;/li&gt;
+                    &lt;/ul&gt;
+                    &lt;/li&gt;
+                    &lt;li&gt;Coordinates of a point in the image MUST have an x-axis and a y-axis value.&lt;/li&gt;
+                    &lt;li&gt;Values defining the size of the shape are measured along the x-axis and the y-axis.&lt;/li&gt;
+                    &lt;li&gt;
+                    The unit of a value is defined by the Region Boundary Measuring Unit property,
+                    its value MUST be from the enumeration defined for the Boundary Measuring Unit property.
+                    &lt;/li&gt;
+                    &lt;/ul&gt;
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="ImageRegionBoundaryW">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:RegionBoundary.Iptc4xmpExt:rbW -->
+                <label>Rectangle Width</label>
+                <description>
+                    The size of a rectangular region boundary along the x-axis, its width.
+                    The range of a width value is any positive value not exceeding the size of the image along its
+                    x-axis.
+                    Used only by the shape rectangle.
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="ImageRegionBoundaryH">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:RegionBoundary.Iptc4xmpExt:rbH -->
+                <label>Region Boundary Rectangle Height</label>
+                <description>
+                    The size of a rectangular region boundary along the y-axis, its height.
+                    The range of a height value is any positive value not exceeding the size of the image along its
+                    y-axis.
+                    Used only by the shape rectangle.
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="ImageRegionBoundaryRx">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:RegionBoundary.Iptc4xmpExt:rbRx -->
+                <label>Region Boundary Circle Radius</label>
+                <description>
+                    The radius of a circular region boundary from the centre of the circle measured along the x-axis.
+                    The range of a radius value is any positive value not exceeding the size of the image.
+                    Used only by the shape circle.
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="ImageRegionBoundaryVerticesX">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:RegionBoundary.Iptc4xmpExt:rbVertices.Iptc4xmpExt:rbX -->
+                <label>Region Boundary Vertex X-Axis Coordinate</label>
+                <description>
+                    Sequence of vertices of the polygon. Used only by the shape polygon.
+                    Distance along the x-axis of the coordinate system related to its Point Zero.
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="ImageRegionBoundaryVerticesY">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:RegionBoundary.Iptc4xmpExt:rbVertices.Iptc4xmpExt:rbY -->
+                <label>Region Boundary Vertex Y-Axis Coordinate</label>
+                <description>
+                    Sequence of vertices of the polygon. Used only by the shape polygon.
+                    Distance along the y-axis of the coordinate system related to its Point Zero
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="ImageRegionID">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:rId -->
+                <label>Region Identifier</label>
+                <description>
+                    Identifier of the region.
+                    Must be unique among all Region Identifiers of an image.
+                    Does not have to be unique beyond the metadata of this image.
+                </description>
+            </tag>
+            <tag name="ImageRegionName">
+                <!-- sortOrder : tp370|s0503 -->
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:Name -->
+                <label>Region Name</label>
+                <description>
+                    Free-text name of the region.
+                    Should be unique among all Region Names of an image.
+                </description>
+            </tag>
+            <tag name="ImageRegionCtypeIdentifier">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:rCtype.xmp:Identifier -->
+                <label>Region Content Type Identifier</label>
+                <description>
+                    The semantic type of what is shown inside the region.
+                    Globally unique identifier of the entity/concept.
+                    The value SHOULD be taken from a Controlled Vocabulary.
+                </description>
+                <format>
+                    <description>
+                        URI -
+                        Recommended but not mandatory:
+                        &lt;a href=&quot;http://cv.iptc.org/newscodes/imageregiontype/&quot;&gt;IPTC Region Content Type
+                        NewsCodes&lt;/a&gt;
+                    </description>
+                    <examples>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/animal" value="animal">A living
+                            organism different from humans or flora
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/artwork" value="artwork">Artistic
+                            work
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/dividingLine"
+                                 value="dividing line">A line expressing a visual division of the image, such as a
+                            horizon
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/plant" value="plant">A living
+                            organism different from humans and animals
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/geoArea" value="geographic area">
+                            A named area on the surface of the planet earth
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/graphic" value="graphic">A
+                            graphic representation of information
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/machineCode"
+                                 value="machine-readable code">Optical label such as barcode or QR code
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/human" value="human">A human
+                            being
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/product" value="product">A thing
+                            that was produced and can be handed over
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/text" value="text">Human readable
+                            script of any language
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/building" value="building">A
+                            structure with walls and roof in most cases
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/vehicle" value="vehicle">An
+                            object used for transporting something, like car, train, ship, plane or bike
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/food" value="food">Substances
+                            providing nutrition for a living body
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/clothing" value="clothing">
+                            Something worn to cover the body
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/rockFormation"
+                                 value="rock formation">A special formation of stone mass
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregiontype/bodyOfWater"
+                                 value="body of water">A significant accumulation of water
+                        </example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="ImageRegionCtypeName">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:rCtype.Iptc4xmpExt:Name -->
+                <label>Region Content Type Name</label>
+                <description>
+                    The semantic type of what is shown inside the region.
+                    Full name of the entity/concept.
+                    The value SHOULD be taken from a Controlled Vocabulary.
+                </description>
+                <format>
+                    <description>
+                        Recommended but not mandatory:
+                        &lt;a href=&quot;http://cv.iptc.org/newscodes/imageregiontype/&quot;&gt;IPTC Region Content Type
+                        NewsCodes&lt;/a&gt;
+                    </description>
+                    <examples>
+                        <example value="animal">A living organism different from humans or flora</example>
+                        <example value="artwork">Artistic work</example>
+                        <example value="dividing line">A line expressing a visual division of the image, such as a
+                            horizon
+                        </example>
+                        <example value="plant">A living organism different from humans and animals</example>
+                        <example value="geographic area">A named area on the surface of the planet earth</example>
+                        <example value="graphic">A graphic representation of information</example>
+                        <example value="machine-readable code">Optical label such as barcode or QR code</example>
+                        <example value="human">A human being</example>
+                        <example value="product">A thing that was produced and can be handed over</example>
+                        <example value="text">Human readable script of any language</example>
+                        <example value="building">A structure with walls and roof in most cases</example>
+                        <example value="vehicle">An object used for transporting something, like car, train, ship, plane
+                            or bike
+                        </example>
+                        <example value="food">Substances providing nutrition for a living body</example>
+                        <example value="clothing">Something worn to cover the body</example>
+                        <example value="rock formation">A special formation of stone mass</example>
+                        <example value="body of water">A significant accumulation of water</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="ImageRegionRoleIdentifier">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:rRole.xmp:Identifier -->
+                <label>Region Role Identifier</label>
+                <description>
+                    Role of this region among all regions of this image or of other images.
+                    Globally unique identifier of the entity/concept.
+                    The value SHOULD be taken from a Controlled Vocabulary.
+                </description>
+                <format>
+                    <description>
+                        URI - Recommended but not mandatory:
+                        &lt;a href=&quot;http://cv.iptc.org/newscodes/imageregionrole/&quot;&gt;IPTC Image Region Role
+                        NewsCodes&lt;/a&gt;
+                    </description>
+                    <examples>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/cropping" value="cropping">Image
+                            region can be used for any cropping
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/recomCropping"
+                                 value="recommended cropping">Image region is recommended for cropping
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/landscapeCropping"
+                                 value="landscape format cropping">Image region suggested for cropping in landscape
+                            format
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/portraitCropping"
+                                 value="portrait format cropping">Image region suggested for cropping in portrait format
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/squareCropping"
+                                 value="square format cropping">Image region suggested for cropping in square format
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/compositeImageItem"
+                                 value="composite image item">Image region of an item in a composite image
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/copyrightRegion"
+                                 value="copyright region">Image region with a copyright different from the copyright of
+                            the whole picture
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/subjectArea"
+                                 value="subject area">Image region contains a subject in the overall scene.
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/mainSubjectArea"
+                                 value="main subject area">Image region contains the main subject in the overall scene.
+                            Same as the Exif SubjectArea.
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/areaOfInterest"
+                                 value="area of interest">Image region contains a thing of special interest to the
+                            viewer
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/anonymised" value="anonymised">
+                            Image region obfuscates a person or object which should not be identifiable by this image
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/recommendedAnonymisation"
+                                 value="recommended anonymisation">Image Region should obfuscate a person or object
+                            which should not be identifiable by this image in an upcoming workflow step
+                        </example>
+                        <example pattern="http://cv.iptc.org/newscodes/imageregionrole/businessUse"
+                                 value="business use">Image region is dedicated to a specific business use
+                        </example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="ImageRegionRoleName">
+                <!-- qualified-id : Iptc4xmpExt:ImageRegion.Iptc4xmpExt:rRole.Iptc4xmpExt:Name -->
+                <label>Region Role Name</label>
+                <description>
+                    Role of this region among all regions of this image or of other images.
+                    Full name of the entity/concept
+                    The value SHOULD be taken from a Controlled Vocabulary.
+                </description>
+                <format>
+                    <description>
+                        Recommended but not mandatory:
+                        &lt;a href=&quot;http://cv.iptc.org/newscodes/imageregionrole/&quot;&gt;IPTC Image Region Role
+                        NewsCodes&lt;/a&gt;
+                    </description>
+                    <examples>
+                        <example value="cropping">Image region can be used for any cropping</example>
+                        <example value="recommended cropping">Image region is recommended for cropping</example>
+                        <example value="landscape format cropping">Image region suggested for cropping in landscape
+                            format
+                        </example>
+                        <example value="portrait format cropping">Image region suggested for cropping in portrait
+                            format
+                        </example>
+                        <example value="square format cropping">Image region suggested for cropping in square format
+                        </example>
+                        <example value="composite image item">Image region of an item in a composite image</example>
+                        <example value="copyright region">Image region with a copyright different from the copyright of
+                            the whole picture
+                        </example>
+                        <example value="subject area">Image region contains a subject in the overall scene.</example>
+                        <example value="main subject area">Image region contains the main subject in the overall scene.
+                            Same as the Exif SubjectArea.
+                        </example>
+                        <example value="area of interest">Image region contains a thing of special interest to the
+                            viewer
+                        </example>
+                        <example value="anonymised">Image region obfuscates a person or object which should not be
+                            identifiable by this image
+                        </example>
+                        <example value="recommended anonymisation">Image Region should obfuscate a person or object
+                            which should not be identifiable by this image in an upcoming workflow step
+                        </example>
+                        <example value="business use">Image region is dedicated to a specific business use</example>
+                    </examples>
+                </format>
+            </tag>
+        </tags>
+    </family>
+    <family name="IptcExt-Licensor" group="XMP">
+        <label>IPTC Extension: Licensor</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-extension-schema-1-8-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos,
+            because of its universal acceptance among news agencies, photographers, photo agencies, libraries, museums,
+            and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard) as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+        </description>
+        <tags>
+            <tag name="LicensorID">
+                <!-- qualified-id : plus:Licensor.plus:LicensorID -->
+                <label>Licensor ID</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+                </description>
+                <format>
+                    <description>
+                        Optional PLUS-ID identifying each Licensor.
+                        If the PLUS-ID being stored in this field is registered with the PLUS Coalition,
+                        it should be expressed as a URL. For example: https://plus-id.org/PLUS-ID.
+                    </description>
+                </format>
+            </tag>
+            <tag name="LicensorName">
+                <!-- qualified-id : plus:Licensor.plus:LicensorName -->
+                <label>Licensor Name</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+                </description>
+            </tag>
+            <tag name="LicensorStreetAddress">
+                <!-- qualified-id : plus:Licensor.plus:LicensorStreetAddress -->
+                <label>Licensor Address</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor street address. Street name and/or number, or box number.
+                </description>
+            </tag>
+            <tag name="LicensorExtendedAddress">
+                <!-- qualified-id : plus:Licensor.plus:LicensorExtendedAddress -->
+                <label>Licensor Address Detail</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Additional Licensor mailing address details. Examples: suite number, apartment number, floor, unit
+                    or room number.
+                </description>
+            </tag>
+            <tag name="LicensorCity">
+                <!-- qualified-id : plus:Licensor.plus:LicensorCity -->
+                <label>Licensor City</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor City name.
+                </description>
+            </tag>
+            <tag name="LicensorRegion">
+                <!-- qualified-id : plus:Licensor.plus:LicensorRegion -->
+                <label>Licensor State/Province</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor State or Province name.
+                </description>
+            </tag>
+            <tag name="LicensorPostalCode">
+                <!-- qualified-id : plus:Licensor.plus:LicensorPostalCode -->
+                <label>Licensor Postal Code</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor Postal Code or Zip Code.
+                </description>
+            </tag>
+            <tag name="LicensorCountry">
+                <!-- qualified-id : plus:Licensor.plus:LicensorCountry -->
+                <label>Licensor Country</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor Country name.
+                </description>
+            </tag>
+            <tag name="LicensorTelephoneType1">
+                <!-- qualified-id : plus:Licensor.plus:LicensorTelephoneType1 -->
+                <label>Licensor Telephone Type 1</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor Telephone Type 1.
+                </description>
+                <format>
+                    <description>
+                        The controlled vocabulary is based on the vCard specification (RFC 2426).
+                        CV values must be written in URL form.
+                    </description>
+                    <examples>
+                        <example value="http://ns.useplus.org/ldf/vocab/work">work</example>
+                        <example value="http://ns.useplus.org/ldf/vocab/cell">cell</example>
+                        <example value="http://ns.useplus.org/ldf/vocab/fax">fax</example>
+                        <example value="http://ns.useplus.org/ldf/vocab/home">home</example>
+                        <example value="http://ns.useplus.org/ldf/vocab/pager">pager</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="LicensorTelephone1">
+                <!-- qualified-id : plus:Licensor.plus:LicensorTelephone1 -->
+                <label>Licensor Telephone 1</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor Telephone number 1.
+                </description>
+                <format>
+                    <description>
+                        Number should include country code, area code and any other codes necessary for international
+                        dialing.
+                        Also include telephone extensions, where applicable.
+                    </description>
+                </format>
+            </tag>
+            <tag name="LicensorTelephoneType2">
+                <!-- qualified-id : plus:Licensor.plus:LicensorTelephoneType2 -->
+                <label>Licensor Telephone Type 2</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor Telephone Type 2.
+                </description>
+                <format>
+                    <description>
+                        The controlled vocabulary is based on the vCard specification (RFC 2426).
+                        CV values must be written in URL form.
+                    </description>
+                    <examples>
+                        <example value="http://ns.useplus.org/ldf/vocab/work">work</example>
+                        <example value="http://ns.useplus.org/ldf/vocab/cell">cell</example>
+                        <example value="http://ns.useplus.org/ldf/vocab/fax">fax</example>
+                        <example value="http://ns.useplus.org/ldf/vocab/home">home</example>
+                        <example value="http://ns.useplus.org/ldf/vocab/pager">pager</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="LicensorTelephone2">
+                <!-- qualified-id : plus:Licensor.plus:LicensorTelephone2 -->
+                <label>Licensor Telephone 2</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor Telephone number 2.
+                </description>
+                <format>
+                    <description>
+                        Number should include country code, area code and any other codes necessary for international
+                        dialing.
+                        Also include telephone extensions, where applicable.
+                    </description>
+                </format>
+            </tag>
+            <tag name="LicensorEmail">
+                <!-- qualified-id : plus:Licensor.plus:LicensorEmail -->
+                <label>Licensor Email</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    Licensor Email address.
+                </description>
+            </tag>
+            <tag name="LicensorURL">
+                <!-- qualified-id : plus:Licensor.plus:LicensorURL -->
+                <label>Licensor URL</label>
+                <description>
+                    A person or company that should be contacted to obtain a licence for using the item or who has
+                    licensed the item.
+
+                    URL for a Licensor web page. May facilitate licensing of the image.
+                    URL should include "http://" or "https://".
+                </description>
+            </tag>
+        </tags>
+    </family>
+    <family name="IptcExt-LocationCreated" group="XMP">
+        <label>IPTC Extension: Location Created</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-extension-schema-1-8-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos,
+            because of its universal acceptance among news agencies, photographers, photo agencies, libraries, museums,
+            and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard) as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+        </description>
+        <tags>
+            <tag name="LocationCreatedLocationId">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.Iptc4xmpExt:LocationId -->
+                <label>Location created ID</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    Globally unique identifier of the location.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+                <format>
+                    <description>URI</description>
+                </format>
+            </tag>
+            <tag name="LocationCreatedLocationName">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.Iptc4xmpExt:LocationName -->
+                <label>Location created Name</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    Full name of the location.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+            </tag>
+            <tag name="LocationCreatedSublocation">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.Iptc4xmpExt:Sublocation -->
+                <label>Location created Sublocation</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    Name of a sublocation. This sublocation name could either be the name of a sublocation to a city
+                    or the name of a well known location or (natural) monument outside a city.
+                    In the sense of a sublocation to a city this element is at the fifth level of a top-down
+                    geographical hierarchy.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+            </tag>
+            <tag name="LocationCreatedCity">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.Iptc4xmpExt:City -->
+                <label>Location created City</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    Name of the city of a location. This element is at the fourth level of a top-down geographical
+                    hierarchy.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+            </tag>
+            <tag name="LocationCreatedProvinceState">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.Iptc4xmpExt:ProvinceState -->
+                <label>Location created Province/State</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    The name of a subregion of a country - a province or state - of a location.
+                    This element is at the third level of a top-down geographical hierarchy.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+            </tag>
+            <tag name="LocationCreatedCountryName">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.Iptc4xmpExt:CountryName -->
+                <label>Location created Country Name</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    The name of a country of a location. This element is at the second level of a top-down geographical
+                    hierarchy.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+            </tag>
+            <tag name="LocationCreatedCountryCode">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.Iptc4xmpExt:CountryCode -->
+                <label>Location created Country ISO-Code</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    The ISO code of a country of a location. This element is at the second level of a top-down
+                    geographical hierarchy.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+                <format>
+                    <description>Enter the 2 or 3 letter ISO 3166 Country Code of the Country.</description>
+                </format>
+            </tag>
+            <tag name="LocationCreatedWorldRegion">
+                <!-- sortOrder : tp480|s0908 -->
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.Iptc4xmpExt:WorldRegion -->
+                <label>Location created World Region</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    The name of a world region of a location. This element is at the first (top) level of a top-down
+                    geographical hierarchy.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+            </tag>
+            <tag name="LocationCreatedGPSAltitude">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.exif:GPSAltitude -->
+                <label>Location created GPS-Altitude</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    Altitude in meters above or below the WGS84 reference level of this Location.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="LocationCreatedGPSAltitudeRef">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.exif:GPSAltitudeRef -->
+                <label>Location created GPS-Altitude Ref</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    The relationship of the GPS Altitude value to the reference level of WGS84: value 0 = above, 1 =
+                    below
+
+                    The WGS84 reference level is the surface of the mathematical representation of the earth's globe.
+                    At a specific location this level may be a few metres above of below the Mean Sea Level of an ocean
+                    or a sea.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+                <format>
+                    <examples>
+                        <example value="0">Above sea level</example>
+                        <example value="1">Below sea level</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="LocationCreatedGPSLongitude">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.exif:GPSLongitude -->
+                <label>Location created GPS-Longitude</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    Longitude of a WGS84 based position of this Location.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+                <format>
+                    <description>
+                        Be aware that the value of this property includes the degrees of the latitude
+                        and must indicate whether it is in the east or west.
+                    </description>
+                </format>
+            </tag>
+            <tag name="LocationCreatedGPSLatitude">
+                <!-- qualified-id : Iptc4xmpExt:LocationCreated.exif:GPSLatitude -->
+                <label>Location created GPS-Lattitude</label>
+                <description>
+                    The location the photo was taken. Enter the details about a location where this image was created.
+                    Latitude of a WGS84 based position of this Location.
+
+                    If the location in the image is different from the location the photo was taken
+                    the IPTC Extension property 'Location Shown in the Image' should be used.
+                </description>
+                <format>
+                    <description>
+                        Be aware that the value of this property includes the degrees of the latitude
+                        and must indicate whether it is in the north or south.
+                    </description>
+                </format>
+            </tag>
+        </tags>
+    </family>
+    <family name="IptcExt-LocationShown" group="XMP">
+        <label>IPTC Extension: Location Shown in the Image</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-extension-schema-1-8-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos,
+            because of its universal acceptance among news agencies, photographers, photo agencies, libraries, museums,
+            and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard) as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+        </description>
+        <tags>
+            <tag name="LocationShownLocationId">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.Iptc4xmpExt:LocationId -->
+                <label>Location shown ID</label>
+                <description>
+                    A location shown in the image.
+                    Globally unique identifier of the location.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+            </tag>
+            <tag name="LocationShownLocationName">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.Iptc4xmpExt:LocationName -->
+                <label>Location shown Name</label>
+                <description>
+                    A location shown in the image.
+                    Full name of the location.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+            </tag>
+            <tag name="LocationShownSublocation">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.Iptc4xmpExt:Sublocation -->
+                <label>Location shown Sublocation</label>
+                <description>
+                    A location shown in the image.
+                    Name of a sublocation. This sublocation name could either be the name of a sublocation to a city
+                    or the name of a well known location or (natural) monument outside a city.
+                    In the sense of a sublocation to a city this element is at the fifth level of a top-down
+                    geographical hierarchy.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+            </tag>
+            <tag name="LocationShownCity">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.Iptc4xmpExt:City -->
+                <label>Location shown City</label>
+                <description>
+                    A location shown in the image.
+                    Name of the city of a location. This element is at the fourth level of a top-down geographical
+                    hierarchy.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+            </tag>
+            <tag name="LocationShownProvinceState">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.Iptc4xmpExt:ProvinceState -->
+                <label>Location shown Province/State</label>
+                <description>
+                    A location shown in the image.
+                    The name of a subregion of a country - a province or state - of a location.
+                    This element is at the third level of a top-down geographical hierarchy.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+            </tag>
+            <tag name="LocationShownCountryName">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.Iptc4xmpExt:CountryName -->
+                <label>Location shown Country Name</label>
+                <description>
+                    A location shown in the image.
+                    The name of a country of a location. This element is at the second level of a top-down geographical
+                    hierarchy.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+            </tag>
+            <tag name="LocationShownCountryCode">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.Iptc4xmpExt:CountryCode -->
+                <label>Location shown Country ISO-Code</label>
+                <description>
+                    A location shown in the image.
+                    The ISO code of a country of a location. This element is at the second level of a top-down
+                    geographical hierarchy.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+                <format>
+                    <description>Enter the 2 or 3 letter ISO 3166 Country Code of the Country.</description>
+                </format>
+            </tag>
+            <tag name="LocationShownWorldRegion">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.Iptc4xmpExt:WorldRegion -->
+                <label>Location shown World Region</label>
+                <description>
+                    A location shown in the image.
+                    The name of a world region of a location. This element is at the first (top) level of a top-down
+                    geographical hierarchy.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+            </tag>
+            <tag name="LocationShownGPSAltitude">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.exif:GPSAltitude -->
+                <label>Location shown GPS-Altitude</label>
+                <description>
+                    A location shown in the image.
+                    Altitude in meters above or below the WGS84 reference level of this Location.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+                <format>
+                    <description>number</description>
+                </format>
+            </tag>
+            <tag name="LocationShownGPSAltitudeRef">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.exif:GPSAltitudeRef -->
+                <label>Location shown GPS-Altitude Ref</label>
+                <description>
+                    A location shown in the image.
+                    The relationship of the GPS Altitude value to the reference level of WGS84: value 0 = above, 1 =
+                    below
+
+                    The WGS84 reference level is the surface of the mathematical representation of the earth's globe.
+                    At a specific location this level may be a few metres above of below the Mean Sea Level of an ocean
+                    or a sea.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.. The WGS84 reference level is the surface of the mathematical
+                    representation of the earth&apos;s globe. At a specific location this level may be a few metres
+                    above of below the Mean Sea Level of an ocean or a sea.
+                </description>
+                <format>
+                    <examples>
+                        <example value="0">Above sea level</example>
+                        <example value="1">Below sea level</example>
+                    </examples>
+                </format>
+            </tag>
+            <tag name="LocationShownGPSLongitude">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.exif:GPSLongitude -->
+                <label>Location shown GPS-Longitude</label>
+                <description>
+                    A location shown in the image.
+                    Longitude of a WGS84 based position of this Location.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+                <format>
+                    <description>
+                        Be aware that the value of this property includes the degrees of the latitude
+                        and must indicate whether it is in the east or west.
+                    </description>
+                </format>
+            </tag>
+            <tag name="LocationShownGPSLatitude">
+                <!-- qualified-id : Iptc4xmpExt:LocationShown.exif:GPSLatitude -->
+                <label>Location shown GPS-Lattitude</label>
+                <description>
+                    A location shown in the image.
+                    Latitude of a WGS84 based position of this Location.
+
+                    If the location the image was taken in is different from this location the property 'Location
+                    Created' should be used too.
+                </description>
+                <format>
+                    <description>
+                        Be aware that the value of this property includes the degrees of the latitude
+                        and must indicate whether it is in the north or south.
+                    </description>
+                </format>
+            </tag>
+        </tags>
+    </family>
+    <family name="IptcExt-PersonShown" group="XMP">
+        <label>IPTC Extension: Person Shown in the Image</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-extension-schema-1-8-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos,
+            because of its universal acceptance among news agencies, photographers, photo agencies, libraries, museums,
+            and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard) as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+        </description>
+        <tags>
+            <tag name="PersonInImageId">
+                <!-- qualified-id : Iptc4xmpExt:PersonInImageWDetails.Iptc4xmpExt:PersonId -->
+                <label>Identifier</label>
+                <description>
+                    Details about person(s) shown in the image.
+                    Globally Unique Identifier of the person.
+                </description>
+                <format>
+                    <description>
+                        Enter globally unique identifier(s) for the person, such as those from WikiData or Freebase.
+                        This should be an identifier as it is used with semantic web technology.
+                    </description>
+                </format>
+            </tag>
+            <tag name="PersonInImageName">
+                <!-- qualified-id : Iptc4xmpExt:PersonInImageWDetails.Iptc4xmpExt:PersonName -->
+                <label>Name</label>
+                <description>
+                    Details about person(s) shown in the image.
+                    Name of the person.
+                </description>
+            </tag>
+            <tag name="PersonInImageDescription">
+                <!-- qualified-id : Iptc4xmpExt:PersonInImageWDetails.Iptc4xmpExt:PersonDescription -->
+                <label>Description</label>
+                <description>
+                    Details about person(s) shown in the image.
+                    A textual description of the person.
+
+                    Describes the person, any actions taken, emotional expressions shown, etc. as free-text
+                </description>
+            </tag>
+            <tag name="PersonInImageCvTermCvId">
+                <!-- qualified-id : Iptc4xmpExt:PersonInImageWDetails.Iptc4xmpExt:PersonCharacteristic.Iptc4xmpExt:CvId -->
+                <label>CV ID</label>
+                <description>
+                    Details about person(s) shown in the image.
+                    A property or trait of the person.
+                    The globally unique identifier of the Controlled Vocabulary the term is from.
+                </description>
+                <format>
+                    <description>URI</description>
+                </format>
+            </tag>
+            <tag name="PersonInImageCvTermId">
+                <!-- qualified-id : Iptc4xmpExt:PersonInImageWDetails.Iptc4xmpExt:PersonCharacteristic.Iptc4xmpExt:CvTermId -->
+                <label>Term ID</label>
+                <description>
+                    Details about person(s) shown in the image.
+                    A property or trait of the person.
+                    The globally unique identifier of the term from a Controlled Vocabulary.
+                </description>
+                <format>
+                    <description>URI</description>
+                </format>
+            </tag>
+            <tag name="PersonInImageCvTermName">
+                <!-- qualified-id : Iptc4xmpExt:PersonInImageWDetails.Iptc4xmpExt:PersonCharacteristic.Iptc4xmpExt:CvTermName -->
+                <label>Name</label>
+                <description>
+                    Details about person(s) shown in the image.
+                    A property or trait of the person.
+                    The natural language name of the term from a Controlled Vocabulary.
+                </description>
+            </tag>
+            <tag name="PersonInImageCvTermRefinedAbout">
+                <!-- qualified-id : Iptc4xmpExt:PersonInImageWDetails.Iptc4xmpExt:PersonCharacteristic.Iptc4xmpExt:CvTermRefinedAbout -->
+                <label>Refined Aboutness</label>
+                <description>
+                    Details about person(s) shown in the image.
+                    A property or trait of the person.
+                    Optionally enter a refinement of the 'about' relationship of the term with the content of the image.
+                    This must be a globally unique identifier from a Controlled Vocabulary
+                </description>
+                <format>
+                    <description>URI</description>
+                </format>
+            </tag>
+        </tags>
+    </family>
+    <family name="IptcExt-ProductShown" group="XMP">
+        <label>IPTC Extension: Product Shown in the Image</label>
+        <homePage>https://iptc.org/standards/photo-metadata/iptc-standard/</homePage>
+        <reference>
+            https://iptc.org/std/photometadata/specification/IPTC-PhotoMetadata#iptc-extension-schema-1-8-specifications
+        </reference>
+        <description>
+            The IPTC Photo Metadata Standard is the most widely used standard to describe photos,
+            because of its universal acceptance among news agencies, photographers, photo agencies, libraries, museums,
+            and other related industries.
+            It structures and defines metadata properties that allow users to add precise and reliable data about
+            images.
+
+            Today, the IPTC Photo Metadata Standard consists of two schemas – IPTC Core and IPTC Extension –
+            which were built on the legacy of the original IPTC-IIM,
+            and developed by the IPTC for professional use with a focus on news and stock photos.
+            IPTC worked alongside Adobe on the technical implementation of the metadata that employs Adobe’s XMP
+            technology
+            (now an ISO Standard) as an enriched alternative to the IIM format.
+
+            IPTC Core and IPTC Extension define metadata properties with comprehensive sets of fields
+            that allow users to add precise and reliable data about people, locations, and products shown in an image.
+            It also supports dates, names and identifiers regarding the creation of the photo,
+            and a flexible way to express rights information.
+        </description>
+        <tags>
+            <tag name="ProductInImageGTIN">
+                <!-- qualified-id : Iptc4xmpExt:ProductInImage.Iptc4xmpExt:ProductGTIN -->
+                <label>GTIN</label>
+                <description>
+                    Details about product shown in the image.
+                    A 14 digit GTIN (Global Trade Item Number) of the product (GTIN-8 to GTIN-14 codes are used).
+                </description>
+                <format>
+                    <description>Enter the 14 digit Global Trade Item Number (GTIN) of the product as defined by GS1.
+                    </description>
+                </format>
+            </tag>
+            <tag name="ProductInImageProductId">
+                <!-- qualified-id : Iptc4xmpExt:ProductInImage.Iptc4xmpExt:ProductId -->
+                <label>Identifier</label>
+                <description>
+                    Details about product shown in the image.
+                    Globally Unique Identifier of the product.
+                </description>
+            </tag>
+            <tag name="ProductInImageName">
+                <!-- qualified-id : Iptc4xmpExt:ProductInImage.Iptc4xmpExt:ProductName -->
+                <label>Name</label>
+                <description>
+                    Details about product shown in the image.
+                    Name of the product.
+                </description>
+            </tag>
+            <tag name="ProductInImageDescription">
+                <!-- qualified-id : Iptc4xmpExt:ProductInImage.Iptc4xmpExt:ProductDescription -->
+                <label>Description</label>
+                <description>
+                    Details about product shown in the image.
+                    A textual description of the product.
+                </description>
+            </tag>
+        </tags>
+    </family>
+</tag-collection>
+
