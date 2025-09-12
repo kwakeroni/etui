@@ -11,8 +11,8 @@ import com.quaxantis.support.swing.Dimensions;
 import com.quaxantis.support.swing.ToolTips;
 import com.quaxantis.support.swing.form.FormField;
 import com.quaxantis.support.swing.form.FormListener;
-import com.quaxantis.support.swing.layout.SpringLayoutOrganizer;
 import com.quaxantis.support.swing.form.SimpleForm;
+import com.quaxantis.support.swing.layout.SpringLayoutOrganizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +154,7 @@ public class TagEntryUI {
                 TagInfoPanel.StandardInfoItem.FORMAT_DESCRIPTION,
                 TagInfoPanel.StandardInfoItem.FORMAT_EXAMPLES.wrapped("<p><strong>examples</strong>", "</p>")
         );
-        pane.setExamplePatternAction(pattern -> form.modifyData(bean -> bean.setValue(bean.value() + pattern)));
+        pane.setExamplePatternAction(pattern -> form.modifyData(bean -> bean.setValue(pattern)));
         pane.setHyperlinkAction(TagInfoPanel::openWithDesktop);
         form.addFormListener(FormListener.onChanged(f -> tagTree.findTag(f.getData().tag()).ifPresent(pane::setTag)));
         return new JScrollPane(pane);
@@ -220,7 +220,7 @@ public class TagEntryUI {
 //    }
 
     private static TagTree createTagTree(TagRepository tagRepository) {
-        return new TagTree(tagRepository.getGroupedFamilies());
+        return new TagTree(tagRepository.tagGroups());
     }
 
     private static JPanel createTagEntryPanel(SimpleForm<?> form, Container actionBar) {

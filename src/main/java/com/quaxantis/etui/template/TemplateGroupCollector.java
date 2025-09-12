@@ -12,6 +12,10 @@ import java.util.stream.Collector;
 
 public class TemplateGroupCollector {
 
+    private TemplateGroupCollector() {
+        throw new UnsupportedOperationException();
+    }
+
     public static Collector<Map.Entry<String, ? extends Template>, ?, List<TemplateGroup>> collector() {
         return new Impl();
     }

@@ -6,7 +6,7 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import java.util.function.*;
+import java.util.function.Function;
 
 public interface FormFieldInput<C extends JComponent, V> {
 
@@ -74,7 +74,7 @@ public interface FormFieldInput<C extends JComponent, V> {
 
             @Override
             public void applyPattern(String pattern) {
-                setValue(getValue() + pattern);
+                setValue(pattern);
             }
 
             @Override
@@ -134,7 +134,7 @@ public interface FormFieldInput<C extends JComponent, V> {
 
             @Override
             public void applyPattern(String pattern) {
-                setValue(getValue() + pattern);
+                setValue(pattern);
             }
 
             @Override

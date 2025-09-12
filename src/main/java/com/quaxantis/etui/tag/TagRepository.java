@@ -103,8 +103,14 @@ public class TagRepository {
                     .flatMap(StreamEntry.flatMapping(List::stream))
                     .collect(groupingBy(StreamEntry::getKey, LinkedHashMap::new, mapping(StreamEntry::getValue, toList())));
         }
+    }
 
-
+    public List<TagGroup> tagGroups() {
+        try (var families = readCollections()) {
+            return families
+                    .flatMap(StreamEntry.flatMapping((XMLTagCollection collection) -> collection.families().stream()))
+                    .collect(TagGroupCollector.collector());
+        }
     }
 
     protected Stream<StreamEntry<String, XMLTagCollection>> readCollections() {

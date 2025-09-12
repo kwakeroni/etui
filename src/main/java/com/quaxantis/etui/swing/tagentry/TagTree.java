@@ -4,6 +4,7 @@ import com.quaxantis.etui.*;
 import com.quaxantis.etui.application.config.ConfigOperations;
 import com.quaxantis.etui.application.config.Configuration;
 import com.quaxantis.etui.swing.tagentry.TagTree.TagSelectionListener.Status;
+import com.quaxantis.etui.tag.TagGroup;
 import com.quaxantis.etui.tag.TagRepository;
 import com.quaxantis.support.swing.ToolTips;
 import com.quaxantis.support.swing.util.QuickJFrame;
@@ -19,20 +20,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.EventListener;
+import java.util.List;
+import java.util.Optional;
+import java.util.SequencedCollection;
+import java.util.stream.Stream;
 
 import static java.util.function.Predicate.not;
 
 class TagTree extends JTree {
 
 
-    public TagTree(Map<String, List<TagFamily>> groups) {
-        this(groups, true);
+    public TagTree(SequencedCollection<TagGroup> tagGroups) {
+        this(tagGroups, true);
     }
 
-    private TagTree(Map<String, List<TagFamily>> groups, boolean removeReadOnlyTags) {
-        super(new Model(groups, removeReadOnlyTags));
+    private TagTree(SequencedCollection<TagGroup> tagGroups, boolean removeReadOnlyTags) {
+        super(new Model(tagGroups, removeReadOnlyTags));
         setRootVisible(false);
         setShowsRootHandles(true);
         setCellRenderer(new Renderer());
@@ -106,6 +110,10 @@ class TagTree extends JTree {
             return hasLabel.label();
         } else if (value instanceof Tag tag) {
             return tag.tagName();
+        } else if (value instanceof TagFamily tagFamily) {
+            return tagFamily.label();
+        } else if (value instanceof TagGroup tagGroup) {
+            return tagGroup.name();
         } else {
             return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
         }
@@ -136,23 +144,10 @@ class TagTree extends JTree {
     }
 
     private static class Model implements TreeModel {
-        private final List<String> groupNames;
-        private final SequencedMap<String, List<TagFamily>> groups;
+        private final TagGroup root;
 
-        private Model(Map<String, List<TagFamily>> groups, boolean removeReadOnlyTags) {
-            this.groups = groups.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            entry -> {
-                                List<TagFamily> families = entry.getValue();
-                                return filterFamilies(families, removeReadOnlyTags);
-                            },
-                            (l, r) -> {
-                                l.addAll(r);
-                                return l;
-                            },
-                            LinkedHashMap::new));
-            this.groupNames = this.groups.sequencedKeySet().stream().toList();
+        private Model(SequencedCollection<TagGroup> tagGroups, boolean removeReadOnlyTags) {
+            this.root = new TagGroup("", tagGroups.stream().toList(), List.of());
         }
 
         private List<TagFamily> filterFamilies(List<TagFamily> families, boolean removeReadOnlyTags) {
@@ -170,27 +165,17 @@ class TagTree extends JTree {
             return tagFamily.filter(not(TagDescriptor::isReadOnly));
         }
 
-        private List<?> getChildren(Object parent) {
-            if (parent == this) {
-                return this.groupNames;
-            } else if (parent instanceof String group) {
-                return groups.get(group);
-            } else if (parent instanceof TagFamily collection) {
-                return collection.tags();
-            } else {
-                return null;
-            }
-        }
-
         @Override
         public Object getRoot() {
-            return this;
+            return root;
         }
 
         @Override
         public int getChildCount(Object parent) {
-            if (getChildren(parent) instanceof List<?> list) {
-                return list.size();
+            if (parent instanceof TagGroup group) {
+                return group.subGroups().size() + group.families().size();
+            } else if (parent instanceof TagFamily family) {
+                return family.tags().size();
             } else {
                 return 0;
             }
@@ -198,8 +183,14 @@ class TagTree extends JTree {
 
         @Override
         public Object getChild(Object parent, int index) {
-            if (getChildren(parent) instanceof List<?> list) {
-                return list.get(index);
+            if (parent instanceof TagGroup group) {
+                if (index < group.subGroups().size()) {
+                    return group.subGroups().get(index);
+                } else {
+                    return group.families().get(index - group.subGroups().size());
+                }
+            } else if (parent instanceof TagFamily family) {
+                return family.tags().get(index);
             } else {
                 return null;
             }
@@ -207,29 +198,52 @@ class TagTree extends JTree {
 
         @Override
         public int getIndexOfChild(Object parent, Object child) {
-            if (getChildren(parent) instanceof List<?> list) {
-                return list.indexOf(child);
+            if (parent instanceof TagGroup group && child instanceof TagGroup subGroup) {
+                return group.subGroups().indexOf(subGroup);
+            } else if (parent instanceof TagGroup group && child instanceof TagFamily family) {
+                return group.subGroups().size() + group.families().indexOf(family);
+            } else if (parent instanceof TagFamily family) {
+                return family.tags().indexOf(child);
             } else {
                 return -1;
             }
         }
 
         public Optional<Tag> findTag(Tag tag) {
-            return this.groups.values().stream()
-                    .flatMap(List::stream)
-                    .<Tag>flatMap(family -> family.tags().stream())
+            return tags(this.root)
                     .filter(tag::isSameTagAs)
                     .findFirst();
         }
 
+        private Stream<Tag> tags(TagGroup group) {
+            return Stream.concat(group.families().stream().map(TagFamily::tags).flatMap(List::stream),
+                                 group.subGroups().stream().flatMap(this::tags));
+        }
+
         public Optional<TreePath> findSelectionPath(Tag tag) {
-            for (String group : this.groupNames) {
-                for (TagFamily family : this.groups.get(group)) {
-                    for (Tag modelTag : family.tags()) {
-                        if (tag.isSameTagAs(modelTag)) {
-                            return Optional.of(new TreePath(new Object[]{this, group, family, modelTag}));
-                        }
-                    }
+            return findSelectionPath(tag, this.root).map(NodePath::toTreePath);
+        }
+
+        public Optional<NodePath> findSelectionPath(Tag tag, TagGroup group) {
+            for (TagFamily family : group.families()) {
+                Optional<NodePath> path = findSelectionPath(tag, family);
+                if (path.isPresent()) {
+                    return path.map(p -> p.withParent(group));
+                }
+            }
+            for (TagGroup subGroup : group.subGroups()) {
+                Optional<NodePath> path = findSelectionPath(tag, subGroup);
+                if (path.isPresent()) {
+                    return path.map(p -> p.withParent(group));
+                }
+            }
+            return Optional.empty();
+        }
+
+        public Optional<NodePath> findSelectionPath(Tag tag, TagFamily family) {
+            for (Tag modelTag : family.tags()) {
+                if (tag.isSameTagAs(modelTag)) {
+                    return Optional.of(new NodePath(modelTag, null).withParent(family));
                 }
             }
             return Optional.empty();
@@ -254,6 +268,23 @@ class TagTree extends JTree {
         public void valueForPathChanged(TreePath path, Object newValue) {
             throw new UnsupportedOperationException();
         }
+
+        private record NodePath(Object node, NodePath childPath) {
+
+            NodePath withParent(Object parent) {
+                return new NodePath(parent, this);
+            }
+
+            TreePath toTreePath() {
+                TreePath thisPath = new TreePath(this.node);
+                return (this.childPath == null) ? thisPath : this.childPath.addTo(thisPath);
+            }
+
+            private TreePath addTo(TreePath path) {
+                TreePath thisPath = path.pathByAddingChild(this.node);
+                return (this.childPath == null) ? thisPath : this.childPath.addTo(thisPath);
+            }
+        }
     }
 
     public interface TagSelectionListener extends EventListener {
@@ -269,12 +300,12 @@ class TagTree extends JTree {
         }
     }
 
-    public static void main() {
+    public static void main(String[] args) {
         Configuration configuration = new ConfigOperations().getConfiguration();
         var repo = new TagRepository(configuration);
         System.out.println(repo.getFamilies().stream().map(TagFamily::label).toList());
 
-        QuickJFrame.of(new TagTree(repo.getGroupedFamilies(), false))
+        QuickJFrame.of(new TagTree(repo.tagGroups(), false))
                 .withTitle("Tag Tree")
                 .show();
     }
